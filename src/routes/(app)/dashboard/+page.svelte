@@ -37,31 +37,41 @@
 
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 			{#if data.user.role === 'creator'}
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Mes produits</h3>
-					<p class="text-muted-foreground text-sm">Gérez vos produits en vente</p>
-				</Card>
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Mes ventes</h3>
-					<p class="text-muted-foreground text-sm">Historique de vos ventes</p>
-				</Card>
+				<a href="/creator/products">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Mes produits</h3>
+						<p class="text-muted-foreground text-sm">Gérez vos produits en vente</p>
+					</Card>
+				</a>
+				<a href="/creator/profile">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Mon profil</h3>
+						<p class="text-muted-foreground text-sm">Gérez votre profil créateur</p>
+					</Card>
+				</a>
 				<Card class="animate-in p-6">
 					<h3 class="font-semibold mb-2">Stripe</h3>
 					<p class="text-muted-foreground text-sm">Configurez vos paiements</p>
 				</Card>
 			{:else if data.user.role === 'admin'}
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Créateurs</h3>
-					<p class="text-muted-foreground text-sm">Gérez les créateurs</p>
-				</Card>
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Invitations</h3>
-					<p class="text-muted-foreground text-sm">Invitez de nouveaux créateurs</p>
-				</Card>
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Statistiques</h3>
-					<p class="text-muted-foreground text-sm">Vue globale de la plateforme</p>
-				</Card>
+				<a href="/admin/creators">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Créateurs</h3>
+						<p class="text-muted-foreground text-sm">Gérez les créateurs</p>
+					</Card>
+				</a>
+				<a href="/admin/invitations">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Invitations</h3>
+						<p class="text-muted-foreground text-sm">Invitez de nouveaux créateurs</p>
+					</Card>
+				</a>
+				<a href="/admin/stats">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Statistiques</h3>
+						<p class="text-muted-foreground text-sm">Vue globale de la plateforme</p>
+					</Card>
+				</a>
 			{:else}
 				<Card class="animate-in p-6">
 					<h3 class="font-semibold mb-2">Mes achats</h3>
