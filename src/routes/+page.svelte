@@ -21,11 +21,13 @@
 		<div class="animate-in text-2xl font-bold">Vasy</div>
 		<nav class="animate-in flex gap-4">
 			<a href="/login" class="text-muted-foreground hover:text-foreground">Connexion</a>
-			<Button size="sm">
-				{#snippet children()}
-					S'inscrire
-				{/snippet}
-			</Button>
+			<a href="/register">
+				<Button size="sm">
+					{#snippet children()}
+						S'inscrire
+					{/snippet}
+				</Button>
+			</a>
 		</nav>
 	</header>
 
