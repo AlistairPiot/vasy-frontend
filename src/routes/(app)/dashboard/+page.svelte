@@ -73,10 +73,12 @@
 					</Card>
 				</a>
 			{:else}
-				<Card class="animate-in p-6">
-					<h3 class="font-semibold mb-2">Mes achats</h3>
-					<p class="text-muted-foreground text-sm">Historique de vos commandes</p>
-				</Card>
+				<a href="/dashboard/orders">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Mes achats</h3>
+						<p class="text-muted-foreground text-sm">Historique de vos commandes</p>
+					</Card>
+				</a>
 				<Card class="animate-in p-6">
 					<h3 class="font-semibold mb-2">Mon profil</h3>
 					<p class="text-muted-foreground text-sm">Gérez vos informations</p>

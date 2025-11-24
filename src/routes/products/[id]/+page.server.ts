@@ -14,10 +14,28 @@ interface Product {
 	created_at: string;
 }
 
-export const load: PageServerLoad = async ({ params }) => {
+interface Creator {
+	id: string;
+	display_name: string;
+	bio: string;
+	profile_image_url: string;
+	is_approved: boolean;
+}
+
+export const load: PageServerLoad = async ({ params, locals }) => {
 	try {
 		const product = await serverApi.get<Product>(`/products/${params.id}`);
-		return { product };
+
+		// Charger les infos du créateur
+		let creator: Creator | null = null;
+		try {
+			creator = await serverApi.get<Creator>(`/creators/${product.creator_id}`, locals.token);
+		} catch {
+			// Si on ne peut pas charger le créateur, on continue sans
+			creator = null;
+		}
+
+		return { product, creator };
 	} catch {
 		throw error(404, 'Produit non trouvé');
 	}

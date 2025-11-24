@@ -1,13 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
-	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { cart } from '$lib/stores/cart';
+	import { favorites } from '$lib/stores/favorites';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 	let selectedImage = $state(0);
 	let images = $state<string[]>([]);
+	let showAddedNotification = $state(false);
+	let notificationTimeout: ReturnType<typeof setTimeout>;
+
+	const isFavorite = $derived(favorites.isFavorite(data.product.id, $favorites));
 
 	onMount(() => {
 		try {
@@ -27,6 +32,32 @@
 
 	function formatPrice(cents: number): string {
 		return (cents / 100).toFixed(2) + ' €';
+	}
+
+	function addToCart() {
+		if (data.product.stock <= 0) return;
+
+		cart.addItem({
+			id: data.product.id,
+			name: data.product.name,
+			price: data.product.price,
+			quantity: 1,
+			image_url: images[0] || '',
+			creator_id: data.product.creator_id
+		});
+
+		showAddedNotification = true;
+		if (notificationTimeout) clearTimeout(notificationTimeout);
+		notificationTimeout = setTimeout(() => {
+			showAddedNotification = false;
+		}, 2000);
+
+		// Animate notification
+		gsap.fromTo('.notification', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.3 });
+	}
+
+	function toggleFavorite() {
+		favorites.toggle(data.product.id);
 	}
 </script>
 
@@ -94,6 +125,25 @@
 
 			<!-- Infos -->
 			<div class="animate-in">
+				{#if data.creator}
+					<a href="/creators/{data.creator.id}" class="text-muted-foreground hover:text-foreground transition-colors mb-2 inline-flex items-center gap-2">
+						<span class="text-sm font-medium">{data.creator.display_name}</span>
+						{#if data.creator.is_approved}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								class="text-blue-500"
+							>
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+								<polyline points="22 4 12 14.01 9 11.01" />
+							</svg>
+						{/if}
+					</a>
+				{/if}
+
 				<h1 class="text-3xl font-bold mb-4">{data.product.name}</h1>
 
 				<p class="text-4xl font-bold text-primary mb-6">
@@ -119,11 +169,39 @@
 					</div>
 				</Card>
 
-				<Button class="w-full" disabled={data.product.stock === 0}>
-					{#snippet children()}
-						{data.product.stock > 0 ? 'Acheter maintenant' : 'Produit épuisé'}
-					{/snippet}
-				</Button>
+				{#if showAddedNotification}
+					<div class="notification bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
+						Produit ajouté au panier !
+					</div>
+				{/if}
+
+				<div class="flex gap-3 mb-6">
+					<button
+						onclick={addToCart}
+						disabled={data.product.stock === 0}
+						class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-10 px-4 py-2 rounded-md font-medium transition-colors"
+					>
+						{data.product.stock > 0 ? 'Ajouter au panier' : 'Produit épuisé'}
+					</button>
+					<button
+						onclick={toggleFavorite}
+						class="px-4 py-2 rounded-md border border-input transition-colors hover:bg-accent {isFavorite ? 'bg-red-100 text-red-600 border-red-300' : 'bg-background'}"
+					>
+						{#if isFavorite}
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+							</svg>
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+							</svg>
+						{/if}
+					</button>
+				</div>
+
+				<div class="text-center">
+					<a href="/cart" class="text-primary hover:underline text-sm">Voir le panier</a>
+				</div>
 			</div>
 		</div>
 	</main>

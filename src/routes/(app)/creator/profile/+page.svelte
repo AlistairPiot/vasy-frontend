@@ -112,7 +112,7 @@
 			</div>
 
 			<div class="space-y-2">
-				<label for="bio" class="text-sm font-medium">Biographie</label>
+				<label for="bio" class="text-sm font-medium">Description courte</label>
 				<textarea
 					id="bio"
 					name="bio"
