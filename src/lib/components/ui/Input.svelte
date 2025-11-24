@@ -6,7 +6,7 @@
 		class?: string;
 	}
 
-	let { class: className, ...rest }: Props = $props();
+	let { class: className = '', ...rest } = $props<Props>();
 </script>
 
 <input

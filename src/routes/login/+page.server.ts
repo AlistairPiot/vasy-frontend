@@ -1,13 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import type { Actions } from './$types';
 import { serverApi } from '$lib/server/api';
 import { loginSchema } from '$lib/validations/auth';
-
-export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.token) {
-		throw redirect(302, '/dashboard');
-	}
-};
 
 export const actions: Actions = {
 	default: async ({ request, cookies }) => {
@@ -35,13 +29,17 @@ export const actions: Actions = {
 			cookies.set('token', response.access_token, {
 				path: '/',
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
+				secure: import.meta.env.PROD,
 				sameSite: 'lax',
 				maxAge: 60 * 60 * 24 * 7 // 7 jours
 			});
 
 			throw redirect(302, '/dashboard');
 		} catch (err) {
+			// Re-throw SvelteKit errors (like redirect)
+			if (err && typeof err === 'object' && 'status' in err) {
+				throw err;
+			}
 			if (err instanceof Error && err.message) {
 				return fail(401, {
 					errors: { form: [err.message] },
