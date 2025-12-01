@@ -51,11 +51,13 @@
 			Vendez vos créations en toute simplicité.
 		</p>
 		<div class="animate-in flex gap-4 justify-center opacity-0 translate-y-[30px]">
-			<Button size="lg">
-				{#snippet children()}
-					Explorer les produits
-				{/snippet}
-			</Button>
+			<a href="/products">
+				<Button size="lg">
+					{#snippet children()}
+						Explorer les produits
+					{/snippet}
+				</Button>
+			</a>
 			<Button variant="outline" size="lg">
 				{#snippet children()}
 					En savoir plus

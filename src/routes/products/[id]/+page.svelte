@@ -37,6 +37,11 @@
 	}
 
 	function addToCart() {
+		if (!data.user) {
+			window.location.href = '/login';
+			return;
+		}
+
 		if (data.product.stock <= 0) return;
 
 		cart.addItem({
@@ -59,6 +64,11 @@
 	}
 
 	function toggleFavorite() {
+		if (!data.user) {
+			window.location.href = '/login';
+			return;
+		}
+
 		favorites.toggle(data.product.id);
 	}
 </script>
