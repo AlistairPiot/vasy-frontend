@@ -3,7 +3,10 @@
 	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import { cart } from '$lib/stores/cart';
+
+	let { data } = $props();
 
 	let containerRef: HTMLDivElement;
 
@@ -41,17 +44,9 @@
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
-	<header class="border-b">
-		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy</a>
-			<nav class="flex gap-4 items-center">
-				<a href="/products" class="text-muted-foreground hover:text-foreground">Produits</a>
-				<a href="/cart" class="text-foreground font-semibold">Panier</a>
-			</nav>
-		</div>
-	</header>
+	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-4 py-8 pt-24">
 		<div class="grid md:grid-cols-3 gap-8">
 			<!-- Cart Items -->
 			<div class="md:col-span-2">

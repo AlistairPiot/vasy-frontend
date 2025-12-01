@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -31,27 +32,9 @@
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
-	<header class="border-b">
-		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy</a>
-			<nav class="flex gap-4 items-center">
-				{#if data.user}
-					{#if data.user.role === 'creator' || data.user.role === 'admin'}
-						<a href="/dashboard" class="text-muted-foreground hover:text-foreground">Dashboard</a>
-					{/if}
-					<form action="/logout" method="POST">
-						<button type="submit" class="text-muted-foreground hover:text-foreground">
-							Déconnexion
-						</button>
-					</form>
-				{:else}
-					<a href="/login" class="text-muted-foreground hover:text-foreground">Connexion</a>
-				{/if}
-			</nav>
-		</div>
-	</header>
+	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-4 py-8 pt-24">
 		<h1 class="animate-in text-3xl font-bold mb-8">Tous les produits</h1>
 
 		{#if data.products.length === 0}

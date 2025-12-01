@@ -23,6 +23,19 @@
 			month: 'long'
 		});
 	}
+
+	function formatPrice(cents: number): string {
+		return (cents / 100).toFixed(2) + ' €';
+	}
+
+	function getFirstImage(imageUrls: string): string {
+		try {
+			const images = JSON.parse(imageUrls);
+			return images[0] || '';
+		} catch {
+			return '';
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
@@ -95,12 +108,44 @@
 		<!-- Products Section -->
 		<div class="animate-in">
 			<h2 class="text-2xl font-bold mb-6">Produits</h2>
-			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<Card class="p-4 text-center text-muted-foreground">
-					<p>Les produits de ce créateur apparaîtront ici</p>
-					<p class="text-sm mt-2">(À connecter au backend)</p>
+			{#if data.products && data.products.length > 0}
+				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{#each data.products as product (product.id)}
+						<a href="/products/{product.id}">
+							<Card class="overflow-hidden hover:shadow-lg transition-shadow h-full">
+								<div class="aspect-square bg-muted overflow-hidden">
+									{#if getFirstImage(product.image_urls)}
+										<img
+											src={getFirstImage(product.image_urls)}
+											alt={product.name}
+											class="w-full h-full object-cover hover:scale-105 transition-transform"
+										/>
+									{:else}
+										<div class="w-full h-full flex items-center justify-center text-muted-foreground">
+											Pas d'image
+										</div>
+									{/if}
+								</div>
+								<div class="p-4">
+									<h3 class="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+									<p class="text-lg font-bold text-primary mb-2">{formatPrice(product.price)}</p>
+									<p class="text-sm text-muted-foreground">
+										{#if product.stock > 0}
+											<span class="text-green-600">En stock</span>
+										{:else}
+											<span class="text-red-600">Épuisé</span>
+										{/if}
+									</p>
+								</div>
+							</Card>
+						</a>
+					{/each}
+				</div>
+			{:else}
+				<Card class="p-8 text-center text-muted-foreground animate-in">
+					<p>Ce créateur n'a pas encore de produits</p>
 				</Card>
-			</div>
+			{/if}
 		</div>
 	</main>
 </div>

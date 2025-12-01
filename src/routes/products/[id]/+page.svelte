@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
 
@@ -62,28 +63,9 @@
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
-	<header class="border-b">
-		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy</a>
-			<nav class="flex gap-4 items-center">
-				<a href="/products" class="text-muted-foreground hover:text-foreground">Produits</a>
-				{#if data.user}
-					{#if data.user.role === 'creator' || data.user.role === 'admin'}
-						<a href="/dashboard" class="text-muted-foreground hover:text-foreground">Dashboard</a>
-					{/if}
-					<form action="/logout" method="POST">
-						<button type="submit" class="text-muted-foreground hover:text-foreground">
-							Déconnexion
-						</button>
-					</form>
-				{:else}
-					<a href="/login" class="text-muted-foreground hover:text-foreground">Connexion</a>
-				{/if}
-			</nav>
-		</div>
-	</header>
+	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-4 py-8 pt-24">
 		<a href="/products" class="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-2 transition-colors">
 			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 				<path d="m15 18-6-6 6-6"/>
@@ -127,20 +109,18 @@
 			<div class="animate-in">
 				{#if data.creator}
 					<a href="/creators/{data.creator.id}" class="text-muted-foreground hover:text-foreground transition-colors mb-2 inline-flex items-center gap-2">
-						<span class="text-sm font-medium">{data.creator.display_name}</span>
-						{#if data.creator.is_approved}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								class="text-blue-500"
-							>
-								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-								<polyline points="22 4 12 14.01 9 11.01" />
-							</svg>
+						{#if data.creator.profile_image_url}
+							<img
+								src={data.creator.profile_image_url}
+								alt={data.creator.display_name}
+								class="w-8 h-8 rounded-full object-cover"
+							/>
+						{:else}
+							<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-semibold">
+								{data.creator.display_name.charAt(0).toUpperCase()}
+							</div>
 						{/if}
+						<span class="text-sm font-medium">{data.creator.display_name}</span>
 					</a>
 				{/if}
 
