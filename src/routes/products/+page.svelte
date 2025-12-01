@@ -3,6 +3,7 @@
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -34,8 +35,13 @@
 <div class="min-h-screen bg-background" bind:this={containerRef}>
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8 pt-24">
-		<h1 class="animate-in text-3xl font-bold mb-8">Tous les produits</h1>
+	<main class="container mx-auto px-4 py-8">
+		<Breadcrumb items={[
+			{ label: 'Accueil', href: '/' },
+			{ label: 'Produits' }
+		]} />
+
+		<h1 class="animate-in text-3xl font-bold mb-8 pt-8">Tous les produits</h1>
 
 		{#if data.products.length === 0}
 			<Card class="animate-in p-8 text-center">

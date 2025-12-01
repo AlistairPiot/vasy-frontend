@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
 
 	let { data } = $props();
@@ -46,8 +47,14 @@
 <div class="min-h-screen bg-background" bind:this={containerRef}>
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8 pt-24">
-		<div class="grid md:grid-cols-3 gap-8">
+	<main class="container mx-auto px-4 py-8">
+		<Breadcrumb items={[
+			{ label: 'Accueil', href: '/' },
+			{ label: 'Produits', href: '/products' },
+			{ label: 'Panier' }
+		]} />
+
+		<div class="grid md:grid-cols-3 gap-8 py-8">
 			<!-- Cart Items -->
 			<div class="md:col-span-2">
 				<div class="animate-in">

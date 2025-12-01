@@ -3,6 +3,7 @@
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
 
@@ -65,15 +66,14 @@
 <div class="min-h-screen bg-background" bind:this={containerRef}>
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8 pt-24">
-		<a href="/products" class="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-2 transition-colors">
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-				<path d="m15 18-6-6 6-6"/>
-			</svg>
-			<span>Retour aux produits</span>
-		</a>
+	<main class="container mx-auto px-4 py-8">
+		<Breadcrumb items={[
+			{ label: 'Accueil', href: '/' },
+			{ label: 'Produits', href: '/products' },
+			{ label: data.product.name }
+		]} />
 
-		<div class="grid md:grid-cols-2 gap-8">
+		<div class="grid md:grid-cols-2 gap-8 py-8">
 			<!-- Images -->
 			<div class="animate-in">
 				{#if images.length > 0}
