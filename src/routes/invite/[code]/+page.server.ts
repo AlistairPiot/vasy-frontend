@@ -27,8 +27,29 @@ export const actions: Actions = {
 		const password = formData.get('password') as string;
 		const confirmPassword = formData.get('confirmPassword') as string;
 		const displayName = formData.get('displayName') as string;
+		const siret = formData.get('siret') as string;
 
 		// Validation
+		if (!displayName || displayName.trim().length === 0) {
+			return fail(400, {
+				errors: { displayName: ["Le nom d'affichage est requis"] }
+			});
+		}
+
+		if (!siret) {
+			return fail(400, {
+				errors: { siret: ['Le numéro de SIRET est requis'] }
+			});
+		}
+
+		// Remove spaces and validate SIRET format
+		const siretDigits = siret.replace(/\s/g, '');
+		if (!/^\d{14}$/.test(siretDigits)) {
+			return fail(400, {
+				errors: { siret: ['Le SIRET doit contenir 14 chiffres'] }
+			});
+		}
+
 		if (!password || password.length < 8) {
 			return fail(400, {
 				errors: { password: ['Le mot de passe doit contenir au moins 8 caractères'] }
@@ -41,17 +62,12 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!displayName || displayName.trim().length === 0) {
-			return fail(400, {
-				errors: { displayName: ["Le nom d'affichage est requis"] }
-			});
-		}
-
 		try {
 			const response = await serverApi.post<{ access_token: string }>('/auth/register/creator', {
 				token: params.code,
 				password,
-				display_name: displayName.trim()
+				display_name: displayName.trim(),
+				siret: siretDigits
 			});
 
 			cookies.set('token', response.access_token, {

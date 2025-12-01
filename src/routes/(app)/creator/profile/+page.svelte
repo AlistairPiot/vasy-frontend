@@ -112,6 +112,18 @@
 			</div>
 
 			<div class="space-y-2">
+				<label for="siret" class="text-sm font-medium">Numéro de SIRET</label>
+				<div class="flex items-center justify-between px-3 py-2 rounded-md border border-input bg-muted text-muted-foreground text-sm font-mono">
+					{#if data.creator.siret}
+						<span>{data.creator.siret.slice(0, 3)} {data.creator.siret.slice(3, 6)} {data.creator.siret.slice(6, 9)} {data.creator.siret.slice(9)}</span>
+					{:else}
+						<span class="text-xs">Non renseigné</span>
+					{/if}
+				</div>
+				<p class="text-xs text-muted-foreground">Ce numéro ne peut pas être modifié</p>
+			</div>
+
+			<div class="space-y-2">
 				<label for="bio" class="text-sm font-medium">Description courte</label>
 				<textarea
 					id="bio"

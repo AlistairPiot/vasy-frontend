@@ -6,6 +6,7 @@ interface Creator {
 	user_id: string;
 	email: string | null;
 	display_name: string;
+	siret: string | null;
 	stripe_onboarding_complete: boolean;
 	is_verified: boolean;
 	is_approved: boolean;

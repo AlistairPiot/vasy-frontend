@@ -60,6 +60,7 @@
 					<tr>
 						<th class="text-left p-4 text-sm font-medium">Nom</th>
 						<th class="text-left p-4 text-sm font-medium">Email</th>
+						<th class="text-left p-4 text-sm font-medium">Numéro de SIRET</th>
 						<th class="text-left p-4 text-sm font-medium">Statut</th>
 						<th class="text-left p-4 text-sm font-medium">Stripe</th>
 						<th class="text-left p-4 text-sm font-medium">Inscrit le</th>
@@ -71,6 +72,13 @@
 						<tr class="border-b last:border-0 transition-colors" data-creator-id={creator.id}>
 							<td class="p-4 text-sm font-medium">{creator.display_name}</td>
 							<td class="p-4 text-sm text-muted-foreground">{creator.email || '-'}</td>
+							<td class="p-4 text-sm font-mono">
+								{#if creator.siret}
+									<span class="text-foreground">{creator.siret.slice(0, 3)} {creator.siret.slice(3, 6)} {creator.siret.slice(6, 9)} {creator.siret.slice(9)}</span>
+								{:else}
+									<span class="text-muted-foreground">-</span>
+								{/if}
+							</td>
 							<td class="p-4">
 								{#if creator.is_approved}
 									<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">

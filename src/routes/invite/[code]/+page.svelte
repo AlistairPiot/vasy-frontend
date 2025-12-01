@@ -9,6 +9,7 @@
 	let { data, form } = $props();
 	let cardRef: HTMLDivElement;
 	let logoRef: HTMLAnchorElement;
+	let siretInput = $state('');
 
 	onMount(() => {
 		gsap.to(logoRef, {
@@ -36,6 +37,23 @@
 			});
 		}
 	});
+
+	function formatSiret(value: string): string {
+		// Remove non-digits and limit to 14
+		const digits = value.replace(/\D/g, '').slice(0, 14);
+		// Format as 3 3 3 5
+		if (digits.length <= 3) return digits;
+		if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+		if (digits.length <= 9) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+		return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`;
+	}
+
+	function handleSiretInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		// Only keep digits and limit to 14
+		const digitsOnly = input.value.replace(/\D/g, '').slice(0, 14);
+		siretInput = formatSiret(digitsOnly);
+	}
 </script>
 
 <div class="min-h-screen bg-background flex flex-col">
@@ -79,6 +97,24 @@
 							/>
 							{#if form?.errors?.displayName}
 								<p class="error-message text-sm text-destructive">{form.errors.displayName[0]}</p>
+							{/if}
+						</div>
+
+						<div class="space-y-2">
+							<label for="siret" class="text-sm font-medium">Numéro de SIRET</label>
+							<Input
+								type="text"
+								id="siret"
+								name="siret"
+								required
+								placeholder="XXX XXX XXX XXXXX"
+								value={siretInput}
+								oninput={handleSiretInput}
+								maxlength={17}
+								class={form?.errors?.siret ? 'border-destructive' : ''}
+							/>
+							{#if form?.errors?.siret}
+								<p class="error-message text-sm text-destructive">{form.errors.siret[0]}</p>
 							{/if}
 						</div>
 
