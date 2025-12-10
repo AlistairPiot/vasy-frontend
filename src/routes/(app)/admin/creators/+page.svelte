@@ -33,8 +33,8 @@
 		approvingId = creatorId;
 	}
 
-	function enhanceApprove(creatorName: string, creatorId: string) {
-		return async ({ cancel }: { cancel: () => void }) => {
+	function enhanceApprove(creatorName: string) {
+		return async ({ cancel }: any) => {
 			if (!confirm(`Êtes-vous sûr de vouloir approuver le créateur "${creatorName}" ?`)) {
 				cancel();
 				approvingId = null;
@@ -50,13 +50,15 @@
 	}
 
 	function enhanceDelete(creatorName: string) {
-		return async ({ cancel, update }: { cancel: () => void; update: () => Promise<void> }) => {
+		return async ({ cancel }: any) => {
 			if (!confirm(`Êtes-vous sûr de vouloir supprimer le créateur "${creatorName}" ?\n\nCette action est irréversible et supprimera également le compte utilisateur associé.`)) {
 				cancel();
 				return;
 			}
 
-			await update();
+			return async () => {
+				await invalidateAll();
+			};
 		};
 	}
 </script>
@@ -118,7 +120,7 @@
 							<td class="p-4">
 								<div class="flex items-center gap-2">
 									{#if !creator.is_approved}
-										<form method="POST" action="?/approve" use:enhance={enhanceApprove(creator.display_name, creator.id)} onsubmit={() => handleApprove(creator.id)}>
+										<form method="POST" action="?/approve" use:enhance={enhanceApprove(creator.display_name)} onsubmit={() => handleApprove(creator.id)}>
 											<input type="hidden" name="creatorId" value={creator.id} />
 											<Button size="sm" disabled={approvingId === creator.id}>
 												{#snippet children()}

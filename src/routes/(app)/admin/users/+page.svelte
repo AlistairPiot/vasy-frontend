@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -27,13 +28,15 @@
 	}
 
 	function enhanceDelete(userEmail: string) {
-		return async ({ cancel, update }: { cancel: () => void; update: () => Promise<void> }) => {
+		return async ({ cancel }: any) => {
 			if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${userEmail}" ?\n\nCette action est irréversible.`)) {
 				cancel();
 				return;
 			}
 
-			await update();
+			return async () => {
+				await invalidateAll();
+			};
 		};
 	}
 </script>
