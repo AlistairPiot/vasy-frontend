@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -23,6 +25,17 @@
 			year: 'numeric'
 		});
 	}
+
+	function enhanceDelete(userEmail: string) {
+		return async ({ cancel, update }: { cancel: () => void; update: () => Promise<void> }) => {
+			if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${userEmail}" ?\n\nCette action est irréversible.`)) {
+				cancel();
+				return;
+			}
+
+			await update();
+		};
+	}
 </script>
 
 <div bind:this={containerRef}>
@@ -36,6 +49,7 @@
 						<th class="text-left p-4 text-sm font-medium">Email</th>
 						<th class="text-left p-4 text-sm font-medium">Statut</th>
 						<th class="text-left p-4 text-sm font-medium">Inscrit le</th>
+						<th class="text-left p-4 text-sm font-medium">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -55,6 +69,16 @@
 							</td>
 							<td class="p-4 text-sm text-muted-foreground">
 								{formatDate(user.created_at)}
+							</td>
+							<td class="p-4">
+								<form method="POST" action="?/delete" use:enhance={enhanceDelete(user.email)}>
+									<input type="hidden" name="userId" value={user.id} />
+									<Button size="sm" variant="destructive">
+										{#snippet children()}
+											Supprimer
+										{/snippet}
+									</Button>
+								</form>
 							</td>
 						</tr>
 					{/each}

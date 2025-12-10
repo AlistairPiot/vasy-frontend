@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -32,20 +33,30 @@
 		approvingId = creatorId;
 	}
 
-	function enhanceApprove() {
-		return async ({ update }: { update: () => Promise<void> }) => {
-			await update();
-			// Animation de succès sur la ligne
-			setTimeout(() => {
-				const row = document.querySelector(`[data-creator-id="${approvingId}"]`);
-				if (row) {
-					gsap.fromTo(row,
-						{ backgroundColor: 'rgba(34, 197, 94, 0.2)' },
-						{ backgroundColor: 'transparent', duration: 1, ease: 'power2.out' }
-					);
-				}
+	function enhanceApprove(creatorName: string, creatorId: string) {
+		return async ({ cancel }: { cancel: () => void }) => {
+			if (!confirm(`Êtes-vous sûr de vouloir approuver le créateur "${creatorName}" ?`)) {
+				cancel();
 				approvingId = null;
-			}, 100);
+				return;
+			}
+
+			// L'action se poursuit, invalidateAll sera appelé après la soumission
+			return async () => {
+				await invalidateAll();
+				approvingId = null;
+			};
+		};
+	}
+
+	function enhanceDelete(creatorName: string) {
+		return async ({ cancel, update }: { cancel: () => void; update: () => Promise<void> }) => {
+			if (!confirm(`Êtes-vous sûr de vouloir supprimer le créateur "${creatorName}" ?\n\nCette action est irréversible et supprimera également le compte utilisateur associé.`)) {
+				cancel();
+				return;
+			}
+
+			await update();
 		};
 	}
 </script>
@@ -105,28 +116,36 @@
 								{formatDate(creator.created_at)}
 							</td>
 							<td class="p-4">
-								{#if !creator.is_approved}
-									<form method="POST" action="?/approve" use:enhance={enhanceApprove} onsubmit={() => handleApprove(creator.id)}>
+								<div class="flex items-center gap-2">
+									{#if !creator.is_approved}
+										<form method="POST" action="?/approve" use:enhance={enhanceApprove(creator.display_name, creator.id)} onsubmit={() => handleApprove(creator.id)}>
+											<input type="hidden" name="creatorId" value={creator.id} />
+											<Button size="sm" disabled={approvingId === creator.id}>
+												{#snippet children()}
+													{#if approvingId === creator.id}
+														<span class="inline-flex items-center gap-1.5">
+															<svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+																<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+																<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+															</svg>
+															Approbation...
+														</span>
+													{:else}
+														Approuver
+													{/if}
+												{/snippet}
+											</Button>
+										</form>
+									{/if}
+									<form method="POST" action="?/delete" use:enhance={enhanceDelete(creator.display_name)}>
 										<input type="hidden" name="creatorId" value={creator.id} />
-										<Button size="sm" disabled={approvingId === creator.id}>
+										<Button size="sm" variant="destructive">
 											{#snippet children()}
-												{#if approvingId === creator.id}
-													<span class="inline-flex items-center gap-1.5">
-														<svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-															<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-															<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-														</svg>
-														Approbation...
-													</span>
-												{:else}
-													Approuver
-												{/if}
+												Supprimer
 											{/snippet}
 										</Button>
 									</form>
-								{:else}
-									<span class="text-xs text-muted-foreground">-</span>
-								{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}

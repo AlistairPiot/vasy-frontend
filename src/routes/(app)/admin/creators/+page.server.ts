@@ -26,5 +26,13 @@ export const actions: Actions = {
 		await serverApi.post(`/admin/creators/${creatorId}/approve`, {}, locals.token);
 
 		return { success: true };
+	},
+	delete: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const creatorId = formData.get('creatorId') as string;
+
+		await serverApi.delete(`/admin/creators/${creatorId}`, locals.token);
+
+		return { success: true };
 	}
 };
