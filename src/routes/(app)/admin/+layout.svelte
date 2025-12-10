@@ -6,7 +6,8 @@
 	const navItems = [
 		{ href: '/admin/stats', label: 'Statistiques' },
 		{ href: '/admin/invitations', label: 'Invitations' },
-		{ href: '/admin/creators', label: 'Créateurs' }
+		{ href: '/admin/creators', label: 'Créateurs' },
+		{ href: '/admin/users', label: 'Utilisateurs' }
 	];
 </script>
 
