@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -7,15 +6,37 @@
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
+	let previousProductsLength = 0;
 
-	onMount(() => {
-		gsap.from(containerRef.querySelectorAll('.animate-in'), {
-			y: 20,
-			opacity: 0,
-			duration: 0.5,
-			stagger: 0.08,
-			ease: 'power3.out'
-		});
+	// Animer les éléments quand les produits changent
+	$effect(() => {
+		// Vérifier si les produits ont changé
+		const currentLength = data.products.length;
+
+		if (containerRef && currentLength !== previousProductsLength) {
+			previousProductsLength = currentLength;
+
+			// Petit délai pour s'assurer que le DOM est mis à jour
+			setTimeout(() => {
+				const elements = containerRef.querySelectorAll('.animate-in');
+
+				// D'abord, définir l'état initial (caché)
+				gsap.set(elements, {
+					y: 20,
+					opacity: 0
+				});
+
+				// Puis animer vers l'état visible
+				gsap.to(elements, {
+					y: 0,
+					opacity: 1,
+					duration: 0.5,
+					stagger: 0.08,
+					ease: 'power3.out',
+					clearProps: 'all'
+				});
+			}, 10);
+		}
 	});
 
 	function formatPrice(cents: number): string {
@@ -41,11 +62,24 @@
 			{ label: 'Produits' }
 		]} />
 
-		<h1 class="animate-in text-3xl font-bold mb-8 pt-8">Tous les produits</h1>
+		{#if data.searchQuery}
+			<h1 class="animate-in text-3xl font-bold mb-2 pt-8">
+				Résultats pour "{data.searchQuery}"
+			</h1>
+			<p class="animate-in text-muted-foreground mb-8">
+				{data.products.length} produit{data.products.length > 1 ? 's' : ''} trouvé{data.products.length > 1 ? 's' : ''}
+			</p>
+		{:else}
+			<h1 class="animate-in text-3xl font-bold mb-8 pt-8">Tous les produits</h1>
+		{/if}
 
 		{#if data.products.length === 0}
 			<Card class="animate-in p-8 text-center">
-				<p class="text-muted-foreground">Aucun produit disponible pour le moment</p>
+				{#if data.searchQuery}
+					<p class="text-muted-foreground">Aucun produit trouvé pour "{data.searchQuery}"</p>
+				{:else}
+					<p class="text-muted-foreground">Aucun produit disponible pour le moment</p>
+				{/if}
 			</Card>
 		{:else}
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

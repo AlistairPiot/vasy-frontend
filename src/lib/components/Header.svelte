@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { User } from '$lib/types';
+	import SearchBar from './SearchBar.svelte';
 
 	interface Props {
 		user?: User;
@@ -9,8 +10,11 @@
 </script>
 
 <header class="fixed top-0 left-0 right-0 border-b bg-background z-50">
-	<div class="container mx-auto px-4 py-4 flex justify-between items-center">
+	<div class="container mx-auto px-4 py-4 flex justify-between items-center gap-6">
 		<a href="/" class="text-xl font-bold min-w-fit">Vasy</a>
+		<div class="flex-1 max-w-2xl">
+			<SearchBar />
+		</div>
 		<nav class="flex gap-4 items-center">
 			<a href="/products" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Produits</a>
 			{#if user}
