@@ -119,6 +119,13 @@
 							</td>
 							<td class="p-4">
 								<div class="flex items-center gap-2">
+									<a href="/admin/creators/{creator.id}/products">
+										<Button size="sm" variant="outline">
+											{#snippet children()}
+												Voir produits
+											{/snippet}
+										</Button>
+									</a>
 									{#if !creator.is_approved}
 										<form method="POST" action="?/approve" use:enhance={enhanceApprove(creator.display_name)} onsubmit={() => handleApprove(creator.id)}>
 											<input type="hidden" name="creatorId" value={creator.id} />
