@@ -1,24 +1,36 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 
-const STORAGE_KEY = 'vasy_favorites';
+const STORAGE_KEY_PREFIX = 'vasy_favorites_';
 
 function createFavoritesStore() {
 	const { subscribe, set, update } = writable<string[]>([]);
 
-	// Load from localStorage on creation
-	if (typeof window !== 'undefined') {
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (stored) {
-				set(JSON.parse(stored));
-			}
-		} catch (err) {
-			console.error('Failed to load favorites from localStorage:', err);
-		}
+	let currentUserId: string | null = null;
+
+	function getStorageKey(): string {
+		return currentUserId ? `${STORAGE_KEY_PREFIX}${currentUserId}` : `${STORAGE_KEY_PREFIX}guest`;
 	}
 
 	return {
 		subscribe,
+
+		// Initialize favorites for a specific user
+		init(userId: string | null) {
+			currentUserId = userId;
+			if (typeof window !== 'undefined') {
+				try {
+					const stored = localStorage.getItem(getStorageKey());
+					if (stored) {
+						set(JSON.parse(stored));
+					} else {
+						set([]);
+					}
+				} catch (err) {
+					console.error('Failed to load favorites from localStorage:', err);
+					set([]);
+				}
+			}
+		},
 
 		toggle(productId: string) {
 			update((favorites) => {
@@ -60,7 +72,7 @@ function createFavoritesStore() {
 
 		persist(favorites: string[]) {
 			if (typeof window !== 'undefined') {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+				localStorage.setItem(getStorageKey(), JSON.stringify(favorites));
 			}
 		}
 	};

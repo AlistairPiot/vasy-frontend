@@ -13,7 +13,7 @@ export interface Cart {
 	items: CartItem[];
 }
 
-const STORAGE_KEY = 'vasy_cart';
+const STORAGE_KEY_PREFIX = 'vasy_cart_';
 
 function createCartStore() {
 	const initialCart: Cart = {
@@ -22,20 +22,32 @@ function createCartStore() {
 
 	const { subscribe, set, update } = writable<Cart>(initialCart);
 
-	// Load from localStorage on creation
-	if (typeof window !== 'undefined') {
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (stored) {
-				set(JSON.parse(stored));
-			}
-		} catch (err) {
-			console.error('Failed to load cart from localStorage:', err);
-		}
+	let currentUserId: string | null = null;
+
+	function getStorageKey(): string {
+		return currentUserId ? `${STORAGE_KEY_PREFIX}${currentUserId}` : `${STORAGE_KEY_PREFIX}guest`;
 	}
 
 	return {
 		subscribe,
+
+		// Initialize cart for a specific user
+		init(userId: string | null) {
+			currentUserId = userId;
+			if (typeof window !== 'undefined') {
+				try {
+					const stored = localStorage.getItem(getStorageKey());
+					if (stored) {
+						set(JSON.parse(stored));
+					} else {
+						set({ items: [] });
+					}
+				} catch (err) {
+					console.error('Failed to load cart from localStorage:', err);
+					set({ items: [] });
+				}
+			}
+		},
 
 		addItem(item: CartItem) {
 			update((cart) => {
@@ -76,13 +88,13 @@ function createCartStore() {
 		clear() {
 			set({ items: [] });
 			if (typeof window !== 'undefined') {
-				localStorage.removeItem(STORAGE_KEY);
+				localStorage.removeItem(getStorageKey());
 			}
 		},
 
 		persist(cart: Cart) {
 			if (typeof window !== 'undefined') {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+				localStorage.setItem(getStorageKey(), JSON.stringify(cart));
 			}
 		}
 	};
