@@ -32,9 +32,9 @@
 	let hoveredResult = $state<SearchResult | null>(null);
 	let showPreview = $state(false);
 
-	let searchContainer: HTMLDivElement;
-	let resultsContainer: HTMLDivElement;
-	let previewContainer: HTMLDivElement;
+	let searchContainer: HTMLDivElement | undefined = $state();
+	let resultsContainer: HTMLDivElement | undefined = $state();
+	let previewContainer: HTMLDivElement | undefined = $state();
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	// Charger les suggestions populaires au montage
