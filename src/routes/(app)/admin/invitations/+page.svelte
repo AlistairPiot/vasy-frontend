@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -8,6 +9,7 @@
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
+	let emailInput: any;
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
@@ -63,6 +65,43 @@
 			copiedToken = null;
 		}, 2000);
 	}
+
+	function enhanceCreate() {
+		return async ({ cancel, formElement }: any) => {
+			const formData = new FormData(formElement);
+			const email = formData.get('email') as string;
+
+			if (!email) {
+				return;
+			}
+
+			if (!confirm(`Êtes-vous sûr de vouloir envoyer une invitation à "${email}" ?`)) {
+				cancel();
+				return;
+			}
+
+			return async () => {
+				await invalidateAll();
+				// Réinitialiser le champ email après succès
+				if (emailInput) {
+					emailInput.value = '';
+				}
+			};
+		};
+	}
+
+	function enhanceDelete(invitationEmail: string) {
+		return async ({ cancel }: any) => {
+			if (!confirm(`Êtes-vous sûr de vouloir supprimer l'invitation pour "${invitationEmail}" ?\n\nCette action est irréversible.`)) {
+				cancel();
+				return;
+			}
+
+			return async () => {
+				await invalidateAll();
+			};
+		};
+	}
 </script>
 
 <div bind:this={containerRef}>
@@ -70,9 +109,10 @@
 
 	<Card class="animate-in p-6 mb-6">
 		<h2 class="font-semibold mb-4">Nouvelle invitation</h2>
-		<form method="POST" action="?/create" use:enhance class="flex gap-4" novalidate>
+		<form method="POST" action="?/create" use:enhance={enhanceCreate()} class="flex gap-4" novalidate>
 			<div class="flex-1">
 				<Input
+					bind:this={emailInput}
 					type="email"
 					name="email"
 					placeholder="email@createur.com"
@@ -127,25 +167,37 @@
 								{formatDate(invitation.expires_at)}
 							</td>
 							<td class="p-4">
-								{#if !invitation.is_used && !isExpired(invitation.expires_at)}
-									<button
-										onclick={(e) => copyToClipboard(invitation.token, e)}
-										class="text-sm text-primary hover:underline inline-flex items-center gap-1.5 transition-colors {copiedToken === invitation.token ? 'text-green-600' : ''}"
-									>
-										{#if copiedToken === invitation.token}
-											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-												<polyline points="20 6 9 17 4 12"/>
-											</svg>
-											Copié !
-										{:else}
-											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-												<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-												<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-											</svg>
-											Copier le lien
-										{/if}
-									</button>
-								{/if}
+								<div class="flex items-center gap-2">
+									{#if !invitation.is_used && !isExpired(invitation.expires_at)}
+										<button
+											onclick={(e) => copyToClipboard(invitation.token, e)}
+											class="text-sm text-primary hover:underline inline-flex items-center gap-1.5 transition-colors {copiedToken === invitation.token ? 'text-green-600' : ''}"
+										>
+											{#if copiedToken === invitation.token}
+												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+													<polyline points="20 6 9 17 4 12"/>
+												</svg>
+												Copié !
+											{:else}
+												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+													<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+													<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+												</svg>
+												Copier le lien
+											{/if}
+										</button>
+									{/if}
+									{#if !invitation.is_used}
+										<form method="POST" action="?/delete" use:enhance={enhanceDelete(invitation.email)}>
+											<input type="hidden" name="invitationId" value={invitation.id} />
+											<Button size="sm" variant="destructive">
+												{#snippet children()}
+													Supprimer
+												{/snippet}
+											</Button>
+										</form>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}

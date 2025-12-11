@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { gsap } from 'gsap';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;

@@ -40,5 +40,14 @@ export const actions: Actions = {
 			}
 			throw err;
 		}
+	},
+
+	delete: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const invitationId = formData.get('invitationId') as string;
+
+		await serverApi.delete(`/admin/invitations/${invitationId}`, locals.token);
+
+		return { success: true };
 	}
 };
