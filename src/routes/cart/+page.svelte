@@ -49,6 +49,33 @@
 		cart.clear();
 		showClearCartModal = false;
 	}
+
+	function removeItemWithAnimation(productId: string, event: MouseEvent) {
+		// Trouver l'élément parent de la carte
+		const button = event.currentTarget as HTMLElement;
+		const cardElement = button.closest('.cart-item-card') as HTMLElement;
+
+		if (cardElement) {
+			// Animation de sortie
+			gsap.to(cardElement, {
+				x: 100,
+				opacity: 0,
+				height: 0,
+				marginBottom: 0,
+				paddingTop: 0,
+				paddingBottom: 0,
+				duration: 0.4,
+				ease: 'power2.inOut',
+				onComplete: () => {
+					// Supprimer l'item après l'animation
+					cart.removeItem(productId);
+				}
+			});
+		} else {
+			// Fallback si l'élément n'est pas trouvé
+			cart.removeItem(productId);
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
@@ -85,10 +112,10 @@
 				{:else}
 					<div class="space-y-4">
 						{#each $cart.items as item, index (item.id)}
-							<Card class="p-4 animate-in hover:shadow-md transition-shadow" style={`animation-delay: ${index * 0.1}s`}>
+							<Card class="cart-item-card p-4 animate-in hover:shadow-md transition-shadow" style={`animation-delay: ${index * 0.1}s`}>
 								<div class="flex gap-4">
 									<!-- Image -->
-									<div class="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+									<div class="w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
 										{#if item.image_url}
 											<img src={item.image_url} alt={item.name} class="w-full h-full object-cover" />
 										{:else}
@@ -125,7 +152,7 @@
 									<div class="flex flex-col items-end justify-between">
 										<p class="text-lg font-bold">{formatPrice(item.price * item.quantity)}</p>
 										<button
-											onclick={() => cart.removeItem(item.id)}
+											onclick={(e) => removeItemWithAnimation(item.id, e)}
 											class="text-sm text-destructive hover:text-destructive/80 transition-colors"
 										>
 											Supprimer
