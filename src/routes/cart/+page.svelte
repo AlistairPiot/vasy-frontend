@@ -3,11 +3,13 @@
 	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
 
 	let { data } = $props();
+	let showClearCartModal = $state(false);
 
 	let containerRef: HTMLDivElement;
 
@@ -41,6 +43,11 @@
 		if (item && item.quantity > 1) {
 			cart.updateQuantity(productId, item.quantity - 1);
 		}
+	}
+
+	function handleClearCart() {
+		cart.clear();
+		showClearCartModal = false;
 	}
 </script>
 
@@ -165,7 +172,7 @@
 					{/if}
 
 					<button
-						onclick={() => cart.clear()}
+						onclick={() => showClearCartModal = true}
 						class="w-full mt-2 px-4 py-2 text-sm text-destructive border border-destructive rounded-md hover:bg-destructive/10 transition-colors"
 					>
 						Vider le panier
@@ -174,4 +181,16 @@
 			</div>
 		</div>
 	</main>
+
+	<!-- Modale de confirmation pour vider le panier -->
+	<ConfirmModal
+		bind:isOpen={showClearCartModal}
+		title="Vider le panier ?"
+		message="Êtes-vous sûr de vouloir supprimer tous les articles de votre panier ? Cette action est irréversible."
+		confirmText="Vider le panier"
+		cancelText="Annuler"
+		variant="destructive"
+		onConfirm={handleClearCart}
+		onCancel={() => showClearCartModal = false}
+	/>
 </div>
