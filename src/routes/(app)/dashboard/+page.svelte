@@ -72,6 +72,18 @@
 						<p class="text-muted-foreground text-sm">Vue globale de la plateforme</p>
 					</Card>
 				</a>
+				<a href="/admin/users">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Utilisateurs</h3>
+						<p class="text-muted-foreground text-sm">Gérez les utilisateurs</p>
+					</Card>
+				</a>
+				<a href="/admin/orders">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Commandes</h3>
+						<p class="text-muted-foreground text-sm">Visualisez toutes les commandes</p>
+					</Card>
+				</a>
 			{:else}
 				<a href="/profile">
 					<Card class="animate-in p-6 hover:shadow-md transition-shadow">

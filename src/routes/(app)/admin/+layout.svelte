@@ -7,7 +7,8 @@
 		{ href: '/admin/stats', label: 'Statistiques' },
 		{ href: '/admin/invitations', label: 'Invitations' },
 		{ href: '/admin/creators', label: 'Créateurs' },
-		{ href: '/admin/users', label: 'Utilisateurs' }
+		{ href: '/admin/users', label: 'Utilisateurs' },
+		{ href: '/admin/orders', label: 'Commandes' }
 	];
 </script>
 
