@@ -22,6 +22,11 @@
 		<nav class="flex gap-4 items-center">
 			<a href="/products" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Produits</a>
 			{#if user}
+				{#if user.role === 'creator' || user.role === 'admin'}
+					<a href="/dashboard" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Dashboard</a>
+				{:else}
+					<a href="/profile" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Profil</a>
+				{/if}
 				<a href="/cart" class="text-muted-foreground hover:text-foreground flex items-center gap-1 whitespace-nowrap relative">
 					<div class="relative">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -37,9 +42,6 @@
 					</div>
 					Panier
 				</a>
-				{#if user.role === 'creator' || user.role === 'admin'}
-					<a href="/dashboard" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Dashboard</a>
-				{/if}
 				<form action="/logout" method="POST">
 					<button type="submit" class="text-muted-foreground hover:text-foreground">
 						Déconnexion

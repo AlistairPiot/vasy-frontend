@@ -57,7 +57,10 @@
 		</div>
 	{/if}
 
-	<Card class="max-w-2xl p-6">
+	<div class="grid lg:grid-cols-2 gap-6">
+		<!-- Colonne de gauche : Informations du profil -->
+		<div class="space-y-6">
+			<Card class="p-6">
 		<form method="POST" use:enhance bind:this={formRef} class="space-y-6">
 			{#if form?.error}
 				<div class="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
@@ -141,20 +144,53 @@
 					Enregistrer
 				{/snippet}
 			</Button>
-		</form>
-	</Card>
-
-	{#if !data.creator.stripe_onboarding_complete}
-		<Card class="max-w-2xl p-6 mt-6 border-orange-200 bg-orange-50">
-			<h2 class="font-semibold mb-2">Configuration Stripe requise</h2>
-			<p class="text-sm text-muted-foreground mb-4">
-				Pour recevoir des paiements, vous devez configurer votre compte Stripe.
-			</p>
-			<Button>
-				{#snippet children()}
-					Configurer Stripe
-				{/snippet}
-			</Button>
+			</form>
 		</Card>
-	{/if}
+
+		{#if !data.creator.stripe_onboarding_complete}
+			<Card class="p-6 border-orange-200 bg-orange-50">
+				<h2 class="font-semibold mb-2">Configuration Stripe requise</h2>
+				<p class="text-sm text-muted-foreground mb-4">
+					Pour recevoir des paiements, vous devez configurer votre compte Stripe.
+				</p>
+				<Button>
+					{#snippet children()}
+						Configurer Stripe
+					{/snippet}
+				</Button>
+			</Card>
+		{/if}
+	</div>
+
+	<!-- Colonne de droite : Commandes -->
+	<div>
+		<h2 class="text-2xl font-bold mb-6">Commandes</h2>
+
+		<Card class="p-6">
+			<!-- Section En cours -->
+			<div class="mb-6">
+				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En cours</h3>
+				<div class="text-sm text-muted-foreground text-center py-4">
+					Aucune commande en cours
+				</div>
+			</div>
+
+			<!-- Section Validé -->
+			<div class="mb-6">
+				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">Validé</h3>
+				<div class="text-sm text-muted-foreground text-center py-4">
+					Aucune commande validée
+				</div>
+			</div>
+
+			<!-- Section Expédié -->
+			<div>
+				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">Expédié</h3>
+				<div class="text-sm text-muted-foreground text-center py-4">
+					Aucune commande expédiée
+				</div>
+			</div>
+		</Card>
+	</div>
+</div>
 </div>
