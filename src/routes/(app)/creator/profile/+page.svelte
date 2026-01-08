@@ -11,6 +11,14 @@
 	let profileImageUrl = $state(data.creator.profile_image_url || '');
 	let uploading = $state(false);
 
+	// États pour les modales de confirmation
+	let confirmModal = $state<{
+		isOpen: boolean;
+		type: 'accept' | 'refuse' | 'ship' | null;
+		orderId: string | null;
+		trackingNumber?: string;
+	}>({ isOpen: false, type: null, orderId: null });
+
 	onMount(() => {
 		gsap.from(formRef, {
 			y: 20,
@@ -45,6 +53,46 @@
 
 		uploading = false;
 		input.value = '';
+	}
+
+	function openConfirmModal(type: 'accept' | 'refuse' | 'ship', orderId: string, trackingNumber?: string) {
+		confirmModal = { isOpen: true, type, orderId, trackingNumber };
+	}
+
+	function closeConfirmModal() {
+		confirmModal = { isOpen: false, type: null, orderId: null };
+	}
+
+	function confirmAction() {
+		if (!confirmModal.orderId) return;
+
+		const form = document.createElement('form');
+		form.method = 'POST';
+
+		if (confirmModal.type === 'accept') {
+			form.action = '?/acceptOrder';
+		} else if (confirmModal.type === 'refuse') {
+			form.action = '?/refuseOrder';
+		} else if (confirmModal.type === 'ship') {
+			form.action = '?/shipOrder';
+		}
+
+		const orderIdInput = document.createElement('input');
+		orderIdInput.type = 'hidden';
+		orderIdInput.name = 'orderId';
+		orderIdInput.value = confirmModal.orderId;
+		form.appendChild(orderIdInput);
+
+		if (confirmModal.type === 'ship' && confirmModal.trackingNumber) {
+			const trackingInput = document.createElement('input');
+			trackingInput.type = 'hidden';
+			trackingInput.name = 'trackingNumber';
+			trackingInput.value = confirmModal.trackingNumber;
+			form.appendChild(trackingInput);
+		}
+
+		document.body.appendChild(form);
+		form.submit();
 	}
 </script>
 
@@ -167,12 +215,12 @@
 		<h2 class="text-2xl font-bold mb-6">Commandes</h2>
 
 		<Card class="p-6">
-			<!-- Section En cours (en_attente) -->
+			<!-- Section En attente (en_attente) -->
 			<div class="mb-6">
-				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En cours</h3>
+				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En attente</h3>
 				{#if data.orders.filter(o => o.status === 'en_attente').length === 0}
 					<div class="text-sm text-muted-foreground text-center py-4">
-						Aucune commande en cours
+						Aucune commande en attente
 					</div>
 				{:else}
 					<div class="space-y-4">
@@ -199,22 +247,16 @@
 								</div>
 
 								<div class="flex gap-2">
-									<form method="POST" action="?/acceptOrder" use:enhance class="flex-1">
-										<input type="hidden" name="orderId" value={order.id} />
-										<Button type="submit" class="w-full" size="sm">
-											{#snippet children()}
-												Accepter
-											{/snippet}
-										</Button>
-									</form>
-									<form method="POST" action="?/refuseOrder" use:enhance class="flex-1">
-										<input type="hidden" name="orderId" value={order.id} />
-										<Button type="submit" variant="destructive" class="w-full" size="sm">
-											{#snippet children()}
-												Refuser
-											{/snippet}
-										</Button>
-									</form>
+									<Button onclick={() => openConfirmModal('accept', order.id)} class="flex-1" size="sm">
+										{#snippet children()}
+											Accepter
+										{/snippet}
+									</Button>
+									<Button onclick={() => openConfirmModal('refuse', order.id)} variant="destructive" class="flex-1" size="sm">
+										{#snippet children()}
+											Refuser
+										{/snippet}
+									</Button>
 								</div>
 							</div>
 						{/each}
@@ -253,32 +295,33 @@
 									{/each}
 								</div>
 
-								<form method="POST" action="?/shipOrder" use:enhance class="space-y-2">
-									<input type="hidden" name="orderId" value={order.id} />
+								<div class="space-y-2">
 									<div>
 										<label class="text-sm font-medium">Numéro de suivi</label>
 										<input
 											type="text"
-											name="trackingNumber"
+											id="trackingNumber-{order.id}"
 											required
 											class="w-full px-3 py-2 border rounded-md text-sm"
 											placeholder="Ex: 1Z999AA10123456784"
 										/>
 									</div>
-									<Button type="submit" class="w-full" size="sm">
+									<Button onclick={() => {
+										const trackingInput = document.getElementById(`trackingNumber-${order.id}`) as HTMLInputElement;
+										if (trackingInput && trackingInput.value) {
+											openConfirmModal('ship', order.id, trackingInput.value);
+										}
+									}} class="w-full" size="sm">
 										{#snippet children()}
 											Marquer comme expédié
 										{/snippet}
 									</Button>
-								</form>
-								<form method="POST" action="?/refuseOrder" use:enhance>
-									<input type="hidden" name="orderId" value={order.id} />
-									<Button type="submit" variant="destructive" class="w-full" size="sm">
+									<Button onclick={() => openConfirmModal('refuse', order.id)} variant="destructive" class="w-full" size="sm">
 										{#snippet children()}
 											Refuser
 										{/snippet}
 									</Button>
-								</form>
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -319,4 +362,53 @@
 		</Card>
 	</div>
 </div>
+
+<!-- Modale de confirmation -->
+{#if confirmModal.isOpen}
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onclick={closeConfirmModal}>
+		<div class="bg-white rounded-lg p-6 max-w-md w-full mx-4" onclick={(e) => e.stopPropagation()}>
+			<h3 class="text-lg font-semibold mb-4">
+				{#if confirmModal.type === 'accept'}
+					Confirmer l'acceptation
+				{:else if confirmModal.type === 'refuse'}
+					Confirmer le refus
+				{:else if confirmModal.type === 'ship'}
+					Confirmer l'expédition
+				{/if}
+			</h3>
+
+			<p class="text-muted-foreground mb-6">
+				{#if confirmModal.type === 'accept'}
+					Êtes-vous sûr de vouloir accepter cette commande ? Vous devrez ensuite l'expédier avec un numéro de suivi.
+				{:else if confirmModal.type === 'refuse'}
+					Êtes-vous sûr de vouloir refuser cette commande ? Cette action est irréversible et le client sera notifié.
+				{:else if confirmModal.type === 'ship'}
+					Êtes-vous sûr de vouloir marquer cette commande comme expédiée ? Le client sera débité et recevra le numéro de suivi.
+				{/if}
+			</p>
+
+			<div class="flex gap-3 justify-end">
+				<Button variant="outline" onclick={closeConfirmModal}>
+					{#snippet children()}
+						Annuler
+					{/snippet}
+				</Button>
+				<Button
+					variant={confirmModal.type === 'refuse' ? 'destructive' : 'default'}
+					onclick={confirmAction}
+				>
+					{#snippet children()}
+						{#if confirmModal.type === 'accept'}
+							Accepter
+						{:else if confirmModal.type === 'refuse'}
+							Refuser
+						{:else if confirmModal.type === 'ship'}
+							Expédier
+						{/if}
+					{/snippet}
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}
 </div>

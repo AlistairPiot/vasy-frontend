@@ -208,9 +208,74 @@
 				{:else if activeTab === 'orders'}
 					<Card class="animate-in p-6">
 						<h2 class="text-xl font-semibold mb-6">Mes commandes</h2>
-						<div class="text-center py-12">
-							<p class="text-muted-foreground">Cette section sera disponible prochainement.</p>
-						</div>
+
+						{#if data.orders.length === 0}
+							<div class="text-center py-12">
+								<p class="text-muted-foreground">Vous n'avez pas encore de commandes.</p>
+							</div>
+						{:else}
+							<div class="space-y-4">
+								{#each data.orders as order}
+									<div class="border rounded-lg p-4">
+										<div class="flex justify-between items-start mb-3">
+											<div>
+												<p class="font-medium">Commande #{order.id.slice(0, 8)}</p>
+												<p class="text-sm text-muted-foreground">
+													{new Date(order.created_at).toLocaleDateString('fr-FR', {
+														day: 'numeric',
+														month: 'long',
+														year: 'numeric'
+													})}
+												</p>
+											</div>
+											<span class="px-3 py-1 rounded-full text-sm font-medium
+												{order.status === 'en_attente' ? 'bg-yellow-100 text-yellow-800' :
+												 order.status === 'validee' ? 'bg-blue-100 text-blue-800' :
+												 order.status === 'expediee' ? 'bg-green-100 text-green-800' :
+												 order.status === 'refusee' ? 'bg-red-100 text-red-800' :
+												 'bg-gray-100 text-gray-800'}">
+												{order.status === 'en_attente' ? 'En attente' :
+												 order.status === 'validee' ? 'Validée' :
+												 order.status === 'expediee' ? 'Expédiée' :
+												 order.status === 'refusee' ? 'Refusée' :
+												 'Annulée'}
+											</span>
+										</div>
+
+										<div class="text-sm mb-3">
+											<p><strong>Livraison :</strong> {order.shipping_name}</p>
+											<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
+										</div>
+
+										{#if order.tracking_number}
+											<div class="text-sm mb-3 bg-green-50 p-2 rounded">
+												<p><strong>Numéro de suivi :</strong> <span class="font-mono">{order.tracking_number}</span></p>
+											</div>
+										{/if}
+
+										<div class="text-sm mb-3">
+											<p><strong>Produits :</strong></p>
+											{#each order.items as item}
+												<div class="flex gap-2 items-center mt-2">
+													{#if item.product_image_url}
+														<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded" />
+													{/if}
+													<div class="flex-1">
+														<p class="text-muted-foreground">{item.product_name} x{item.quantity}</p>
+														<p class="text-muted-foreground">{(item.product_price / 100).toFixed(2)} €</p>
+													</div>
+												</div>
+											{/each}
+										</div>
+
+										<div class="border-t pt-3 flex justify-between items-center">
+											<span class="font-semibold">Total</span>
+											<span class="font-semibold">{(order.total_amount / 100).toFixed(2)} €</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
 					</Card>
 				{/if}
 			</div>

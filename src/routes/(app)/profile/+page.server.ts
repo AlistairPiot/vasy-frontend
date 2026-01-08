@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { user } = await parent();
 
 	// Seuls les clients peuvent accéder à cette page
@@ -10,7 +10,15 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/dashboard');
 	}
 
-	return { user };
+	// Charger les commandes du client
+	let orders: any[] = [];
+	try {
+		orders = await serverApi.get('/orders/my-orders', locals.token);
+	} catch (error) {
+		console.error('Error loading orders:', error);
+	}
+
+	return { user, orders };
 };
 
 export const actions: Actions = {
