@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
 
@@ -19,7 +19,19 @@ interface Product {
 	stock: number;
 }
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, parent }) => {
+	// Vérifier l'authentification
+	if (!locals.token) {
+		throw redirect(302, '/login');
+	}
+
+	const { user } = await parent();
+
+	// Les admins ne peuvent pas accéder à cette page (ils ont leur propre interface)
+	if (user && user.role === 'admin') {
+		throw redirect(302, '/dashboard');
+	}
+
 	try {
 		const creator = await serverApi.get<Creator>(`/creators/${params.id}`, locals.token);
 

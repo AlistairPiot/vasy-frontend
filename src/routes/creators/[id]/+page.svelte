@@ -79,22 +79,7 @@
 
 				<!-- Creator Info -->
 				<div class="flex-1">
-					<div class="flex items-center gap-2 mb-2">
-						<h1 class="text-3xl font-bold">{data.creator.display_name}</h1>
-						{#if data.creator.is_approved}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								class="text-blue-500"
-							>
-								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-								<polyline points="22 4 12 14.01 9 11.01" />
-							</svg>
-						{/if}
-					</div>
+					<h1 class="text-3xl font-bold mb-2">{data.creator.display_name}</h1>
 
 					<p class="text-muted-foreground mb-4">{data.creator.bio}</p>
 

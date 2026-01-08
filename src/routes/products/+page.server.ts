@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
+import { redirect } from '@sveltejs/kit';
 
 interface Product {
 	id: string;
@@ -12,13 +13,23 @@ interface Product {
 	created_at: string;
 }
 
-export const load: PageServerLoad = async ({ url, parent }) => {
+export const load: PageServerLoad = async ({ url, parent, locals }) => {
+	// Vérifier l'authentification
+	if (!locals.token) {
+		throw redirect(302, '/login');
+	}
+
 	const skip = parseInt(url.searchParams.get('skip') || '0');
 	const limit = parseInt(url.searchParams.get('limit') || '20');
 	const searchQuery = url.searchParams.get('q');
 
 	// Récupérer l'utilisateur depuis le layout parent
 	const { user } = await parent();
+
+	// Les admins ne peuvent pas accéder à cette page (ils ont leur propre interface)
+	if (user && user.role === 'admin') {
+		throw redirect(302, '/dashboard');
+	}
 
 	// Si une recherche est fournie, utiliser l'endpoint de recherche
 	if (searchQuery) {

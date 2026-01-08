@@ -165,33 +165,35 @@
 					</div>
 				{/if}
 
-				<div class="flex gap-3 mb-6">
-					<button
-						onclick={addToCart}
-						disabled={data.product.stock === 0}
-						class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-10 px-4 py-2 rounded-md font-medium transition-colors"
-					>
-						{data.product.stock > 0 ? 'Ajouter au panier' : 'Produit épuisé'}
-					</button>
-					<button
-						onclick={toggleFavorite}
-						class="px-4 py-2 rounded-md border border-input transition-colors hover:bg-accent {isFavorite ? 'bg-red-100 text-red-600 border-red-300' : 'bg-background'}"
-					>
-						{#if isFavorite}
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-							</svg>
-						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-							</svg>
-						{/if}
-					</button>
-				</div>
+				{#if data.user?.role === 'client'}
+					<div class="flex gap-3 mb-6">
+						<button
+							onclick={addToCart}
+							disabled={data.product.stock === 0}
+							class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-10 px-4 py-2 rounded-md font-medium transition-colors"
+						>
+							{data.product.stock > 0 ? 'Ajouter au panier' : 'Produit épuisé'}
+						</button>
+						<button
+							onclick={toggleFavorite}
+							class="px-4 py-2 rounded-md border border-input transition-colors hover:bg-accent {isFavorite ? 'bg-red-100 text-red-600 border-red-300' : 'bg-background'}"
+						>
+							{#if isFavorite}
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+									<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+								</svg>
+							{:else}
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+								</svg>
+							{/if}
+						</button>
+					</div>
 
-				<div class="text-center">
-					<a href="/cart" class="text-primary hover:underline text-sm">Voir le panier</a>
-				</div>
+					<div class="text-center">
+						<a href="/cart" class="text-primary hover:underline text-sm">Voir le panier</a>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</main>

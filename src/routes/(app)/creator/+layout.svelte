@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import Header from '$lib/components/Header.svelte';
 
 	let { data, children } = $props();
 
@@ -10,21 +11,9 @@
 </script>
 
 <div class="min-h-screen bg-background">
-	<header class="border-b">
-		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy</a>
-			<div class="flex items-center gap-4">
-				<span class="text-sm text-muted-foreground">{data.creator.display_name}</span>
-				<form action="/logout" method="POST">
-					<button type="submit" class="text-sm text-muted-foreground hover:text-foreground">
-						Déconnexion
-					</button>
-				</form>
-			</div>
-		</div>
-	</header>
+	<Header user={data.user} />
 
-	<div class="container mx-auto px-4 py-6">
+	<div class="container mx-auto px-4 py-6 pt-24">
 		<nav class="flex gap-4 mb-8 border-b pb-4">
 			{#each navItems as item}
 				<a

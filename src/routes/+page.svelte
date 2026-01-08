@@ -25,7 +25,7 @@
 				<a href="/dashboard">
 					<Button size="sm">
 						{#snippet children()}
-							Dashboard
+							Tableau de bord
 						{/snippet}
 					</Button>
 				</a>
