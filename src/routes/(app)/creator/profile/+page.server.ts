@@ -2,13 +2,22 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { creator } = await parent();
-	return { creator };
+
+	// Charger les commandes du créateur
+	let orders: any[] = [];
+	try {
+		orders = await serverApi.get('/orders/creator-orders', locals.token);
+	} catch (error) {
+		console.error('Error loading orders:', error);
+	}
+
+	return { creator, orders };
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	updateProfile: async ({ request, locals }) => {
 		const formData = await request.formData();
 
 		const displayName = formData.get('displayName') as string;
@@ -34,6 +43,56 @@ export const actions: Actions = {
 		} catch (err) {
 			if (err instanceof Error && err.message) {
 				return fail(400, { error: err.message });
+			}
+			throw err;
+		}
+	},
+
+	acceptOrder: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const orderId = formData.get('orderId') as string;
+
+		try {
+			await serverApi.post(`/orders/${orderId}/accept`, {}, locals.token);
+			return { orderSuccess: true };
+		} catch (err) {
+			if (err instanceof Error && err.message) {
+				return fail(400, { orderError: err.message });
+			}
+			throw err;
+		}
+	},
+
+	refuseOrder: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const orderId = formData.get('orderId') as string;
+
+		try {
+			await serverApi.post(`/orders/${orderId}/refuse`, {}, locals.token);
+			return { orderSuccess: true };
+		} catch (err) {
+			if (err instanceof Error && err.message) {
+				return fail(400, { orderError: err.message });
+			}
+			throw err;
+		}
+	},
+
+	shipOrder: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const orderId = formData.get('orderId') as string;
+		const trackingNumber = formData.get('trackingNumber') as string;
+
+		if (!trackingNumber) {
+			return fail(400, { orderError: 'Numéro de suivi requis' });
+		}
+
+		try {
+			await serverApi.post(`/orders/${orderId}/ship`, { tracking_number: trackingNumber }, locals.token);
+			return { orderSuccess: true };
+		} catch (err) {
+			if (err instanceof Error && err.message) {
+				return fail(400, { orderError: err.message });
 			}
 			throw err;
 		}

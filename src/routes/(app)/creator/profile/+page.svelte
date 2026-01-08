@@ -61,7 +61,7 @@
 		<!-- Colonne de gauche : Informations du profil -->
 		<div class="space-y-6">
 			<Card class="p-6">
-		<form method="POST" use:enhance bind:this={formRef} class="space-y-6">
+		<form method="POST" action="?/updateProfile" use:enhance bind:this={formRef} class="space-y-6">
 			{#if form?.error}
 				<div class="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
 					{form.error}
@@ -167,28 +167,154 @@
 		<h2 class="text-2xl font-bold mb-6">Commandes</h2>
 
 		<Card class="p-6">
-			<!-- Section En cours -->
+			<!-- Section En cours (en_attente) -->
 			<div class="mb-6">
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En cours</h3>
-				<div class="text-sm text-muted-foreground text-center py-4">
-					Aucune commande en cours
-				</div>
+				{#if data.orders.filter(o => o.status === 'en_attente').length === 0}
+					<div class="text-sm text-muted-foreground text-center py-4">
+						Aucune commande en cours
+					</div>
+				{:else}
+					<div class="space-y-4">
+						{#each data.orders.filter(o => o.status === 'en_attente') as order}
+							<div class="border rounded-lg p-4">
+								<div class="flex justify-between items-start mb-2">
+									<div>
+										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
+									</div>
+									<p class="font-bold">{(order.total_amount / 100).toFixed(2)} €</p>
+								</div>
+
+								<div class="text-sm mb-3">
+									<p><strong>Livraison :</strong> {order.shipping_name}</p>
+									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
+								</div>
+
+								<div class="text-sm mb-3">
+									<p><strong>Produits :</strong></p>
+									{#each order.items as item}
+										<p class="text-muted-foreground">- {item.product_name} x{item.quantity}</p>
+									{/each}
+								</div>
+
+								<div class="flex gap-2">
+									<form method="POST" action="?/acceptOrder" use:enhance class="flex-1">
+										<input type="hidden" name="orderId" value={order.id} />
+										<Button type="submit" class="w-full" size="sm">
+											{#snippet children()}
+												Accepter
+											{/snippet}
+										</Button>
+									</form>
+									<form method="POST" action="?/refuseOrder" use:enhance class="flex-1">
+										<input type="hidden" name="orderId" value={order.id} />
+										<Button type="submit" variant="destructive" class="w-full" size="sm">
+											{#snippet children()}
+												Refuser
+											{/snippet}
+										</Button>
+									</form>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
-			<!-- Section Validé -->
+			<!-- Section Validé (validee) -->
 			<div class="mb-6">
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">Validé</h3>
-				<div class="text-sm text-muted-foreground text-center py-4">
-					Aucune commande validée
-				</div>
+				{#if data.orders.filter(o => o.status === 'validee').length === 0}
+					<div class="text-sm text-muted-foreground text-center py-4">
+						Aucune commande validée
+					</div>
+				{:else}
+					<div class="space-y-4">
+						{#each data.orders.filter(o => o.status === 'validee') as order}
+							<div class="border rounded-lg p-4">
+								<div class="flex justify-between items-start mb-2">
+									<div>
+										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
+									</div>
+									<p class="font-bold">{(order.total_amount / 100).toFixed(2)} €</p>
+								</div>
+
+								<div class="text-sm mb-3">
+									<p><strong>Livraison :</strong> {order.shipping_name}</p>
+									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
+								</div>
+
+								<div class="text-sm mb-3">
+									<p><strong>Produits :</strong></p>
+									{#each order.items as item}
+										<p class="text-muted-foreground">- {item.product_name} x{item.quantity}</p>
+									{/each}
+								</div>
+
+								<form method="POST" action="?/shipOrder" use:enhance class="space-y-2">
+									<input type="hidden" name="orderId" value={order.id} />
+									<div>
+										<label class="text-sm font-medium">Numéro de suivi</label>
+										<input
+											type="text"
+											name="trackingNumber"
+											required
+											class="w-full px-3 py-2 border rounded-md text-sm"
+											placeholder="Ex: 1Z999AA10123456784"
+										/>
+									</div>
+									<Button type="submit" class="w-full" size="sm">
+										{#snippet children()}
+											Marquer comme expédié
+										{/snippet}
+									</Button>
+								</form>
+								<form method="POST" action="?/refuseOrder" use:enhance>
+									<input type="hidden" name="orderId" value={order.id} />
+									<Button type="submit" variant="destructive" class="w-full" size="sm">
+										{#snippet children()}
+											Refuser
+										{/snippet}
+									</Button>
+								</form>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
-			<!-- Section Expédié -->
+			<!-- Section Expédié (expediee) -->
 			<div>
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">Expédié</h3>
-				<div class="text-sm text-muted-foreground text-center py-4">
-					Aucune commande expédiée
-				</div>
+				{#if data.orders.filter(o => o.status === 'expediee').length === 0}
+					<div class="text-sm text-muted-foreground text-center py-4">
+						Aucune commande expédiée
+					</div>
+				{:else}
+					<div class="space-y-4">
+						{#each data.orders.filter(o => o.status === 'expediee') as order}
+							<div class="border rounded-lg p-4 bg-green-50">
+								<div class="flex justify-between items-start mb-2">
+									<div>
+										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+										<p class="text-sm text-muted-foreground">{new Date(order.shipped_at).toLocaleDateString('fr-FR')}</p>
+									</div>
+									<p class="font-bold text-green-600">{(order.total_amount / 100).toFixed(2)} €</p>
+								</div>
+
+								<div class="text-sm mb-2">
+									<p><strong>Livraison :</strong> {order.shipping_name}</p>
+								</div>
+
+								<div class="text-sm">
+									<p><strong>Suivi :</strong> <span class="font-mono">{order.tracking_number}</span></p>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</Card>
 	</div>

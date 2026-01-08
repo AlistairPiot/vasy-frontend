@@ -191,11 +191,13 @@
 					</div>
 
 					{#if $cart.items.length > 0}
-						<Button class="w-full" disabled={$cart.items.length === 0}>
-							{#snippet children()}
-								Procéder au paiement
-							{/snippet}
-						</Button>
+						<a href="/checkout">
+							<Button class="w-full">
+								{#snippet children()}
+									Procéder au paiement
+								{/snippet}
+							</Button>
+						</a>
 					{/if}
 
 					<button
