@@ -6,12 +6,13 @@
 
 	interface Props {
 		items: BreadcrumbItem[];
+		compact?: boolean;
 	}
 
-	let { items } = $props<Props>();
+	let { items, compact = false }: Props = $props();
 </script>
 
-<nav class="pt-20 pb-2" aria-label="Breadcrumb">
+<nav class="{compact ? 'pt-6' : 'pt-24'} pb-6" aria-label="Breadcrumb">
 	<ol class="flex items-center gap-2 text-sm">
 		{#each items as item, index}
 			<li>
