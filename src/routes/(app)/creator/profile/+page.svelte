@@ -94,10 +94,60 @@
 		document.body.appendChild(form);
 		form.submit();
 	}
+
+	async function handleStripeConnect() {
+		console.log('handleStripeConnect called');
+		try {
+			console.log('Fetching /api/stripe/connect...');
+			const response = await fetch('/api/stripe/connect', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+
+			console.log('Response status:', response.status);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('Response error:', errorText);
+				throw new Error('Erreur lors de la connexion à Stripe');
+			}
+
+			const data = await response.json();
+			console.log('Response data:', data);
+
+			// Rediriger vers l'URL Stripe
+			if (data.url) {
+				console.log('Redirecting to:', data.url);
+				window.location.href = data.url;
+			} else {
+				console.error('No URL in response');
+			}
+		} catch (error) {
+			console.error('Stripe Connect error:', error);
+			alert('Erreur lors de la connexion à Stripe. Veuillez réessayer.');
+		}
+	}
 </script>
 
 <div>
 	<h1 class="text-2xl font-bold mb-6">Mon profil</h1>
+
+	{#if data.stripeSuccess}
+		<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
+			Configuration Stripe réussie ! Votre compte est maintenant {data.stripeStatus.onboarding_complete ? 'complètement configuré' : 'en cours de validation'}.
+			{#if !data.stripeStatus.onboarding_complete}
+				<br/>Il peut prendre quelques minutes pour que Stripe valide vos informations.
+			{/if}
+		</div>
+	{/if}
+
+	{#if data.stripeError}
+		<div class="bg-red-100 text-red-800 text-sm p-3 rounded-md mb-4">
+			Une erreur s'est produite lors de la configuration Stripe. Veuillez réessayer.
+		</div>
+	{/if}
 
 	{#if form?.success}
 		<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
@@ -195,15 +245,43 @@
 			</form>
 		</Card>
 
-		{#if !data.creator.stripe_onboarding_complete}
+		{#if !data.stripeStatus.onboarding_complete}
 			<Card class="p-6 border-orange-200 bg-orange-50">
-				<h2 class="font-semibold mb-2">Configuration Stripe requise</h2>
+				<div class="flex justify-between items-start mb-2">
+					<h2 class="font-semibold">Configuration Stripe requise</h2>
+					{#if data.stripeStatus.connected}
+						<button
+							type="button"
+							onclick={() => window.location.reload()}
+							class="text-xs text-muted-foreground hover:text-foreground"
+							title="Rafraîchir le statut"
+						>
+							↻ Rafraîchir
+						</button>
+					{/if}
+				</div>
 				<p class="text-sm text-muted-foreground mb-4">
 					Pour recevoir des paiements, vous devez configurer votre compte Stripe.
+					{#if data.stripeStatus.connected}
+						<br/>Stripe valide vos informations, cela peut prendre quelques minutes.
+					{/if}
 				</p>
-				<Button>
+				<Button type="button" onclick={handleStripeConnect}>
 					{#snippet children()}
-						Configurer Stripe
+						{data.stripeStatus.connected ? 'Reprendre la configuration' : 'Configurer Stripe'}
+					{/snippet}
+				</Button>
+			</Card>
+		{:else}
+			<Card class="p-6 border-green-200 bg-green-50">
+				<h2 class="font-semibold mb-2 text-green-800">✓ Stripe configuré</h2>
+				<p class="text-sm text-muted-foreground mb-4">
+					Votre compte Stripe est configuré et vous pouvez recevoir des paiements.
+					Pour modifier vos informations bancaires ou fiscales, cliquez sur le bouton ci-dessous.
+				</p>
+				<Button type="button" onclick={handleStripeConnect} variant="outline">
+					{#snippet children()}
+						Gérer mon compte Stripe
 					{/snippet}
 				</Button>
 			</Card>

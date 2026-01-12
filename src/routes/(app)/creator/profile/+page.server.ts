@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
 
-export const load: PageServerLoad = async ({ parent, locals }) => {
+export const load: PageServerLoad = async ({ parent, locals, url }) => {
 	const { creator } = await parent();
 
 	// Charger les commandes du créateur
@@ -13,7 +13,19 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 		console.error('Error loading orders:', error);
 	}
 
-	return { creator, orders };
+	// Charger le statut Stripe
+	let stripeStatus = { connected: false, onboarding_complete: false };
+	try {
+		stripeStatus = await serverApi.get('/stripe/connect/status', locals.token);
+	} catch (error) {
+		console.error('Error loading Stripe status:', error);
+	}
+
+	// Récupérer les paramètres de retour Stripe
+	const stripeSuccess = url.searchParams.get('stripe_success') === 'true';
+	const stripeError = url.searchParams.get('stripe_error') === 'true';
+
+	return { creator, orders, stripeStatus, stripeSuccess, stripeError };
 };
 
 export const actions: Actions = {
