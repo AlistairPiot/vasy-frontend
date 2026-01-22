@@ -11,7 +11,21 @@ interface Product {
 	created_at: string;
 }
 
+interface StripeStatus {
+	connected: boolean;
+	onboarding_complete: boolean;
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const products = await serverApi.get<Product[]>('/products/my', locals.token);
-	return { products };
+
+	// Charger le statut Stripe
+	let stripeStatus: StripeStatus;
+	try {
+		stripeStatus = await serverApi.get<StripeStatus>('/stripe/connect/status', locals.token);
+	} catch {
+		stripeStatus = { connected: false, onboarding_complete: false };
+	}
+
+	return { products, stripeStatus };
 };

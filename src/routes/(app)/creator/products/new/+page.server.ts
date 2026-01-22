@@ -1,6 +1,27 @@
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
+
+interface StripeStatus {
+	connected: boolean;
+	onboarding_complete: boolean;
+}
+
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.token) {
+		throw redirect(302, '/login');
+	}
+
+	try {
+		const stripeStatus = await serverApi.get<StripeStatus>(
+			'/stripe/connect/status',
+			locals.token
+		);
+		return { stripeStatus };
+	} catch {
+		return { stripeStatus: { connected: false, onboarding_complete: false } };
+	}
+};
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {

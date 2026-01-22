@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { User } from '$lib/types';
 	import SearchBar from './SearchBar.svelte';
+	import ConfirmModal from './ui/ConfirmModal.svelte';
 	import { cart } from '$lib/stores/cart';
 	import logo from '$lib/assets/vasy.svg';
 
@@ -12,6 +13,27 @@
 
 	// Calculer le nombre total d'articles dans le panier
 	let cartItemCount = $derived($cart.items.reduce((total, item) => total + item.quantity, 0));
+
+	// État de la modale de confirmation de déconnexion
+	let showLogoutModal = $state(false);
+	let logoutFormRef: HTMLFormElement;
+
+	function handleLogoutClick(event: Event) {
+		event.preventDefault();
+		showLogoutModal = true;
+	}
+
+	function confirmLogout() {
+		showLogoutModal = false;
+		// Soumettre le formulaire après la fermeture de la modale
+		setTimeout(() => {
+			logoutFormRef?.submit();
+		}, 100);
+	}
+
+	function cancelLogout() {
+		showLogoutModal = false;
+	}
 </script>
 
 <header class="fixed top-0 left-0 right-0 border-b bg-background z-50">
@@ -47,8 +69,12 @@
 						Panier
 					</a>
 				{/if}
-				<form action="/logout" method="POST">
-					<button type="submit" class="text-muted-foreground hover:text-foreground">
+				<form action="/logout" method="POST" bind:this={logoutFormRef}>
+					<button
+						type="button"
+						onclick={handleLogoutClick}
+						class="text-muted-foreground hover:text-foreground"
+					>
 						Déconnexion
 					</button>
 				</form>
@@ -58,3 +84,14 @@
 		</nav>
 	</div>
 </header>
+
+<ConfirmModal
+	bind:isOpen={showLogoutModal}
+	title="Confirmer la déconnexion"
+	message="Êtes-vous sûr de vouloir vous déconnecter ?"
+	confirmText="Se déconnecter"
+	cancelText="Annuler"
+	variant="destructive"
+	onConfirm={confirmLogout}
+	onCancel={cancelLogout}
+/>

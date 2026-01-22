@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import logo from '$lib/assets/vasy.svg';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 
 	let { data, children } = $props();
 
@@ -11,6 +12,27 @@
 		{ href: '/admin/users', label: 'Utilisateurs' },
 		{ href: '/admin/orders', label: 'Commandes' }
 	];
+
+	// État de la modale de confirmation de déconnexion
+	let showLogoutModal = $state(false);
+	let logoutFormRef: HTMLFormElement;
+
+	function handleLogoutClick(event: Event) {
+		event.preventDefault();
+		showLogoutModal = true;
+	}
+
+	function confirmLogout() {
+		showLogoutModal = false;
+		// Soumettre le formulaire après la fermeture de la modale
+		setTimeout(() => {
+			logoutFormRef?.submit();
+		}, 100);
+	}
+
+	function cancelLogout() {
+		showLogoutModal = false;
+	}
 </script>
 
 <div class="min-h-screen bg-background">
@@ -22,8 +44,12 @@
 			</a>
 			<div class="flex items-center gap-4">
 				<span class="text-sm text-muted-foreground">{data.user.email}</span>
-				<form action="/logout" method="POST">
-					<button type="submit" class="text-sm text-muted-foreground hover:text-foreground">
+				<form action="/logout" method="POST" bind:this={logoutFormRef}>
+					<button
+						type="button"
+						onclick={handleLogoutClick}
+						class="text-sm text-muted-foreground hover:text-foreground"
+					>
 						Déconnexion
 					</button>
 				</form>
@@ -50,3 +76,14 @@
 		{@render children()}
 	</div>
 </div>
+
+<ConfirmModal
+	bind:isOpen={showLogoutModal}
+	title="Confirmer la déconnexion"
+	message="Êtes-vous sûr de vouloir vous déconnecter ?"
+	confirmText="Se déconnecter"
+	cancelText="Annuler"
+	variant="destructive"
+	onConfirm={confirmLogout}
+	onCancel={cancelLogout}
+/>
