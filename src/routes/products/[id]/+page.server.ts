@@ -23,11 +23,6 @@ interface Creator {
 }
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
-	// Vérifier l'authentification
-	if (!locals.token) {
-		throw redirect(302, '/login');
-	}
-
 	const { user } = await parent();
 
 	// Les admins ne peuvent pas accéder à cette page (ils ont leur propre interface)
@@ -41,13 +36,19 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 		// Charger les infos du créateur
 		let creator: Creator | null = null;
 		try {
-			creator = await serverApi.get<Creator>(`/creators/${product.creator_id}`, locals.token);
+			// Si l'utilisateur est connecté, on charge le créateur avec le token
+			if (locals.token) {
+				creator = await serverApi.get<Creator>(`/creators/${product.creator_id}`, locals.token);
+			} else {
+				// Sinon on essaie sans token (endpoint public)
+				creator = await serverApi.get<Creator>(`/creators/${product.creator_id}`);
+			}
 		} catch {
 			// Si on ne peut pas charger le créateur, on continue sans
 			creator = null;
 		}
 
-		return { product, creator };
+		return { product, creator, user };
 	} catch {
 		throw error(404, 'Produit non trouvé');
 	}
