@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import logo from '$lib/assets/vasy.svg';
 
 	let { data, children } = $props();
 
@@ -15,7 +16,10 @@
 <div class="min-h-screen bg-background">
 	<header class="border-b">
 		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy Admin</a>
+			<a href="/" class="flex items-center gap-2">
+				<img src={logo} alt="Vasy" class="h-8 w-auto" />
+				<span class="text-sm font-medium text-muted-foreground">Admin</span>
+			</a>
 			<div class="flex items-center gap-4">
 				<span class="text-sm text-muted-foreground">{data.user.email}</span>
 				<form action="/logout" method="POST">

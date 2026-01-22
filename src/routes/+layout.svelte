@@ -4,6 +4,7 @@
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
 	import Footer from '$lib/components/Footer.svelte';
+	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 
 	let { children, data } = $props();
 
@@ -25,4 +26,5 @@
 		{@render children()}
 	</div>
 	<Footer />
+	<ScrollToTop />
 </div>

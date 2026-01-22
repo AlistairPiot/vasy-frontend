@@ -2,6 +2,7 @@
 	import type { User } from '$lib/types';
 	import SearchBar from './SearchBar.svelte';
 	import { cart } from '$lib/stores/cart';
+	import logo from '$lib/assets/vasy.svg';
 
 	interface Props {
 		user?: User;
@@ -15,7 +16,9 @@
 
 <header class="fixed top-0 left-0 right-0 border-b bg-background z-50">
 	<div class="container mx-auto px-4 py-4 flex justify-between items-center gap-6">
-		<a href="/" class="text-xl font-bold min-w-fit">Vasy</a>
+		<a href="/" class="flex items-center gap-2 min-w-fit">
+			<img src={logo} alt="Vasy" class="h-8 w-auto" />
+		</a>
 		<div class="flex-1 max-w-2xl">
 			<SearchBar />
 		</div>

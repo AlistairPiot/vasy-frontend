@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import logo from '$lib/assets/vasy.svg';
 
 	let { form } = $props();
 	let formRef: HTMLFormElement;
@@ -41,7 +42,9 @@
 
 <div class="min-h-screen bg-background flex flex-col">
 	<header class="container mx-auto px-4 py-4">
-		<a href="/" class="text-xl font-bold opacity-0 translate-y-[30px] inline-block" bind:this={logoRef}>Vasy</a>
+		<a href="/" class="opacity-0 translate-y-[30px] inline-block" bind:this={logoRef}>
+			<img src={logo} alt="Vasy" class="h-8 w-auto" />
+		</a>
 	</header>
 
 	<div class="flex-1 flex items-center justify-center p-4">
