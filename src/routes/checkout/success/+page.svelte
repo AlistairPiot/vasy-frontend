@@ -33,7 +33,7 @@
 				</p>
 
 				<div class="flex gap-4 justify-center">
-					<a href="/dashboard">
+					<a href="/profile?tab=orders">
 						<Button>
 							{#snippet children()}
 								Voir mes commandes

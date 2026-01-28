@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import { gsap } from 'gsap';
 	import { enhance } from '$app/forms';
 	import Header from '$lib/components/Header.svelte';
@@ -9,7 +10,11 @@
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
-	let activeTab = $state<'profile' | 'orders'>('profile');
+
+	// Initialiser l'onglet actif selon le paramètre URL
+	let activeTab = $state<'profile' | 'orders'>(
+		($page.url.searchParams.get('tab') === 'orders' ? 'orders' : 'profile')
+	);
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
