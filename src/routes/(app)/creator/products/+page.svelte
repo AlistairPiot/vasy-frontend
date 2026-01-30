@@ -3,6 +3,7 @@
 	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { calculateProductCommission, formatPrice } from '$lib/utils';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -16,10 +17,6 @@
 			ease: 'power3.out'
 		});
 	});
-
-	function formatPrice(cents: number): string {
-		return (cents / 100).toFixed(2) + ' €';
-	}
 
 	function getFirstImage(imageUrls: string): string | null {
 		try {
@@ -106,7 +103,12 @@
 						{/if}
 						<h3 class="font-semibold truncate">{product.name}</h3>
 						<div class="flex justify-between items-center mt-2">
-							<span class="text-lg font-bold">{formatPrice(product.price)}</span>
+							<div>
+								<span class="text-lg font-bold">{formatPrice(product.price)}</span>
+								<div class="text-xs text-green-600">
+									Vous recevez: {formatPrice(calculateProductCommission(product.price).creatorEarnings)}
+								</div>
+							</div>
 							<span class="text-sm text-muted-foreground">
 								Stock: {product.stock}
 							</span>

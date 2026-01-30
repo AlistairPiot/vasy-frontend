@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { formatPrice } from '$lib/utils';
 
 	let { data, form } = $props();
 	let formRef: HTMLFormElement;
@@ -309,7 +310,10 @@
 										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<p class="font-bold">{(order.total_amount / 100).toFixed(2)} €</p>
+									<div class="text-right">
+										<p class="font-bold">{formatPrice(order.total_amount)}</p>
+										<p class="text-xs text-green-600">Vous recevrez: {formatPrice(order.creator_earnings)}</p>
+									</div>
 								</div>
 
 								<div class="text-sm mb-3">
@@ -358,7 +362,10 @@
 										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<p class="font-bold">{(order.total_amount / 100).toFixed(2)} €</p>
+									<div class="text-right">
+										<p class="font-bold">{formatPrice(order.total_amount)}</p>
+										<p class="text-xs text-green-600">Vous recevrez: {formatPrice(order.creator_earnings)}</p>
+									</div>
 								</div>
 
 								<div class="text-sm mb-3">
@@ -422,7 +429,10 @@
 										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.shipped_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<p class="font-bold text-green-600">{(order.total_amount / 100).toFixed(2)} €</p>
+									<div class="text-right">
+										<p class="text-sm text-muted-foreground line-through">{formatPrice(order.total_amount)}</p>
+										<p class="font-bold text-green-600">Gagné: {formatPrice(order.creator_earnings)}</p>
+									</div>
 								</div>
 
 								<div class="text-sm mb-2">

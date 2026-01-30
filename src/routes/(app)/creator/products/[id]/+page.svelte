@@ -5,8 +5,17 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import {
+		calculateProductCommission,
+		formatPrice,
+		PLATFORM_COMMISSION_PERCENT,
+		STRIPE_COMMISSION_PERCENT
+	} from '$lib/utils';
 
 	let { data, form } = $props();
+
+	// Calcul des commissions
+	let commission = $derived(calculateProductCommission(data.product.price));
 	let formRef: HTMLFormElement;
 	let imageUrls = $state<string[]>([]);
 	let uploading = $state(false);
@@ -88,6 +97,36 @@
 			Produit mis à jour avec succès
 		</div>
 	{/if}
+
+	<!-- Section des commissions -->
+	<Card class="max-w-2xl p-6 mb-6 bg-blue-50 border-blue-200">
+		<h3 class="font-semibold text-blue-900 mb-4">Détail des commissions</h3>
+		<div class="grid grid-cols-2 gap-4 text-sm">
+			<div>
+				<p class="text-blue-700">Prix de vente</p>
+				<p class="text-lg font-bold text-blue-900">{formatPrice(data.product.price)}</p>
+			</div>
+			<div>
+				<p class="text-blue-700">Vous recevez</p>
+				<p class="text-lg font-bold text-green-600">{formatPrice(commission.creatorEarnings)}</p>
+			</div>
+		</div>
+		<div class="mt-4 pt-4 border-t border-blue-200">
+			<p class="text-xs text-blue-600 mb-2">Détail des frais :</p>
+			<div class="flex justify-between text-xs text-blue-700">
+				<span>Commission plateforme ({PLATFORM_COMMISSION_PERCENT}% + 0.25€)</span>
+				<span>-{formatPrice(commission.platformCommission)}</span>
+			</div>
+			<div class="flex justify-between text-xs text-blue-700">
+				<span>Commission Stripe ({STRIPE_COMMISSION_PERCENT}% + 0.25€)</span>
+				<span>-{formatPrice(commission.stripeCommission)}</span>
+			</div>
+			<div class="flex justify-between text-xs font-semibold text-blue-900 mt-2 pt-2 border-t border-blue-200">
+				<span>Total des frais ({commission.commissionPercent}%)</span>
+				<span>-{formatPrice(commission.totalCommission)}</span>
+			</div>
+		</div>
+	</Card>
 
 	<Card class="max-w-2xl p-6">
 		<form method="POST" action="?/update" use:enhance bind:this={formRef} class="space-y-6" novalidate>
