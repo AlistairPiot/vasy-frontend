@@ -79,7 +79,12 @@
 					</div>
 
 					<div class="space-y-2">
-						<label for="password" class="text-sm font-medium">Mot de passe</label>
+						<div class="flex items-center justify-between">
+							<label for="password" class="text-sm font-medium">Mot de passe</label>
+							<a href="/forgot-password" class="text-sm text-primary hover:underline">
+								Mot de passe oublié ?
+							</a>
+						</div>
 						<Input
 							type="password"
 							id="password"
