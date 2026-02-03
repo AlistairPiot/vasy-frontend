@@ -11,13 +11,6 @@
 	let headerRef: HTMLElement;
 	let scrollY = $state(0);
 
-	// Stats fictives pour l'exemple
-	const stats = {
-		creators: 150,
-		products: 2500,
-		satisfied: 5000
-	};
-
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 
@@ -155,24 +148,6 @@
 				Découvrez des produits artisanaux uniques créés par des artisans passionnés. Vendez vos
 				créations en toute simplicité.
 			</p>
-
-			<!-- Indicateurs de confiance -->
-			<div
-				class="animate-in flex flex-wrap gap-8 justify-center mb-10 opacity-0 translate-y-[30px]"
-			>
-				<div class="text-center">
-					<div class="text-4xl font-bold text-white mb-1">{stats.creators}+</div>
-					<div class="text-sm text-gray-300">Créateurs</div>
-				</div>
-				<div class="text-center">
-					<div class="text-4xl font-bold text-white mb-1">{stats.products}+</div>
-					<div class="text-sm text-gray-300">Produits</div>
-				</div>
-				<div class="text-center">
-					<div class="text-4xl font-bold text-white mb-1">{stats.satisfied}+</div>
-					<div class="text-sm text-gray-300">Clients satisfaits</div>
-				</div>
-			</div>
 
 			<!-- CTA avec micro-interactions -->
 			<div class="animate-in flex flex-col sm:flex-row gap-4 justify-center opacity-0 translate-y-[30px]">
@@ -380,92 +355,6 @@
 					{/snippet}
 				</Button>
 			</a>
-		</div>
-	</div>
-</section>
-
-<!-- Témoignages -->
-<section class="py-24 bg-gray-50 fade-in-section">
-	<div class="container mx-auto px-4">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-900 mb-4">Ils nous font confiance</h2>
-			<p class="text-xl text-gray-600 max-w-2xl mx-auto">
-				Découvrez ce que disent nos clients et créateurs
-			</p>
-		</div>
-
-		<div class="grid md:grid-cols-3 gap-8">
-			<!-- Témoignage 1 -->
-			<div class="bg-white rounded-xl p-8 shadow-lg">
-				<div class="flex items-center gap-1 mb-4">
-					{#each Array(5) as _}
-						<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-							/>
-						</svg>
-					{/each}
-				</div>
-				<p class="text-gray-600 mb-4 italic">
-					"Des produits de qualité exceptionnelle ! J'ai découvert des créateurs talentueux et leurs
-					créations sont magnifiques."
-				</p>
-				<div class="flex items-center gap-3">
-					<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full"></div>
-					<div>
-						<p class="font-semibold text-gray-900">Marie D.</p>
-						<p class="text-sm text-gray-500">Cliente</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Témoignage 2 -->
-			<div class="bg-white rounded-xl p-8 shadow-lg">
-				<div class="flex items-center gap-1 mb-4">
-					{#each Array(5) as _}
-						<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-							/>
-						</svg>
-					{/each}
-				</div>
-				<p class="text-gray-600 mb-4 italic">
-					"Plateforme intuitive et facile à utiliser. J'ai pu développer mon activité rapidement
-					grâce à Vasy."
-				</p>
-				<div class="flex items-center gap-3">
-					<div class="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-400 rounded-full"></div>
-					<div>
-						<p class="font-semibold text-gray-900">Pierre L.</p>
-						<p class="text-sm text-gray-500">Créateur</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Témoignage 3 -->
-			<div class="bg-white rounded-xl p-8 shadow-lg">
-				<div class="flex items-center gap-1 mb-4">
-					{#each Array(5) as _}
-						<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-							/>
-						</svg>
-					{/each}
-				</div>
-				<p class="text-gray-600 mb-4 italic">
-					"Service client au top ! Livraison rapide et produits conformes à la description. Je
-					recommande !"
-				</p>
-				<div class="flex items-center gap-3">
-					<div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full"></div>
-					<div>
-						<p class="font-semibold text-gray-900">Sophie M.</p>
-						<p class="text-sm text-gray-500">Cliente</p>
-					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 </section>

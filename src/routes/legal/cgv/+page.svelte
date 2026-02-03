@@ -41,7 +41,7 @@
 			<h2 class="text-2xl font-semibold mb-4 mt-8">6. Réclamations</h2>
 			<p class="mb-4">
 				Pour toute réclamation, contactez-nous à :
-				<a href="mailto:support@vasy.fr" class="text-primary hover:underline">support@vasy.fr</a>
+				<a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a>
 			</p>
 		</div>
 	</Card>

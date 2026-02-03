@@ -30,7 +30,7 @@
 			<h2 class="text-2xl font-semibold mb-4 mt-8">Contact</h2>
 			<p class="mb-4">
 				Pour toute question, n'hésitez pas à nous contacter à :
-				<a href="mailto:contact@vasy.fr" class="text-primary hover:underline">contact@vasy.fr</a>
+				<a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a>
 			</p>
 		</div>
 	</Card>

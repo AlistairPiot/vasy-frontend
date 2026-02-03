@@ -57,7 +57,7 @@
 			<h2 class="text-2xl font-semibold mb-4 mt-8">6. Contact</h2>
 			<p class="mb-4">
 				Pour exercer vos droits ou pour toute question :
-				<a href="mailto:privacy@vasy.fr" class="text-primary hover:underline">privacy@vasy.fr</a>
+				<a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a>
 			</p>
 		</div>
 	</Card>

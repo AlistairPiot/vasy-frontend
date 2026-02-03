@@ -11,7 +11,7 @@
 			<p class="mb-4">
 				<strong>Raison sociale :</strong> Vasy<br/>
 				<strong>Siège social :</strong> [À compléter]<br/>
-				<strong>Email :</strong> <a href="mailto:contact@vasy.fr" class="text-primary hover:underline">contact@vasy.fr</a><br/>
+				<strong>Email :</strong> <a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a><br/>
 				<strong>SIRET :</strong> [À compléter]<br/>
 				<strong>Capital social :</strong> [À compléter]
 			</p>
@@ -36,7 +36,7 @@
 			</p>
 			<p class="mb-4">
 				Pour exercer ce droit, contactez-nous à :
-				<a href="mailto:privacy@vasy.fr" class="text-primary hover:underline">privacy@vasy.fr</a>
+				<a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a>
 			</p>
 
 			<h2 class="text-2xl font-semibold mb-4 mt-8">5. Propriété intellectuelle</h2>
