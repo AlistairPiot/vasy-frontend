@@ -139,9 +139,13 @@
 		}
 	}
 
-	// Réagir aux changements
+	// Réagir aux changements des events et de la sélection
 	$effect(() => {
-		if (map && L) {
+		// Référencer explicitement les dépendances pour que Svelte les track
+		const _events = events;
+		const _selectedId = selectedEventId;
+
+		if (map && L && _events) {
 			updateMarkers();
 		}
 	});
