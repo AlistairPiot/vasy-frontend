@@ -9,6 +9,12 @@
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 
+	// Modal state
+	let showDeleteModal = $state(false);
+	let productToDelete = $state<{ id: string; name: string } | null>(null);
+	let deleteReason = $state('');
+	let deleteFormRef: HTMLFormElement | null = $state(null);
+
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
@@ -40,17 +46,26 @@
 		}
 	}
 
-	function enhanceDelete(productName: string) {
-		return async ({ cancel }: any) => {
-			if (!confirm(`Êtes-vous sûr de vouloir supprimer le produit "${productName}" ?\n\nCette action est irréversible.`)) {
-				cancel();
-				return;
-			}
+	function openDeleteModal(product: { id: string; name: string }) {
+		productToDelete = product;
+		deleteReason = '';
+		showDeleteModal = true;
+	}
 
-			return async () => {
-				await invalidateAll();
-			};
-		};
+	function closeDeleteModal() {
+		showDeleteModal = false;
+		productToDelete = null;
+		deleteReason = '';
+	}
+
+	function confirmDelete() {
+		if (!deleteReason.trim()) {
+			alert('Veuillez indiquer un motif de suppression.');
+			return;
+		}
+		if (deleteFormRef) {
+			deleteFormRef.requestSubmit();
+		}
 	}
 </script>
 
@@ -128,14 +143,15 @@
 									{formatDate(product.created_at)}
 								</td>
 								<td class="p-4">
-									<form method="POST" action="?/delete" use:enhance={enhanceDelete(product.name)}>
-										<input type="hidden" name="productId" value={product.id} />
-										<Button size="sm" variant="destructive">
-											{#snippet children()}
-												Supprimer
-											{/snippet}
-										</Button>
-									</form>
+									<Button
+										size="sm"
+										variant="destructive"
+										onclick={() => openDeleteModal({ id: product.id, name: product.name })}
+									>
+										{#snippet children()}
+											Supprimer
+										{/snippet}
+									</Button>
 								</td>
 							</tr>
 						{/each}
@@ -149,3 +165,54 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Modal de suppression -->
+{#if showDeleteModal && productToDelete}
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onclick={closeDeleteModal}>
+		<div class="bg-background rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onclick={(e) => e.stopPropagation()}>
+			<h2 class="text-xl font-bold mb-4">Supprimer le produit</h2>
+			<p class="text-muted-foreground mb-4">
+				Vous êtes sur le point de supprimer le produit <strong>"{productToDelete.name}"</strong>.
+			</p>
+
+			<form
+				method="POST"
+				action="?/delete"
+				bind:this={deleteFormRef}
+				use:enhance={() => {
+					return async () => {
+						closeDeleteModal();
+						await invalidateAll();
+					};
+				}}
+			>
+				<input type="hidden" name="productId" value={productToDelete.id} />
+
+				<label class="block mb-2 font-medium">
+					Motif de la suppression <span class="text-red-500">*</span>
+				</label>
+				<textarea
+					name="reason"
+					bind:value={deleteReason}
+					rows="3"
+					class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4"
+					placeholder="Ex: Contenu inapproprié, droits d'auteur..."
+					required
+				></textarea>
+
+				<div class="flex gap-3 justify-end">
+					<Button variant="outline" onclick={closeDeleteModal}>
+						{#snippet children()}
+							Annuler
+						{/snippet}
+					</Button>
+					<Button variant="destructive" onclick={confirmDelete}>
+						{#snippet children()}
+							Supprimer
+						{/snippet}
+					</Button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}

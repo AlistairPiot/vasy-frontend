@@ -51,7 +51,11 @@ export const serverApi = {
 		});
 	},
 
-	delete<T>(endpoint: string, token?: string): Promise<T> {
-		return api<T>(endpoint, { method: 'DELETE', token });
+	delete<T>(endpoint: string, token?: string, data?: unknown): Promise<T> {
+		return api<T>(endpoint, {
+			method: 'DELETE',
+			body: data ? JSON.stringify(data) : undefined,
+			token
+		});
 	}
 };

@@ -36,8 +36,9 @@ export const actions: Actions = {
 	delete: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const productId = formData.get('productId') as string;
+		const reason = formData.get('reason') as string;
 
-		await serverApi.delete(`/admin/products/${productId}`, locals.token);
+		await serverApi.delete(`/admin/products/${productId}`, locals.token, { reason });
 
 		return { success: true };
 	}
