@@ -6,6 +6,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
+	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
@@ -186,14 +187,11 @@
 						<label for="location_text" class="block text-sm font-medium mb-1">
 							Lieu <span class="text-red-500">*</span>
 						</label>
-						<input
-							type="text"
+						<AddressAutocomplete
 							id="location_text"
 							name="location_text"
 							required
-							maxlength="500"
-							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Ex: 12 Rue de la Paix, 75002 Paris"
+							placeholder="Rechercher une adresse..."
 						/>
 					</div>
 

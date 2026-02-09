@@ -39,9 +39,14 @@ export const actions: Actions = {
 	delete: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const eventId = formData.get('eventId') as string;
+		const reason = formData.get('reason') as string;
+
+		if (!reason || reason.trim().length === 0) {
+			return fail(400, { error: 'Le motif de suppression est requis' });
+		}
 
 		try {
-			await serverApi.delete(`/admin/events/${eventId}`, locals.token);
+			await serverApi.delete(`/admin/events/${eventId}`, locals.token, { reason: reason.trim() });
 			return { success: true };
 		} catch (err) {
 			if (err instanceof Error) {

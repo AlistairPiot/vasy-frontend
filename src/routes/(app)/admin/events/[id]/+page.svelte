@@ -4,6 +4,7 @@
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
@@ -12,6 +13,11 @@
 	const eventDate = new Date(data.event.date);
 	const dateValue = eventDate.toISOString().split('T')[0];
 	const timeValue = eventDate.toTimeString().slice(0, 5);
+
+	// État pour l'adresse avec valeurs initiales
+	let locationValue = $state(data.event.location_text);
+	let latitudeValue = $state<number | null>(data.event.latitude);
+	let longitudeValue = $state<number | null>(data.event.longitude);
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
@@ -118,15 +124,14 @@
 					<label for="location_text" class="block text-sm font-medium mb-1">
 						Lieu <span class="text-red-500">*</span>
 					</label>
-					<input
-						type="text"
+					<AddressAutocomplete
 						id="location_text"
 						name="location_text"
 						required
-						maxlength="500"
-						value={data.event.location_text}
-						class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-						placeholder="Ex: 12 Rue de la Paix, 75002 Paris"
+						placeholder="Rechercher une adresse..."
+						bind:value={locationValue}
+						bind:latitude={latitudeValue}
+						bind:longitude={longitudeValue}
 					/>
 				</div>
 

@@ -9,6 +9,12 @@
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
 
+	// État pour la modale de suppression
+	let deleteModalOpen = $state(false);
+	let eventToDelete = $state<{ id: string; name: string } | null>(null);
+	let deleteReason = $state('');
+	let isDeleting = $state(false);
+
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
@@ -60,6 +66,41 @@
 			url.searchParams.delete('status');
 		}
 		goto(url.toString());
+	}
+
+	function openDeleteModal(event: { id: string; name: string }) {
+		eventToDelete = event;
+		deleteReason = '';
+		deleteModalOpen = true;
+	}
+
+	function closeDeleteModal() {
+		deleteModalOpen = false;
+		eventToDelete = null;
+		deleteReason = '';
+	}
+
+	async function confirmDelete() {
+		if (!eventToDelete || !deleteReason.trim()) return;
+
+		isDeleting = true;
+		try {
+			const formData = new FormData();
+			formData.append('eventId', eventToDelete.id);
+			formData.append('reason', deleteReason.trim());
+
+			const response = await fetch('?/delete', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (response.ok) {
+				await invalidateAll();
+				closeDeleteModal();
+			}
+		} finally {
+			isDeleting = false;
+		}
 	}
 </script>
 
@@ -198,35 +239,15 @@
 													{/snippet}
 												</Button>
 											</a>
-											<form
-												method="POST"
-												action="?/delete"
-												use:enhance={() => {
-													return async () => {
-														await invalidateAll();
-													};
-												}}
+											<Button
+												size="sm"
+												variant="destructive"
+												onclick={() => openDeleteModal({ id: event.id, name: event.name })}
 											>
-												<input type="hidden" name="eventId" value={event.id} />
-												<Button
-													type="submit"
-													size="sm"
-													variant="destructive"
-													onclick={(e: MouseEvent) => {
-														if (
-															!confirm(
-																`Êtes-vous sûr de vouloir supprimer l'événement "${event.name}" ?`
-															)
-														) {
-															e.preventDefault();
-														}
-													}}
-												>
-													{#snippet children()}
-														Supprimer
-													{/snippet}
-												</Button>
-											</form>
+												{#snippet children()}
+													Supprimer
+												{/snippet}
+											</Button>
 										{:else}
 											<span class="text-sm text-muted-foreground">-</span>
 										{/if}
@@ -244,3 +265,80 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Modale de suppression avec motif -->
+{#if deleteModalOpen && eventToDelete}
+	<div
+		class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+		onclick={(e) => e.target === e.currentTarget && closeDeleteModal()}
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-background rounded-lg shadow-2xl max-w-md w-full p-6 border border-border">
+			<!-- Icon -->
+			<div class="mb-4 flex justify-center">
+				<div class="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+					<svg
+						class="w-6 h-6 text-destructive"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+						/>
+					</svg>
+				</div>
+			</div>
+
+			<!-- Title -->
+			<h2 class="text-xl font-bold text-center mb-2">Supprimer l'événement</h2>
+
+			<!-- Message -->
+			<p class="text-muted-foreground text-center mb-4">
+				Vous êtes sur le point de supprimer l'événement
+				<strong class="text-foreground">"{eventToDelete.name}"</strong>.
+			</p>
+
+			<!-- Reason input -->
+			<div class="mb-6">
+				<label for="delete-reason" class="block text-sm font-medium mb-2">
+					Motif de suppression <span class="text-red-500">*</span>
+				</label>
+				<textarea
+					id="delete-reason"
+					bind:value={deleteReason}
+					rows="3"
+					class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-destructive resize-none"
+					placeholder="Expliquez pourquoi cet événement est supprimé..."
+				></textarea>
+				<p class="text-xs text-muted-foreground mt-1">
+					Ce motif sera envoyé par email au créateur.
+				</p>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex gap-3">
+				<Button class="flex-1" variant="outline" onclick={closeDeleteModal} disabled={isDeleting}>
+					{#snippet children()}
+						Annuler
+					{/snippet}
+				</Button>
+				<Button
+					class="flex-1"
+					variant="destructive"
+					onclick={confirmDelete}
+					disabled={!deleteReason.trim() || isDeleting}
+				>
+					{#snippet children()}
+						{isDeleting ? 'Suppression...' : 'Supprimer'}
+					{/snippet}
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}

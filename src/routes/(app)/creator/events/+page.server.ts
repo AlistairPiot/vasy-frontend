@@ -34,6 +34,8 @@ export const actions: Actions = {
 		const date = formData.get('date') as string;
 		const time = formData.get('time') as string;
 		const location_text = formData.get('location_text') as string;
+		const latitudeStr = formData.get('latitude') as string;
+		const longitudeStr = formData.get('longitude') as string;
 
 		// Validation
 		if (!name || name.trim().length === 0) {
@@ -45,7 +47,19 @@ export const actions: Actions = {
 		}
 
 		if (!location_text || location_text.trim().length === 0) {
-			return fail(400, { error: 'Le lieu est requis' });
+			return fail(400, { error: 'Veuillez sélectionner une adresse dans la liste' });
+		}
+
+		// Vérifier que les coordonnées sont présentes (adresse sélectionnée)
+		if (!latitudeStr || !longitudeStr) {
+			return fail(400, { error: 'Veuillez sélectionner une adresse valide dans la liste' });
+		}
+
+		const latitude = parseFloat(latitudeStr);
+		const longitude = parseFloat(longitudeStr);
+
+		if (isNaN(latitude) || isNaN(longitude)) {
+			return fail(400, { error: 'Coordonnées invalides. Veuillez resélectionner une adresse.' });
 		}
 
 		// Combiner date et heure
@@ -58,7 +72,9 @@ export const actions: Actions = {
 					name: name.trim(),
 					description: description?.trim() || null,
 					date: dateTime,
-					location_text: location_text.trim()
+					location_text: location_text.trim(),
+					latitude,
+					longitude
 				},
 				locals.token
 			);
