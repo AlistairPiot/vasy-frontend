@@ -10,7 +10,8 @@
 		{ href: '/admin/invitations', label: 'Invitations' },
 		{ href: '/admin/creators', label: 'Créateurs' },
 		{ href: '/admin/users', label: 'Utilisateurs' },
-		{ href: '/admin/orders', label: 'Commandes' }
+		{ href: '/admin/orders', label: 'Commandes' },
+		{ href: '/admin/events', label: 'Événements' }
 	];
 
 	// État de la modale de confirmation de déconnexion

@@ -6,6 +6,7 @@
 
 	const navItems = [
 		{ href: '/creator/products', label: 'Mes produits' },
+		{ href: '/creator/events', label: 'Mes événements' },
 		{ href: '/creator/profile', label: 'Mon profil' }
 	];
 </script>
