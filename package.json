@@ -30,6 +30,8 @@
 	},
 	"dependencies": {
 		"@stripe/stripe-js": "^8.6.1",
+		"@types/leaflet": "^1.9.21",
+		"leaflet": "^1.9.4",
 		"zod": "^4.1.12"
 	}
 }

@@ -5,10 +5,15 @@
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
 	let showCreateForm = $state(false);
+	let selectedEventId = $state<string | null>(null);
+
+	// Vue actuelle: 'both', 'map', 'list'
+	let viewMode = $state<'both' | 'map' | 'list'>('both');
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
@@ -50,16 +55,60 @@
 	function isEventPast(dateStr: string): boolean {
 		return new Date(dateStr) < new Date();
 	}
+
+	function handleEventSelect(eventId: string) {
+		selectedEventId = eventId;
+		// Scroll vers l'événement si en mode 'both' ou 'list'
+		if (viewMode !== 'map') {
+			const element = document.getElementById(`event-${eventId}`);
+			if (element) {
+				element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}
+	}
 </script>
 
 <div bind:this={containerRef}>
+	<!-- Header avec titre et actions -->
 	<div class="animate-in flex items-center justify-between mb-6">
 		<h1 class="text-2xl font-bold">Mes événements</h1>
-		<Button onclick={() => (showCreateForm = !showCreateForm)}>
-			{#snippet children()}
-				{showCreateForm ? 'Annuler' : '+ Nouvel événement'}
-			{/snippet}
-		</Button>
+		<div class="flex items-center gap-3">
+			<!-- Toggle de vue -->
+			<div class="flex bg-muted rounded-lg p-1">
+				<button
+					class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'list'
+						? 'bg-background shadow-sm'
+						: 'hover:bg-background/50'}"
+					onclick={() => (viewMode = 'list')}
+					title="Afficher la liste"
+				>
+					Liste
+				</button>
+				<button
+					class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'both'
+						? 'bg-background shadow-sm'
+						: 'hover:bg-background/50'}"
+					onclick={() => (viewMode = 'both')}
+					title="Afficher les deux"
+				>
+					Les deux
+				</button>
+				<button
+					class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'map'
+						? 'bg-background shadow-sm'
+						: 'hover:bg-background/50'}"
+					onclick={() => (viewMode = 'map')}
+					title="Afficher la carte"
+				>
+					Carte
+				</button>
+			</div>
+			<Button onclick={() => (showCreateForm = !showCreateForm)}>
+				{#snippet children()}
+					{showCreateForm ? 'Annuler' : '+ Nouvel événement'}
+				{/snippet}
+			</Button>
+		</div>
 	</div>
 
 	{#if form?.error}
@@ -179,7 +228,7 @@
 		</Card>
 	{/if}
 
-	<!-- Liste des événements -->
+	<!-- Contenu principal avec carte et liste -->
 	{#if data.events.length === 0}
 		<Card class="animate-in">
 			<div class="p-8 text-center text-muted-foreground">
@@ -192,41 +241,70 @@
 			</div>
 		</Card>
 	{:else}
-		<div class="space-y-4">
-			{#each data.events as event}
-				{@const badge = getStatusBadge(event.status)}
-				<Card class="animate-in">
-					<div class="p-6">
-						<div class="flex items-start justify-between">
-							<div class="flex-1">
-								<div class="flex items-center gap-3 mb-2">
-									<h3 class="text-lg font-semibold">{event.name}</h3>
-									<span class="text-xs px-2 py-1 rounded {badge.class}">
-										{badge.text}
-									</span>
+		<div
+			class="animate-in grid gap-6"
+			class:grid-cols-1={viewMode !== 'both'}
+			class:lg:grid-cols-2={viewMode === 'both'}
+		>
+			<!-- Liste des événements (gauche) -->
+			{#if viewMode === 'list' || viewMode === 'both'}
+				<div
+					class="space-y-4 {viewMode === 'both' ? 'max-h-[calc(100vh-280px)] overflow-y-auto pr-2' : ''}"
+				>
+					{#each data.events as event}
+						{@const badge = getStatusBadge(event.status)}
+						<Card
+							id="event-{event.id}"
+							class="transition-all cursor-pointer {selectedEventId === event.id
+								? 'ring-2 ring-primary'
+								: 'hover:shadow-md'}"
+						>
+							<button
+								type="button"
+								class="w-full text-left"
+								onclick={() => (selectedEventId = event.id)}
+							>
+								<div class="p-4">
+									<div class="flex items-start justify-between">
+										<div class="flex-1">
+											<div class="flex items-center gap-2 mb-2">
+												<h3 class="font-semibold">{event.name}</h3>
+												<span class="text-xs px-2 py-0.5 rounded {badge.class}">
+													{badge.text}
+												</span>
+											</div>
+
+											<div class="space-y-1 text-sm text-muted-foreground">
+												<p class="flex items-center gap-2">
+													<span>📅</span>
+													<span class:line-through={isEventPast(event.date)}>
+														{formatDate(event.date)} à {formatTime(event.date)}
+													</span>
+												</p>
+												<p class="flex items-center gap-2">
+													<span>📍</span>
+													<span class="truncate">{event.location_text}</span>
+												</p>
+												{#if event.latitude && event.longitude}
+													<p class="flex items-center gap-2 text-xs text-green-600">
+														<span>✓</span>
+														<span>Géolocalisé</span>
+													</p>
+												{/if}
+											</div>
+
+											{#if event.description}
+												<p class="mt-2 text-sm line-clamp-2">{event.description}</p>
+											{/if}
+										</div>
+									</div>
 								</div>
+							</button>
 
-								<div class="space-y-1 text-sm text-muted-foreground">
-									<p class="flex items-center gap-2">
-										<span>📅</span>
-										<span class:line-through={isEventPast(event.date)}>
-											{formatDate(event.date)} à {formatTime(event.date)}
-										</span>
-									</p>
-									<p class="flex items-center gap-2">
-										<span>📍</span>
-										<span>{event.location_text}</span>
-									</p>
-								</div>
-
-								{#if event.description}
-									<p class="mt-3 text-sm">{event.description}</p>
-								{/if}
-							</div>
-
-							<div class="ml-4 flex gap-2">
-								<a href="/creator/events/{event.id}">
-									<Button size="sm" variant="outline">
+							<!-- Actions -->
+							<div class="px-4 pb-4 flex gap-2 border-t pt-3">
+								<a href="/creator/events/{event.id}" class="flex-1">
+									<Button size="sm" variant="outline" class="w-full">
 										{#snippet children()}
 											Modifier
 										{/snippet}
@@ -249,9 +327,7 @@
 										size="sm"
 										variant="destructive"
 										onclick={(e: MouseEvent) => {
-											if (
-												!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')
-											) {
+											if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
 												e.preventDefault();
 											}
 										}}
@@ -262,14 +338,30 @@
 									</Button>
 								</form>
 							</div>
-						</div>
-					</div>
-				</Card>
-			{/each}
-		</div>
+						</Card>
+					{/each}
 
-		<div class="animate-in mt-6 text-sm text-muted-foreground">
-			Total : {data.events.length} événement{data.events.length > 1 ? 's' : ''}
+					<div class="text-sm text-muted-foreground pt-2">
+						Total : {data.events.length} événement{data.events.length > 1 ? 's' : ''}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Carte (droite/centre) -->
+			{#if viewMode === 'map' || viewMode === 'both'}
+				<div
+					class="relative {viewMode === 'map' ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-280px)]'}"
+				>
+					<Card class="h-full overflow-hidden">
+						<EventsMap
+							events={data.events}
+							bind:selectedEventId
+							onEventSelect={handleEventSelect}
+							class="h-full"
+						/>
+					</Card>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
