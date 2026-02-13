@@ -50,7 +50,7 @@
 				<h3 class="font-semibold text-lg mb-4">Contact</h3>
 				<ul class="space-y-2">
 					<li class="text-sm text-muted-foreground">
-						Email: <a href="mailto:vasy.creation.contact@gmail.com" class="hover:text-foreground transition-colors">vasy.creation.contact@gmail.com</a>
+						Email : <a href="mailto:vasy.creation.contact@gmail.com" class="hover:text-foreground transition-colors">vasy.creation.contact@gmail.com</a>
 					</li>
 				</ul>
 			</div>

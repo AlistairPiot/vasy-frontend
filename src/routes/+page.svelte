@@ -190,9 +190,12 @@
 			</div>
 
 			<!-- Scroll indicator -->
-			<div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+			<button
+				onclick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
+				class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer"
+			>
 				<svg
-					class="w-6 h-6 text-white/60"
+					class="w-10 h-10 text-white/60 hover:text-white transition-colors"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -204,7 +207,7 @@
 						d="M19 14l-7 7m0 0l-7-7m7 7V3"
 					/>
 				</svg>
-			</div>
+			</button>
 		</div>
 	</div>
 </div>
