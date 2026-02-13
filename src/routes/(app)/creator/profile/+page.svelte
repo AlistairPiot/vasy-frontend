@@ -291,9 +291,9 @@
 
 	<!-- Colonne de droite : Commandes -->
 	<div>
-		<h2 class="text-2xl font-bold mb-6">Commandes</h2>
-
 		<Card class="p-6">
+			<h2 class="text-2xl font-bold mb-6">Commandes</h2>
+
 			<!-- Section En attente (en_attente) -->
 			<div class="mb-6">
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En attente</h3>

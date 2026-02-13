@@ -39,9 +39,19 @@
 		});
 	}
 
-	function isEventPast(dateStr: string): boolean {
-		return new Date(dateStr) < new Date();
+	function getEventStatus(dateStr: string): 'past' | 'today' | 'upcoming' {
+		const eventDate = new Date(dateStr);
+		const today = new Date();
+		// Comparer uniquement les jours (sans l'heure)
+		const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+		const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+		if (eventDay.getTime() === todayDay.getTime()) return 'today';
+		if (eventDay < todayDay) return 'past';
+		return 'upcoming';
 	}
+
+	const eventStatus = getEventStatus(data.event.date);
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
@@ -56,14 +66,28 @@
 			]}
 		/>
 
+		<a
+			href="/events"
+			class="animate-in group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+			Retour aux événements
+		</a>
+
 		<div class="grid md:grid-cols-2 gap-8 py-8">
 			<!-- Infos de l'événement -->
 			<div class="animate-in">
-				{#if isEventPast(data.event.date)}
+				{#if eventStatus === 'past'}
 					<div
-						class="mb-4 px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md inline-block"
+						class="mb-4 px-3 py-1.5 bg-red-100 text-red-800 text-sm rounded-md inline-block"
 					>
 						Événement passé
+					</div>
+				{:else if eventStatus === 'today'}
+					<div
+						class="mb-4 px-3 py-1.5 bg-blue-100 text-blue-800 text-sm rounded-md inline-block"
+					>
+						Aujourd'hui
 					</div>
 				{:else}
 					<div
@@ -82,7 +106,7 @@
 							<div>
 								<p
 									class="font-medium"
-									class:line-through={isEventPast(data.event.date)}
+									class:line-through={eventStatus === 'past'}
 								>
 									{formatDate(data.event.date)}
 								</p>

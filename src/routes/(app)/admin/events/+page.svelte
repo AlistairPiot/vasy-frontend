@@ -231,14 +231,14 @@
 								</td>
 								<td class="p-4">
 									<div class="flex gap-2">
+										<a href="/admin/events/{event.id}">
+											<Button size="sm" variant="outline">
+												{#snippet children()}
+													Voir
+												{/snippet}
+											</Button>
+										</a>
 										{#if event.status !== 'deleted'}
-											<a href="/admin/events/{event.id}">
-												<Button size="sm" variant="outline">
-													{#snippet children()}
-														Modifier
-													{/snippet}
-												</Button>
-											</a>
 											<Button
 												size="sm"
 												variant="destructive"
@@ -248,8 +248,6 @@
 													Supprimer
 												{/snippet}
 											</Button>
-										{:else}
-											<span class="text-sm text-muted-foreground">-</span>
 										{/if}
 									</div>
 								</td>

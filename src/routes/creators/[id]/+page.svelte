@@ -50,11 +50,9 @@
 	</header>
 
 	<main class="container mx-auto px-4 py-8">
-		<a href="/products" class="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-2 transition-colors">
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-				<path d="m15 18-6-6 6-6"/>
-			</svg>
-			<span>Retour aux produits</span>
+		<a href="/products" class="group text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-2 transition-colors text-sm">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+			Retour aux produits
 		</a>
 
 		<!-- Creator Header -->

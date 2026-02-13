@@ -254,12 +254,12 @@
 						<Card
 							id="event-{event.id}"
 							class="transition-all cursor-pointer {selectedEventId === event.id
-								? 'ring-2 ring-primary'
-								: 'hover:shadow-md'}"
+								? 'shadow-md -translate-y-0.5'
+								: 'hover:shadow-md hover:-translate-y-0.5'}"
 						>
 							<button
 								type="button"
-								class="w-full text-left overflow-hidden"
+								class="w-full text-left overflow-hidden cursor-pointer"
 								onclick={() => (selectedEventId = event.id)}
 							>
 								<div class="p-4">

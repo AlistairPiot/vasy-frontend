@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -35,6 +36,29 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
+	}
+
+	function getEventStatus(dateStr: string): 'past' | 'today' | 'upcoming' {
+		const eventDate = new Date(dateStr);
+		const today = new Date();
+		const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+		const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+		if (eventDay.getTime() === todayDay.getTime()) return 'today';
+		if (eventDay < todayDay) return 'past';
+		return 'upcoming';
+	}
+
+	function getStatusBadge(dateStr: string) {
+		const status = getEventStatus(dateStr);
+		switch (status) {
+			case 'past':
+				return { text: 'Passé', class: 'bg-red-100 text-red-800' };
+			case 'today':
+				return { text: "Aujourd'hui", class: 'bg-blue-100 text-blue-800' };
+			case 'upcoming':
+				return { text: 'À venir', class: 'bg-green-100 text-green-800' };
+		}
 	}
 
 	function handleEventSelect(eventId: string) {
@@ -114,23 +138,29 @@
 							: ''}"
 					>
 						{#each data.events as event}
-							<a
-								href="/events/{event.id}"
-								class="block"
-								onmouseenter={() => (selectedEventId = event.id)}
+							{@const badge = getStatusBadge(event.date)}
+							<Card
+								id="event-{event.id}"
+								class="transition-all cursor-pointer hover:shadow-md hover:-translate-y-0.5 {selectedEventId === event.id
+									? 'shadow-md -translate-y-0.5'
+									: ''}"
 							>
-								<Card
-									id="event-{event.id}"
-									class="transition-all {selectedEventId === event.id
-										? 'ring-2 ring-primary'
-										: 'hover:shadow-md'}"
+								<button
+									type="button"
+									class="w-full text-left overflow-hidden cursor-pointer"
+									onclick={() => goto(`/events/${event.id}`)}
 								>
 									<div class="p-4">
 										<div class="flex items-start justify-between min-w-0">
 											<div class="flex-1 min-w-0">
-												<h3 class="font-semibold text-lg truncate mb-2">
-													{event.name}
-												</h3>
+												<div class="flex items-center gap-2 mb-2 min-w-0">
+													<h3 class="font-semibold text-lg truncate">
+														{event.name}
+													</h3>
+													<span class="text-xs px-2 py-0.5 rounded shrink-0 {badge.class}">
+														{badge.text}
+													</span>
+												</div>
 
 												<div class="space-y-1 text-sm text-muted-foreground">
 													<p class="flex items-center gap-2 min-w-0">
@@ -155,10 +185,15 @@
 													</p>
 												{/if}
 											</div>
+											<span class="shrink-0 ml-3 text-muted-foreground">
+												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+													<path d="M9 18l6-6-6-6"/>
+												</svg>
+											</span>
 										</div>
 									</div>
-								</Card>
-							</a>
+								</button>
+							</Card>
 						{/each}
 					</div>
 				{/if}

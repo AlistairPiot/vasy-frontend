@@ -46,7 +46,9 @@
 		</div>
 		<nav class="flex gap-4 items-center">
 			<a href="/products" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Produits</a>
-			<a href="/events" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Événements</a>
+			{#if !user || user.role === 'client'}
+				<a href="/events" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Événements</a>
+			{/if}
 			{#if user}
 				{#if user.role === 'creator' || user.role === 'admin'}
 					<a href="/dashboard" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Tableau de bord</a>
