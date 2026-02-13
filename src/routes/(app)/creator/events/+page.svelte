@@ -259,28 +259,28 @@
 						>
 							<button
 								type="button"
-								class="w-full text-left"
+								class="w-full text-left overflow-hidden"
 								onclick={() => (selectedEventId = event.id)}
 							>
 								<div class="p-4">
-									<div class="flex items-start justify-between">
-										<div class="flex-1">
-											<div class="flex items-center gap-2 mb-2">
-												<h3 class="font-semibold">{event.name}</h3>
-												<span class="text-xs px-2 py-0.5 rounded {badge.class}">
+									<div class="flex items-start justify-between min-w-0">
+										<div class="flex-1 min-w-0">
+											<div class="flex items-center gap-2 mb-2 min-w-0">
+												<h3 class="font-semibold truncate">{event.name}</h3>
+												<span class="text-xs px-2 py-0.5 rounded shrink-0 {badge.class}">
 													{badge.text}
 												</span>
 											</div>
 
 											<div class="space-y-1 text-sm text-muted-foreground">
-												<p class="flex items-center gap-2">
-													<span>📅</span>
-													<span class:line-through={isEventPast(event.date)}>
+												<p class="flex items-center gap-2 min-w-0">
+													<span class="shrink-0">📅</span>
+													<span class="truncate" class:line-through={isEventPast(event.date)}>
 														{formatDate(event.date)} à {formatTime(event.date)}
 													</span>
 												</p>
-												<p class="flex items-center gap-2">
-													<span>📍</span>
+												<p class="flex items-center gap-2 min-w-0">
+													<span class="shrink-0">📍</span>
 													<span class="truncate">{event.location_text}</span>
 												</p>
 												{#if event.latitude && event.longitude}
