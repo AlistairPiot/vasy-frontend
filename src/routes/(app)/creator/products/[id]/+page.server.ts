@@ -26,7 +26,6 @@ export const actions: Actions = {
 		const price = parseFloat(formData.get('price') as string) * 100;
 		const stock = parseInt(formData.get('stock') as string);
 		const imageUrls = formData.get('imageUrls') as string;
-		const isActive = formData.get('isActive') === 'on';
 
 		if (!name || !price || stock === undefined) {
 			return fail(400, { error: 'Champs requis manquants' });
@@ -40,12 +39,28 @@ export const actions: Actions = {
 					description: description || null,
 					price: Math.round(price),
 					stock,
-					image_urls: imageUrls || '[]',
-					is_active: isActive
+					image_urls: imageUrls || '[]'
 				},
 				locals.token
 			);
 
+			return { success: true };
+		} catch (err) {
+			if (err instanceof Error && err.message) {
+				return fail(400, { error: err.message });
+			}
+			throw err;
+		}
+	},
+
+	toggleActive: async ({ params, locals }) => {
+		try {
+			const product = await serverApi.get<Product>(`/products/${params.id}`, locals.token);
+			await serverApi.patch(
+				`/products/${params.id}`,
+				{ is_active: !product.is_active },
+				locals.token
+			);
 			return { success: true };
 		} catch (err) {
 			if (err instanceof Error && err.message) {

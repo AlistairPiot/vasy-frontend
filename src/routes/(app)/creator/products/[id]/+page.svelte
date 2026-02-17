@@ -85,11 +85,20 @@
 <div>
 	<div class="flex justify-between items-center mb-6">
 		<h1 class="text-2xl font-bold">Modifier le produit</h1>
-		<Button variant="destructive" onclick={() => (showDeleteConfirm = true)}>
-			{#snippet children()}
-				Supprimer
-			{/snippet}
-		</Button>
+		<div class="flex gap-3">
+			<form method="POST" action="?/toggleActive" use:enhance>
+				<Button type="submit" variant="outline">
+					{#snippet children()}
+						{data.product.is_active ? 'Désactiver' : 'Activer'}
+					{/snippet}
+				</Button>
+			</form>
+			<Button variant="destructive" onclick={() => (showDeleteConfirm = true)}>
+				{#snippet children()}
+					Supprimer
+				{/snippet}
+			</Button>
+		</div>
 	</div>
 
 	{#if form?.success}
@@ -177,17 +186,6 @@
 						value={data.product.stock}
 					/>
 				</div>
-			</div>
-
-			<div class="flex items-center gap-2">
-				<input
-					type="checkbox"
-					id="isActive"
-					name="isActive"
-					checked={data.product.is_active}
-					class="rounded border-input"
-				/>
-				<label for="isActive" class="text-sm font-medium">Produit actif</label>
 			</div>
 
 			<div class="space-y-2">
