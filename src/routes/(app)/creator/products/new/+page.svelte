@@ -148,8 +148,8 @@
 			</div>
 
 			<div class="space-y-2">
-				<label class="text-sm font-medium">Images</label>
-				<div class="border-2 border-dashed border-input rounded-md p-4">
+				<label class="text-sm font-medium">Images *</label>
+				<div class="border-2 border-dashed rounded-md p-4 {imageUrls.length === 0 && form?.error?.includes('image') ? 'border-destructive' : 'border-input'}">
 					<input
 						type="file"
 						accept="image/*"

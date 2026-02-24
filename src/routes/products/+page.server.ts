@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
-import { redirect } from '@sveltejs/kit';
 
 interface Product {
 	id: string;
@@ -20,11 +19,6 @@ export const load: PageServerLoad = async ({ url, parent }) => {
 
 	// Récupérer l'utilisateur depuis le layout parent (peut être null si déconnecté)
 	const { user } = await parent();
-
-	// Les admins ne peuvent pas accéder à cette page (ils ont leur propre interface)
-	if (user && user.role === 'admin') {
-		throw redirect(302, '/dashboard');
-	}
 
 	// Si une recherche est fournie, utiliser l'endpoint de recherche
 	if (searchQuery) {

@@ -56,6 +56,11 @@ export const actions: Actions = {
 			return fail(400, { error: 'Le stock doit être un nombre positif' });
 		}
 
+		const parsedImages = JSON.parse(imageUrls || '[]');
+		if (!parsedImages.length) {
+			return fail(400, { error: 'Au moins une image est requise' });
+		}
+
 		try {
 			await serverApi.post(
 				'/products/',
