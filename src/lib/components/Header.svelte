@@ -3,6 +3,7 @@
 	import SearchBar from './SearchBar.svelte';
 	import ConfirmModal from './ui/ConfirmModal.svelte';
 	import { cart } from '$lib/stores/cart';
+	import { favorites } from '$lib/stores/favorites';
 	import logo from '$lib/assets/vasy.svg';
 
 	interface Props {
@@ -56,6 +57,16 @@
 					<a href="/profile" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Profil</a>
 				{/if}
 				{#if user.role === 'client'}
+					<a href="/favorites" class="relative text-muted-foreground hover:text-foreground transition-colors" title="Mes favoris">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+						</svg>
+						{#if $favorites.length > 0}
+							<span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+								{$favorites.length > 9 ? '9+' : $favorites.length}
+							</span>
+						{/if}
+					</a>
 					<a href="/cart" class="text-muted-foreground hover:text-foreground flex items-center gap-1 whitespace-nowrap relative">
 						<div class="relative">
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
