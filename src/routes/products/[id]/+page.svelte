@@ -16,6 +16,14 @@
 
 	const isFavorite = $derived(favorites.isFavorite(data.product.id, $favorites));
 
+	// Report modal
+	let showReportModal = $state(false);
+	let reportEmail = $state(data.user?.email ?? '');
+	let reportReason = $state('');
+	let reportLoading = $state(false);
+	let reportSuccess = $state(false);
+	let reportError = $state('');
+
 	onMount(() => {
 		try {
 			images = JSON.parse(data.product.image_urls);
@@ -70,6 +78,43 @@
 		}
 
 		favorites.toggle(data.product.id);
+	}
+
+	function openReportModal() {
+		reportEmail = data.user?.email ?? '';
+		reportReason = '';
+		reportSuccess = false;
+		reportError = '';
+		showReportModal = true;
+	}
+
+	async function submitReport() {
+		if (!reportEmail.trim() || !reportReason.trim()) {
+			reportError = 'Veuillez remplir tous les champs.';
+			return;
+		}
+		reportLoading = true;
+		reportError = '';
+		try {
+			const res = await fetch('/api/reports', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					product_id: data.product.id,
+					reporter_email: reportEmail.trim(),
+					reason: reportReason.trim()
+				})
+			});
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				throw new Error(err.error || 'Erreur serveur');
+			}
+			reportSuccess = true;
+		} catch (e) {
+			reportError = e instanceof Error ? e.message : 'Erreur lors de l\'envoi.';
+		} finally {
+			reportLoading = false;
+		}
 	}
 </script>
 
@@ -206,7 +251,108 @@
 						</div>
 					{/if}
 				{/if}
+
+				<!-- Signaler le produit -->
+				{#if data.user}
+				<div class="mt-6 pt-4 border-t">
+					<button
+						onclick={openReportModal}
+						class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+						Signaler ce produit
+					</button>
+				</div>
+				{/if}
 			</div>
 		</div>
 	</main>
 </div>
+
+<!-- Modal de signalement -->
+{#if showReportModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+		<!-- Backdrop -->
+		<button
+			class="absolute inset-0 bg-black/50"
+			onclick={() => showReportModal = false}
+			aria-label="Fermer"
+		></button>
+
+		<!-- Contenu -->
+		<div class="relative bg-background rounded-lg border shadow-lg w-full max-w-md p-6">
+			<div class="flex items-start justify-between mb-4">
+				<div>
+					<h2 class="text-lg font-semibold">Signaler ce produit</h2>
+					<p class="text-sm text-muted-foreground mt-0.5">{data.product.name}</p>
+				</div>
+				<button
+					onclick={() => showReportModal = false}
+					class="text-muted-foreground hover:text-foreground ml-4"
+					aria-label="Fermer"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+
+			{#if reportSuccess}
+				<div class="text-center py-6">
+					<div class="text-green-600 mb-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mx-auto"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+					</div>
+					<p class="font-medium">Signalement envoyé</p>
+					<p class="text-sm text-muted-foreground mt-1">Merci, nous examinerons votre signalement.</p>
+					<button
+						onclick={() => showReportModal = false}
+						class="mt-4 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
+					>
+						Fermer
+					</button>
+				</div>
+			{:else}
+				<div class="space-y-4">
+					<div>
+						<label for="report-email" class="block text-sm font-medium mb-1">Votre email</label>
+						<input
+							id="report-email"
+							type="email"
+							bind:value={reportEmail}
+							placeholder="votre@email.com"
+							class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+						/>
+					</div>
+					<div>
+						<label for="report-reason" class="block text-sm font-medium mb-1">Motif du signalement</label>
+						<textarea
+							id="report-reason"
+							bind:value={reportReason}
+							placeholder="Décrivez le problème avec ce produit..."
+							rows="4"
+							class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+						></textarea>
+					</div>
+
+					{#if reportError}
+						<p class="text-sm text-red-500">{reportError}</p>
+					{/if}
+
+					<div class="flex gap-3 pt-1">
+						<button
+							onclick={() => showReportModal = false}
+							class="flex-1 px-4 py-2 rounded-md border border-input text-sm font-medium hover:bg-accent transition-colors"
+						>
+							Annuler
+						</button>
+						<button
+							onclick={submitReport}
+							disabled={reportLoading}
+							class="flex-1 px-4 py-2 rounded-md bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-colors"
+						>
+							{reportLoading ? 'Envoi...' : 'Envoyer le signalement'}
+						</button>
+					</div>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}

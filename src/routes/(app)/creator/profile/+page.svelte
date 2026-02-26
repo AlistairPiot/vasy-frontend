@@ -202,6 +202,7 @@
 	let payoutError = $state<string | null>(null);
 	let payoutSuccess = $state(false);
 	let ibanDisplay = $state('');
+	let mandateAccepted = $state(false);
 
 	function handleIbanInput(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -278,6 +279,7 @@
 					account_token: accountToken.id,
 					bank_account_token: bankToken.id,
 					iban_last4: ibanRaw.slice(-4),
+					mandate_accepted: mandateAccepted,
 				}),
 			});
 
@@ -495,8 +497,23 @@
 							<p class="text-xs text-muted-foreground">Votre IBAN est transmis de façon sécurisée à Stripe. Nous ne le stockons pas.</p>
 						</div>
 
+						<label class="flex items-start gap-3 p-3 rounded-md border border-input bg-muted/30 cursor-pointer">
+							<input
+								type="checkbox"
+								bind:checked={mandateAccepted}
+								required
+								class="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+							/>
+							<span class="text-xs text-muted-foreground leading-relaxed">
+								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
+								à prélever une commission de 5% + 0,25€ par produit sur chaque vente,
+								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
+								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
+							</span>
+						</label>
+
 						<div class="flex gap-2 pt-2">
-							<Button type="submit" disabled={payoutLoading}>
+							<Button type="submit" disabled={payoutLoading || !mandateAccepted}>
 								{#snippet children()}
 									{payoutLoading ? 'Enregistrement...' : 'Enregistrer'}
 								{/snippet}
@@ -565,7 +582,22 @@
 							<Input type="text" name="iban" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" required />
 						</div>
 
-						<Button type="submit" disabled={payoutLoading}>
+						<label class="flex items-start gap-3 p-3 rounded-md border border-input bg-muted/30 cursor-pointer">
+							<input
+								type="checkbox"
+								bind:checked={mandateAccepted}
+								required
+								class="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+							/>
+							<span class="text-xs text-muted-foreground leading-relaxed">
+								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
+								à prélever une commission de 5% + 0,25€ par produit sur chaque vente,
+								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
+								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
+							</span>
+						</label>
+
+						<Button type="submit" disabled={payoutLoading || !mandateAccepted}>
 							{#snippet children()}
 								{payoutLoading ? 'Enregistrement...' : 'Mettre à jour'}
 							{/snippet}
