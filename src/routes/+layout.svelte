@@ -12,7 +12,7 @@
 	$effect(() => {
 		if (typeof window !== 'undefined') {
 			cart.init(data.user?.id || null);
-			favorites.init(data.user?.id || null);
+			favorites.init(data.favoriteIds ?? []);
 		}
 	});
 </script>

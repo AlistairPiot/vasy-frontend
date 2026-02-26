@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 export const PLATFORM_COMMISSION_PERCENT = 5.0; // 5%
 export const PLATFORM_COMMISSION_FIXED_PER_PRODUCT = 25; // 0.25€ = 25 centimes par produit distinct
 
-export const STRIPE_COMMISSION_PERCENT = 1.5; // 1.5%
+export const STRIPE_COMMISSION_PERCENT = 1.5; // 1.5% (taux carte européenne, estimation)
 export const STRIPE_COMMISSION_FIXED = 25; // 0.25€ = 25 centimes par transaction
 
 /**

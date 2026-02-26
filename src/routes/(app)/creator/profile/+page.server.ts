@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { serverApi } from '$lib/server/api';
 
-export const load: PageServerLoad = async ({ parent, locals, url }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { creator } = await parent();
 
 	// Charger les commandes du créateur
@@ -13,19 +13,25 @@ export const load: PageServerLoad = async ({ parent, locals, url }) => {
 		console.error('Error loading orders:', error);
 	}
 
-	// Charger le statut Stripe
-	let stripeStatus = { connected: false, onboarding_complete: false };
+	// Charger le statut bancaire
+	let stripeStatus = { connected: false, onboarding_complete: false, iban_last4: null as string | null };
 	try {
 		stripeStatus = await serverApi.get('/stripe/connect/status', locals.token);
 	} catch (error) {
 		console.error('Error loading Stripe status:', error);
 	}
 
-	// Récupérer les paramètres de retour Stripe
-	const stripeSuccess = url.searchParams.get('stripe_success') === 'true';
-	const stripeError = url.searchParams.get('stripe_error') === 'true';
+	// Charger l'historique des virements
+	let payoutsData = { transfers: [] as any[], total_paid_out: 0 };
+	if (stripeStatus.onboarding_complete) {
+		try {
+			payoutsData = await serverApi.get('/stripe/payouts', locals.token);
+		} catch (error) {
+			console.error('Error loading payouts:', error);
+		}
+	}
 
-	return { creator, orders, stripeStatus, stripeSuccess, stripeError };
+	return { creator, orders, stripeStatus, payoutsData };
 };
 
 export const actions: Actions = {

@@ -62,7 +62,7 @@
 						Vous devez configurer votre compte Stripe pour pouvoir créer et vendre des produits.
 						Cette étape est obligatoire pour recevoir les paiements de vos clients.
 					</p>
-					<a href="/creator/profile">
+					<a href="/creator/profile#stripe">
 						<Button size="sm" class="bg-orange-600 hover:bg-orange-700 text-white">
 							{#snippet children()}
 								Configurer Stripe maintenant

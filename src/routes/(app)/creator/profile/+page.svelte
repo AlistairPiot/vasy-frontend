@@ -2,6 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
+	import { loadStripe } from '@stripe/stripe-js';
+	import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -29,31 +31,129 @@
 		});
 	});
 
-	async function handleAvatarUpload(event: Event) {
+	// Recadrage photo de profil
+	const CROP_VIEWPORT = 280;
+	let showCropModal = $state(false);
+	let cropObjectUrl = $state('');
+	let cropScale = $state(1);
+	let cropX = $state(0);
+	let cropY = $state(0);
+	let imgNaturalWidth = $state(1);
+	let imgNaturalHeight = $state(1);
+	let isDragging = $state(false);
+	let dragStartX = 0, dragStartY = 0, dragStartCropX = 0, dragStartCropY = 0;
+
+	// Valeurs dérivées réactives
+	const minScale = $derived(Math.max(CROP_VIEWPORT / imgNaturalWidth, CROP_VIEWPORT / imgNaturalHeight));
+	const scaledW = $derived(imgNaturalWidth * cropScale);
+	const scaledH = $derived(imgNaturalHeight * cropScale);
+	const imgLeft = $derived(CROP_VIEWPORT / 2 - scaledW / 2 + cropX);
+	const imgTop = $derived(CROP_VIEWPORT / 2 - scaledH / 2 + cropY);
+	let sliderPos = $state(0);
+
+	function syncSlider() {
+		sliderPos = Math.max(0, Math.min(100, ((cropScale - minScale) / (minScale * 4)) * 100));
+	}
+
+	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-
-		uploading = true;
-
-		const formData = new FormData();
-		formData.append('file', file);
-
-		try {
-			const response = await fetch('/api/upload/avatar', {
-				method: 'POST',
-				body: formData
-			});
-			const data = await response.json();
-			if (data.url) {
-				profileImageUrl = data.url;
-			}
-		} catch (err) {
-			console.error('Upload failed:', err);
-		}
-
-		uploading = false;
 		input.value = '';
+
+		if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
+		const url = URL.createObjectURL(file);
+		const tmpImg = new Image();
+		tmpImg.onload = () => {
+			imgNaturalWidth = tmpImg.naturalWidth;
+			imgNaturalHeight = tmpImg.naturalHeight;
+			cropObjectUrl = url;
+			cropScale = Math.max(CROP_VIEWPORT / imgNaturalWidth, CROP_VIEWPORT / imgNaturalHeight);
+			cropX = 0;
+			cropY = 0;
+			showCropModal = true;
+		};
+		tmpImg.src = url;
+	}
+
+	function clampPosition() {
+		const maxX = Math.max(0, (scaledW - CROP_VIEWPORT) / 2);
+		const maxY = Math.max(0, (scaledH - CROP_VIEWPORT) / 2);
+		cropX = Math.max(-maxX, Math.min(maxX, cropX));
+		cropY = Math.max(-maxY, Math.min(maxY, cropY));
+	}
+
+	function onCropWheel(event: WheelEvent) {
+		event.preventDefault();
+		const factor = event.deltaY > 0 ? 0.92 : 1.08;
+		cropScale = Math.max(minScale, Math.min(cropScale * factor, minScale * 5));
+		clampPosition();
+		syncSlider();
+	}
+
+	function onCropPointerDown(event: PointerEvent) {
+		isDragging = true;
+		dragStartX = event.clientX;
+		dragStartY = event.clientY;
+		dragStartCropX = cropX;
+		dragStartCropY = cropY;
+		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+	}
+
+	function onCropPointerMove(event: PointerEvent) {
+		if (!isDragging) return;
+		cropX = dragStartCropX + (event.clientX - dragStartX);
+		cropY = dragStartCropY + (event.clientY - dragStartY);
+		clampPosition();
+	}
+
+	function onSliderInput() {
+		cropScale = minScale + (sliderPos / 100) * minScale * 4;
+		clampPosition();
+	}
+
+	async function confirmCrop() {
+		const img = new Image();
+		img.src = cropObjectUrl;
+		await new Promise<void>(r => { img.onload = () => r(); });
+
+		const OUTPUT = 400;
+		const canvas = document.createElement('canvas');
+		canvas.width = OUTPUT;
+		canvas.height = OUTPUT;
+		const ctx = canvas.getContext('2d')!;
+
+		// Clip circulaire
+		ctx.beginPath();
+		ctx.arc(OUTPUT / 2, OUTPUT / 2, OUTPUT / 2, 0, Math.PI * 2);
+		ctx.clip();
+
+		// Coordonnées source : quelle portion de l'image originale est visible dans le viewport
+		const srcX = -imgLeft / cropScale;
+		const srcY = -imgTop / cropScale;
+		const srcW = CROP_VIEWPORT / cropScale;
+		const srcH = CROP_VIEWPORT / cropScale;
+
+		ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, OUTPUT, OUTPUT);
+
+		canvas.toBlob(async (blob) => {
+			if (!blob) return;
+			showCropModal = false;
+			URL.revokeObjectURL(cropObjectUrl);
+			cropObjectUrl = '';
+			uploading = true;
+			const fd = new FormData();
+			fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }));
+			try {
+				const res = await fetch('/api/upload/avatar', { method: 'POST', body: fd });
+				const d = await res.json();
+				if (d.url) profileImageUrl = d.url;
+			} catch (err) {
+				console.error('Upload failed:', err);
+			} finally {
+				uploading = false;
+			}
+		}, 'image/png', 0.95);
 	}
 
 	function openConfirmModal(type: 'accept' | 'refuse' | 'ship', orderId: string, trackingNumber?: string) {
@@ -96,59 +196,109 @@
 		form.submit();
 	}
 
-	async function handleStripeConnect() {
-		console.log('handleStripeConnect called');
+	// Formulaire coordonnées bancaires
+	let showPayoutForm = $state(false);
+	let payoutLoading = $state(false);
+	let payoutError = $state<string | null>(null);
+	let payoutSuccess = $state(false);
+	let ibanDisplay = $state('');
+
+	function handleIbanInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		// Ne garder que lettres et chiffres, majuscules, max 34 chars
+		const raw = input.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 34);
+		// Formater par groupes de 4
+		ibanDisplay = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+	}
+
+	const ibanRaw = $derived(ibanDisplay.replace(/\s/g, ''));
+	const ibanValid = $derived(ibanRaw.length >= 15 && /^[A-Z]{2}\d{2}/.test(ibanRaw));
+
+	async function handlePayoutSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.target as HTMLFormElement;
+		const formData = new FormData(formEl);
+
+		payoutLoading = true;
+		payoutError = null;
+
 		try {
-			console.log('Fetching /api/stripe/connect...');
-			const response = await fetch('/api/stripe/connect', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
+			const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
+			if (!stripe) throw new Error('Stripe non disponible');
+
+			const firstName = formData.get('first_name') as string;
+			const lastName = formData.get('last_name') as string;
+
+			// 1. Créer le token account avec les données personnelles (obligatoire pour FR)
+			const { token: accountToken, error: accountError } = await stripe.createToken('account', {
+				business_type: 'individual',
+				individual: {
+					first_name: firstName,
+					last_name: lastName,
+					dob: {
+						day: parseInt(formData.get('dob_day') as string),
+						month: parseInt(formData.get('dob_month') as string),
+						year: parseInt(formData.get('dob_year') as string),
+					},
+					address: {
+						line1: formData.get('address_line1') as string,
+						city: formData.get('address_city') as string,
+						postal_code: formData.get('address_postal_code') as string,
+						country: 'FR',
+					},
+					email: data.user.email,
 				},
+				tos_shown_and_accepted: true,
+			} as Parameters<typeof stripe.createToken>[1]);
+
+			if (accountError || !accountToken) {
+				payoutError = accountError?.message ?? 'Erreur lors de la création du token compte';
+				return;
+			}
+
+			// 2. Créer le token bank_account avec l'IBAN
+			const { token: bankToken, error: bankError } = await stripe.createToken('bank_account', {
+				country: 'FR',
+				currency: 'eur',
+				account_number: ibanRaw,
+				account_holder_name: `${firstName} ${lastName}`,
+				account_holder_type: 'individual',
 			});
 
-			console.log('Response status:', response.status);
+			if (bankError || !bankToken) {
+				payoutError = bankError?.message ?? "Erreur lors de la validation de l'IBAN";
+				return;
+			}
+
+			// 3. Envoyer les tokens au backend
+			const response = await fetch('/api/stripe/setup-payout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					account_token: accountToken.id,
+					bank_account_token: bankToken.id,
+					iban_last4: ibanRaw.slice(-4),
+				}),
+			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('Response error:', errorText);
-				throw new Error('Erreur lors de la connexion à Stripe');
-			}
-
-			const data = await response.json();
-			console.log('Response data:', data);
-
-			// Rediriger vers l'URL Stripe
-			if (data.url) {
-				console.log('Redirecting to:', data.url);
-				window.location.href = data.url;
+				const err = await response.json().catch(() => ({ detail: 'Erreur inconnue' }));
+				payoutError = err.detail || 'Erreur lors de la configuration';
 			} else {
-				console.error('No URL in response');
+				payoutSuccess = true;
+				showPayoutForm = false;
+				window.location.reload();
 			}
-		} catch (error) {
-			console.error('Stripe Connect error:', error);
-			alert('Erreur lors de la connexion à Stripe. Veuillez réessayer.');
+		} catch (e) {
+			payoutError = e instanceof Error ? e.message : 'Erreur réseau. Veuillez réessayer.';
+		} finally {
+			payoutLoading = false;
 		}
 	}
 </script>
 
 <div>
 	<h1 class="text-2xl font-bold mb-6">Mon profil</h1>
-
-	{#if data.stripeSuccess}
-		<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
-			Configuration Stripe réussie ! Votre compte est maintenant {data.stripeStatus.onboarding_complete ? 'complètement configuré' : 'en cours de validation'}.
-			{#if !data.stripeStatus.onboarding_complete}
-				<br/>Il peut prendre quelques minutes pour que Stripe valide vos informations.
-			{/if}
-		</div>
-	{/if}
-
-	{#if data.stripeError}
-		<div class="bg-red-100 text-red-800 text-sm p-3 rounded-md mb-4">
-			Une erreur s'est produite lors de la configuration Stripe. Veuillez réessayer.
-		</div>
-	{/if}
 
 	{#if form?.success}
 		<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
@@ -187,7 +337,7 @@
 						<input
 							type="file"
 							accept="image/*"
-							onchange={handleAvatarUpload}
+							onchange={handleFileSelect}
 							class="hidden"
 							id="avatar-upload"
 							disabled={uploading}
@@ -246,45 +396,209 @@
 			</form>
 		</Card>
 
+		{#if payoutError}
+			<div class="bg-red-100 text-red-800 text-sm p-3 rounded-md">
+				{payoutError}
+			</div>
+		{/if}
+
+		<div id="stripe"></div>
 		{#if !data.stripeStatus.onboarding_complete}
 			<Card class="p-6 border-orange-200 bg-orange-50">
-				<div class="flex justify-between items-start mb-2">
-					<h2 class="font-semibold">Configuration Stripe requise</h2>
-					{#if data.stripeStatus.connected}
-						<button
-							type="button"
-							onclick={() => window.location.reload()}
-							class="text-xs text-muted-foreground hover:text-foreground"
-							title="Rafraîchir le statut"
-						>
-							↻ Rafraîchir
-						</button>
-					{/if}
-				</div>
+				<h2 class="font-semibold mb-2">Coordonnées bancaires requises</h2>
 				<p class="text-sm text-muted-foreground mb-4">
-					Pour recevoir des paiements, vous devez configurer votre compte Stripe.
-					{#if data.stripeStatus.connected}
-						<br/>Stripe valide vos informations, cela peut prendre quelques minutes.
-					{/if}
+					Pour recevoir vos paiements, renseignez vos coordonnées bancaires. Ces informations sont transmises de manière sécurisée à notre partenaire Stripe.
 				</p>
-				<Button type="button" onclick={handleStripeConnect}>
-					{#snippet children()}
-						{data.stripeStatus.connected ? 'Reprendre la configuration' : 'Configurer Stripe'}
-					{/snippet}
-				</Button>
+
+				{#if !showPayoutForm}
+					<Button type="button" onclick={() => (showPayoutForm = true)}>
+						{#snippet children()}
+							Configurer mes coordonnées bancaires
+						{/snippet}
+					</Button>
+				{:else}
+					<form onsubmit={handlePayoutSubmit} class="space-y-4 mt-4">
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Prénom *</label>
+								<Input type="text" name="first_name" required />
+							</div>
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Nom *</label>
+								<Input type="text" name="last_name" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">Date de naissance *</label>
+							<div class="grid grid-cols-3 gap-2">
+								<Input type="number" name="dob_day" placeholder="JJ" min="1" max="31" required />
+								<Input type="number" name="dob_month" placeholder="MM" min="1" max="12" required />
+								<Input type="number" name="dob_year" placeholder="AAAA" min="1900" max="2005" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">Adresse *</label>
+							<Input type="text" name="address_line1" placeholder="Numéro et nom de rue" required />
+						</div>
+
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Code postal *</label>
+								<Input type="text" name="address_postal_code" placeholder="75001" required />
+							</div>
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Ville *</label>
+								<Input type="text" name="address_city" placeholder="Paris" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">IBAN *</label>
+							<div class="relative">
+								<input
+									type="text"
+									name="iban"
+									value={ibanDisplay}
+									oninput={handleIbanInput}
+									placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+									required
+									autocomplete="off"
+									spellcheck="false"
+									class="flex w-full rounded-md border px-3 py-2 text-sm font-mono tracking-wider pr-20
+										{ibanRaw.length > 0
+											? ibanValid
+												? 'border-green-500 focus-visible:ring-green-500'
+												: 'border-red-400 focus-visible:ring-red-400'
+											: 'border-input'}
+										bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2"
+								/>
+								<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+									{#if ibanRaw.length > 0}
+										{#if ibanValid}
+											<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+											</svg>
+										{:else}
+											<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+											</svg>
+										{/if}
+									{/if}
+									<span class="text-xs text-muted-foreground tabular-nums">{ibanRaw.length}/34</span>
+								</div>
+							</div>
+							{#if ibanRaw.length > 0 && !ibanValid}
+								<p class="text-xs text-red-500">Format invalide — doit commencer par 2 lettres suivies de 2 chiffres (ex : FR76…)</p>
+							{/if}
+							<p class="text-xs text-muted-foreground">Votre IBAN est transmis de façon sécurisée à Stripe. Nous ne le stockons pas.</p>
+						</div>
+
+						<div class="flex gap-2 pt-2">
+							<Button type="submit" disabled={payoutLoading}>
+								{#snippet children()}
+									{payoutLoading ? 'Enregistrement...' : 'Enregistrer'}
+								{/snippet}
+							</Button>
+							<Button type="button" variant="outline" onclick={() => (showPayoutForm = false)}>
+								{#snippet children()}
+									Annuler
+								{/snippet}
+							</Button>
+						</div>
+					</form>
+				{/if}
 			</Card>
 		{:else}
 			<Card class="p-6 border-green-200 bg-green-50">
-				<h2 class="font-semibold mb-2 text-green-800">✓ Stripe configuré</h2>
+				<h2 class="font-semibold mb-2 text-green-800">✓ Coordonnées bancaires configurées</h2>
 				<p class="text-sm text-muted-foreground mb-4">
-					Votre compte Stripe est configuré et vous pouvez recevoir des paiements.
-					Pour modifier vos informations bancaires ou fiscales, cliquez sur le bouton ci-dessous.
+					Vos virements seront effectués automatiquement sur votre compte IBAN se terminant par <span class="font-mono font-semibold">{data.stripeStatus.iban_last4 || '····'}</span>.
 				</p>
-				<Button type="button" onclick={handleStripeConnect} variant="outline">
+				<Button type="button" variant="outline" onclick={() => (showPayoutForm = !showPayoutForm)}>
 					{#snippet children()}
-						Gérer mon compte Stripe
+						{showPayoutForm ? 'Annuler' : 'Modifier les coordonnées'}
 					{/snippet}
 				</Button>
+
+				{#if showPayoutForm}
+					<form onsubmit={handlePayoutSubmit} class="space-y-4 mt-4">
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Prénom *</label>
+								<Input type="text" name="first_name" required />
+							</div>
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Nom *</label>
+								<Input type="text" name="last_name" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">Date de naissance *</label>
+							<div class="grid grid-cols-3 gap-2">
+								<Input type="number" name="dob_day" placeholder="JJ" min="1" max="31" required />
+								<Input type="number" name="dob_month" placeholder="MM" min="1" max="12" required />
+								<Input type="number" name="dob_year" placeholder="AAAA" min="1900" max="2005" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">Adresse *</label>
+							<Input type="text" name="address_line1" placeholder="Numéro et nom de rue" required />
+						</div>
+
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Code postal *</label>
+								<Input type="text" name="address_postal_code" placeholder="75001" required />
+							</div>
+							<div class="space-y-1">
+								<label class="text-sm font-medium">Ville *</label>
+								<Input type="text" name="address_city" placeholder="Paris" required />
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label class="text-sm font-medium">Nouvel IBAN *</label>
+							<Input type="text" name="iban" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" required />
+						</div>
+
+						<Button type="submit" disabled={payoutLoading}>
+							{#snippet children()}
+								{payoutLoading ? 'Enregistrement...' : 'Mettre à jour'}
+							{/snippet}
+						</Button>
+					</form>
+				{/if}
+			</Card>
+		{/if}
+
+		<!-- Historique des virements -->
+		{#if data.stripeStatus.onboarding_complete && data.payoutsData.transfers.length > 0}
+			<Card class="p-6">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="font-semibold">Virements reçus</h2>
+					<span class="text-sm font-semibold text-green-600">
+						Total : {(data.payoutsData.total_paid_out / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+					</span>
+				</div>
+				<div class="space-y-2">
+					{#each data.payoutsData.transfers as transfer}
+						<div class="flex items-center justify-between py-2 border-b last:border-0">
+							<div class="text-sm text-muted-foreground">
+								{new Date(transfer.created * 1000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+								{#if transfer.metadata?.order_id}
+									<span class="ml-2 text-xs font-mono">#{transfer.metadata.order_id.slice(0, 8)}</span>
+								{/if}
+							</div>
+							<span class="font-semibold text-green-600">
+								+{(transfer.amount / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+							</span>
+						</div>
+					{/each}
+				</div>
 			</Card>
 		{/if}
 	</div>
@@ -494,6 +808,61 @@
 							Expédier
 						{/if}
 					{/snippet}
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Modal de recadrage photo -->
+{#if showCropModal}
+	<div class="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+		<div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+			<h3 class="text-lg font-semibold mb-1 text-center">Positionner la photo</h3>
+			<p class="text-xs text-muted-foreground text-center mb-4">Glissez pour repositionner · molette ou curseur pour zoomer</p>
+
+			<!-- Zone de recadrage circulaire -->
+			<div class="flex justify-center mb-4">
+				<div
+					class="overflow-hidden rounded-full ring-2 ring-primary cursor-grab select-none"
+					style:width="{CROP_VIEWPORT}px"
+					style:height="{CROP_VIEWPORT}px"
+					style:background-image={cropObjectUrl ? `url(${cropObjectUrl})` : 'none'}
+					style:background-size="{scaledW}px {scaledH}px"
+					style:background-position="{imgLeft}px {imgTop}px"
+					style:background-repeat="no-repeat"
+					onwheel={onCropWheel}
+					onpointerdown={onCropPointerDown}
+					onpointermove={onCropPointerMove}
+					onpointerup={() => (isDragging = false)}
+					onpointercancel={() => (isDragging = false)}
+					role="img"
+					aria-label="Zone de recadrage"
+				></div>
+			</div>
+
+			<!-- Curseur de zoom -->
+			<div class="flex items-center gap-2 mb-5 px-1">
+				<svg class="w-4 h-4 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10h-6" />
+				</svg>
+				<input
+					type="range" min="0" max="100" step="1"
+					bind:value={sliderPos}
+					oninput={onSliderInput}
+					class="flex-1 accent-primary"
+				/>
+				<svg class="w-5 h-5 text-muted-foreground shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+				</svg>
+			</div>
+
+			<div class="flex gap-3">
+				<Button variant="outline" class="flex-1" onclick={() => (showCropModal = false)}>
+					{#snippet children()}Annuler{/snippet}
+				</Button>
+				<Button class="flex-1" onclick={confirmCrop}>
+					{#snippet children()}Confirmer{/snippet}
 				</Button>
 			</div>
 		</div>

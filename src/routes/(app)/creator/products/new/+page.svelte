@@ -63,6 +63,33 @@
 	function removeImage(index: number) {
 		imageUrls = imageUrls.filter((_, i) => i !== index);
 	}
+
+	let dragIndex = $state<number | null>(null);
+	let dragOverIndex = $state<number | null>(null);
+
+	function onDragStart(i: number) {
+		dragIndex = i;
+	}
+
+	function onDragOver(e: DragEvent, i: number) {
+		e.preventDefault();
+		dragOverIndex = i;
+	}
+
+	function onDrop(i: number) {
+		if (dragIndex === null || dragIndex === i) return;
+		const arr = [...imageUrls];
+		const [item] = arr.splice(dragIndex, 1);
+		arr.splice(i, 0, item);
+		imageUrls = arr;
+		dragIndex = null;
+		dragOverIndex = null;
+	}
+
+	function onDragEnd() {
+		dragIndex = null;
+		dragOverIndex = null;
+	}
 </script>
 
 <div>
@@ -90,7 +117,7 @@
 						Vous devez configurer votre compte Stripe avant de pouvoir créer un produit. Cela
 						permet de recevoir les paiements de vos clients.
 					</p>
-					<a href="/creator/profile">
+					<a href="/creator/profile#stripe">
 						<Button size="sm" class="bg-orange-600 hover:bg-orange-700 text-white">
 							{#snippet children()}
 								Configurer Stripe
@@ -174,10 +201,23 @@
 				</div>
 
 				{#if imageUrls.length > 0}
-					<div class="grid grid-cols-5 gap-2 mt-2">
+					<p class="text-xs text-muted-foreground mt-2">Faites glisser pour réorganiser. La première image est la principale.</p>
+					<div class="grid grid-cols-5 gap-2 mt-1">
 						{#each imageUrls as url, i}
-							<div class="relative">
+							<div
+								class="relative cursor-grab active:cursor-grabbing transition-opacity rounded
+									{dragIndex === i ? 'opacity-40' : ''}
+									{dragOverIndex === i && dragIndex !== i ? 'ring-2 ring-primary' : ''}"
+								draggable="true"
+								ondragstart={() => onDragStart(i)}
+								ondragover={(e) => onDragOver(e, i)}
+								ondrop={() => onDrop(i)}
+								ondragend={onDragEnd}
+							>
 								<img src={url} alt="Preview" class="w-full h-20 object-cover rounded" />
+								{#if i === 0}
+									<span class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded">Principale</span>
+								{/if}
 								<button
 									type="button"
 									onclick={() => removeImage(i)}

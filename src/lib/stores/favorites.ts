@@ -1,79 +1,53 @@
 import { writable } from 'svelte/store';
 
-const STORAGE_KEY_PREFIX = 'vasy_favorites_';
-
 function createFavoritesStore() {
 	const { subscribe, set, update } = writable<string[]>([]);
-
-	let currentUserId: string | null = null;
-
-	function getStorageKey(): string {
-		return currentUserId ? `${STORAGE_KEY_PREFIX}${currentUserId}` : `${STORAGE_KEY_PREFIX}guest`;
-	}
 
 	return {
 		subscribe,
 
-		// Initialize favorites for a specific user
-		init(userId: string | null) {
-			currentUserId = userId;
-			if (typeof window !== 'undefined') {
-				try {
-					const stored = localStorage.getItem(getStorageKey());
-					if (stored) {
-						set(JSON.parse(stored));
-					} else {
-						set([]);
-					}
-				} catch (err) {
-					console.error('Failed to load favorites from localStorage:', err);
-					set([]);
-				}
+		init(favoriteIds: string[]) {
+			set(favoriteIds);
+		},
+
+		async toggle(productId: string) {
+			let isCurrentlyFavorite = false;
+			const unsub = subscribe((favs) => {
+				isCurrentlyFavorite = favs.includes(productId);
+			});
+			unsub();
+
+			if (isCurrentlyFavorite) {
+				await this.remove(productId);
+			} else {
+				await this.add(productId);
 			}
 		},
 
-		toggle(productId: string) {
-			update((favorites) => {
-				const index = favorites.indexOf(productId);
-				if (index > -1) {
-					favorites.splice(index, 1);
-				} else {
-					favorites.push(productId);
-				}
-				this.persist(favorites);
-				return favorites;
-			});
+		async add(productId: string) {
+			try {
+				await fetch('/api/favorites', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ productId })
+				});
+				update((favs) => (favs.includes(productId) ? favs : [...favs, productId]));
+			} catch (err) {
+				console.error('Failed to add favorite:', err);
+			}
 		},
 
-		add(productId: string) {
-			update((favorites) => {
-				if (!favorites.includes(productId)) {
-					favorites.push(productId);
-					this.persist(favorites);
-				}
-				return favorites;
-			});
-		},
-
-		remove(productId: string) {
-			update((favorites) => {
-				const index = favorites.indexOf(productId);
-				if (index > -1) {
-					favorites.splice(index, 1);
-					this.persist(favorites);
-				}
-				return favorites;
-			});
+		async remove(productId: string) {
+			try {
+				await fetch(`/api/favorites/${productId}`, { method: 'DELETE' });
+				update((favs) => favs.filter((id) => id !== productId));
+			} catch (err) {
+				console.error('Failed to remove favorite:', err);
+			}
 		},
 
 		isFavorite(productId: string, favs: string[]): boolean {
 			return favs.includes(productId);
-		},
-
-		persist(favorites: string[]) {
-			if (typeof window !== 'undefined') {
-				localStorage.setItem(getStorageKey(), JSON.stringify(favorites));
-			}
 		}
 	};
 }

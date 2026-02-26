@@ -112,6 +112,40 @@
 		</div>
 	</div>
 
+	{#if !data.stripeStatus.onboarding_complete}
+		<Card class="animate-in p-6 mb-6 border-orange-500 bg-orange-50">
+			<div class="flex gap-4 items-start">
+				<svg
+					class="w-6 h-6 text-orange-600 shrink-0 mt-0.5"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+					/>
+				</svg>
+				<div class="flex-1">
+					<h3 class="font-semibold text-orange-900 mb-2">Configuration Stripe requise</h3>
+					<p class="text-sm text-orange-800 mb-4">
+						Vous devez configurer votre compte Stripe pour pouvoir créer des événements.
+						Cette étape est obligatoire pour recevoir les paiements de vos clients.
+					</p>
+					<a href="/creator/profile#stripe">
+						<Button size="sm" class="bg-orange-600 hover:bg-orange-700 text-white">
+							{#snippet children()}
+								Configurer Stripe maintenant
+							{/snippet}
+						</Button>
+					</a>
+				</div>
+			</div>
+		</Card>
+	{/if}
+
 	{#if form?.error}
 		<div class="animate-in bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
 			{form.error}
@@ -128,7 +162,7 @@
 
 	<!-- Formulaire de création -->
 	{#if showCreateForm}
-		<Card class="animate-in mb-6">
+		<Card class="animate-in mb-6 {!data.stripeStatus.onboarding_complete ? 'opacity-50 pointer-events-none' : ''}">
 			<div class="p-6">
 				<h2 class="text-lg font-semibold mb-4">Créer un événement</h2>
 				<form

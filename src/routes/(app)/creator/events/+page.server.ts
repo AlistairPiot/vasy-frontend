@@ -18,12 +18,22 @@ interface Event {
 	updated_at: string;
 }
 
+interface StripeStatus {
+	connected: boolean;
+	onboarding_complete: boolean;
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const events = await serverApi.get<Event[]>('/events/', locals.token);
 
-	return {
-		events
-	};
+	let stripeStatus: StripeStatus;
+	try {
+		stripeStatus = await serverApi.get<StripeStatus>('/stripe/connect/status', locals.token);
+	} catch {
+		stripeStatus = { connected: false, onboarding_complete: false };
+	}
+
+	return { events, stripeStatus };
 };
 
 export const actions: Actions = {
