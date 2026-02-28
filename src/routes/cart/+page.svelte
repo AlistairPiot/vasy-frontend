@@ -115,7 +115,7 @@
 							<Card class="cart-item-card p-4 animate-in hover:shadow-md transition-shadow" style={`animation-delay: ${index * 0.1}s`}>
 								<div class="flex gap-4">
 									<!-- Image -->
-									<div class="w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
+									<a href="/products/{item.id}" class="w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity">
 										{#if item.image_url}
 											<img src={item.image_url} alt={item.name} class="w-full h-full object-cover" />
 										{:else}
@@ -123,11 +123,13 @@
 												Pas d'image
 											</div>
 										{/if}
-									</div>
+									</a>
 
 									<!-- Item Details -->
 									<div class="flex-1">
-										<h3 class="font-semibold mb-2">{item.name}</h3>
+										<a href="/products/{item.id}" class="hover:underline">
+											<h3 class="font-semibold mb-2">{item.name}</h3>
+										</a>
 										<p class="text-lg font-bold text-primary">{formatPrice(item.price)}</p>
 
 										<!-- Quantity Controls -->

@@ -261,15 +261,15 @@
 										<div class="text-sm mb-3">
 											<p><strong>Produits :</strong></p>
 											{#each order.items as item}
-												<div class="flex gap-2 items-center mt-2">
+												<a href="/products/{item.product_id}" class="flex gap-2 items-center mt-2 hover:bg-muted/50 rounded p-1 -m-1 transition-colors">
 													{#if item.product_image_url}
 														<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded" />
 													{/if}
 													<div class="flex-1">
-														<p class="text-muted-foreground">{item.product_name} x{item.quantity}</p>
+														<p class="text-muted-foreground hover:underline">{item.product_name} x{item.quantity}</p>
 														<p class="text-muted-foreground">{(item.product_price / 100).toFixed(2)} €</p>
 													</div>
-												</div>
+												</a>
 											{/each}
 										</div>
 

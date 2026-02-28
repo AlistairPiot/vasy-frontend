@@ -667,10 +667,19 @@
 									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
 								</div>
 
-								<div class="text-sm mb-3">
-									<p><strong>Produits :</strong></p>
+								<div class="mb-3 space-y-1">
 									{#each order.items as item}
-										<p class="text-muted-foreground">- {item.product_name} x{item.quantity}</p>
+										<a href="/products/{item.product_id}" class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group">
+											{#if item.product_image_url}
+												<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded shrink-0" />
+											{:else}
+												<div class="w-12 h-12 bg-muted rounded shrink-0"></div>
+											{/if}
+											<div class="flex-1 min-w-0">
+												<p class="text-sm font-medium truncate group-hover:underline">{item.product_name}</p>
+												<p class="text-xs text-muted-foreground">x{item.quantity} · {formatPrice(item.product_price)}</p>
+											</div>
+										</a>
 									{/each}
 								</div>
 
@@ -719,10 +728,19 @@
 									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
 								</div>
 
-								<div class="text-sm mb-3">
-									<p><strong>Produits :</strong></p>
+								<div class="mb-3 space-y-1">
 									{#each order.items as item}
-										<p class="text-muted-foreground">- {item.product_name} x{item.quantity}</p>
+										<a href="/products/{item.product_id}" class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group">
+											{#if item.product_image_url}
+												<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded shrink-0" />
+											{:else}
+												<div class="w-12 h-12 bg-muted rounded shrink-0"></div>
+											{/if}
+											<div class="flex-1 min-w-0">
+												<p class="text-sm font-medium truncate group-hover:underline">{item.product_name}</p>
+												<p class="text-xs text-muted-foreground">x{item.quantity} · {formatPrice(item.product_price)}</p>
+											</div>
+										</a>
 									{/each}
 								</div>
 
@@ -760,7 +778,7 @@
 			</div>
 
 			<!-- Section Expédié (expediee) -->
-			<div>
+			<div class="mb-6">
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">Expédié</h3>
 				{#if data.orders.filter(o => o.status === 'expediee').length === 0}
 					<div class="text-sm text-muted-foreground text-center py-4">
@@ -781,18 +799,68 @@
 									</div>
 								</div>
 
-								<div class="text-sm mb-2">
-									<p><strong>Livraison :</strong> {order.shipping_name}</p>
+								<div class="mb-3 space-y-1">
+									{#each order.items as item}
+										<a href="/products/{item.product_id}" class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-green-100 transition-colors group">
+											{#if item.product_image_url}
+												<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded shrink-0" />
+											{:else}
+												<div class="w-12 h-12 bg-muted rounded shrink-0"></div>
+											{/if}
+											<div class="flex-1 min-w-0">
+												<p class="text-sm font-medium truncate group-hover:underline">{item.product_name}</p>
+												<p class="text-xs text-muted-foreground">x{item.quantity} · {formatPrice(item.product_price)}</p>
+											</div>
+										</a>
+									{/each}
 								</div>
 
-								<div class="text-sm">
-									<p><strong>Suivi :</strong> <span class="font-mono">{order.tracking_number}</span></p>
+								<div class="text-sm text-muted-foreground">
+									<strong class="text-foreground">Livraison :</strong> {order.shipping_name} · <strong class="text-foreground">Suivi :</strong> <span class="font-mono">{order.tracking_number}</span>
 								</div>
 							</div>
 						{/each}
 					</div>
 				{/if}
 			</div>
+
+			<!-- Section Refusé (refusee) -->
+			{#if data.orders.filter(o => o.status === 'refusee').length > 0}
+			<div>
+				<h3 class="text-lg font-semibold mb-4 pb-2 border-b text-muted-foreground">Refusé</h3>
+				<div class="space-y-3">
+					{#each data.orders.filter(o => o.status === 'refusee') as order}
+						<div class="border rounded-lg p-4 bg-muted/30 opacity-70">
+							<div class="flex justify-between items-start mb-2">
+								<div>
+									<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+									<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
+								</div>
+								<div class="text-right">
+									<span class="text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">Refusée</span>
+									<p class="text-sm text-muted-foreground mt-1">{formatPrice(order.total_amount)}</p>
+								</div>
+							</div>
+							<div class="space-y-1">
+								{#each order.items as item}
+									<a href="/products/{item.product_id}" class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors group">
+										{#if item.product_image_url}
+											<img src={item.product_image_url} alt={item.product_name} class="w-12 h-12 object-cover rounded shrink-0 opacity-60" />
+										{:else}
+											<div class="w-12 h-12 bg-muted rounded shrink-0"></div>
+										{/if}
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-medium truncate group-hover:underline text-muted-foreground">{item.product_name}</p>
+											<p class="text-xs text-muted-foreground">x{item.quantity} · {formatPrice(item.product_price)}</p>
+										</div>
+									</a>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+			{/if}
 		</Card>
 	</div>
 </div>
