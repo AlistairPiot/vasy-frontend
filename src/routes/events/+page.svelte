@@ -6,6 +6,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
+	import { eventFavorites } from '$lib/stores/eventFavorites';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -145,10 +146,12 @@
 									? 'shadow-md -translate-y-0.5'
 									: ''}"
 							>
-								<button
-									type="button"
+								<div
+									role="button"
+									tabindex="0"
 									class="w-full text-left overflow-hidden cursor-pointer"
 									onclick={() => goto(`/events/${event.id}`)}
+									onkeydown={(e) => e.key === 'Enter' && goto(`/events/${event.id}`)}
 								>
 									<div class="p-4">
 										<div class="flex items-start justify-between min-w-0">
@@ -185,14 +188,26 @@
 													</p>
 												{/if}
 											</div>
-											<span class="shrink-0 ml-3 text-muted-foreground">
-												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-													<path d="M9 18l6-6-6-6"/>
-												</svg>
-											</span>
+											<div class="flex items-center gap-1 shrink-0 ml-3">
+												<button
+													type="button"
+													onclick={(e) => { e.stopPropagation(); eventFavorites.toggle(event.id); }}
+													class="p-1.5 rounded-full hover:bg-muted transition-colors"
+													title={$eventFavorites.includes(event.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={$eventFavorites.includes(event.id) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={$eventFavorites.includes(event.id) ? 'text-red-500' : 'text-muted-foreground'}>
+														<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+													</svg>
+												</button>
+												<span class="text-muted-foreground">
+													<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+														<path d="M9 18l6-6-6-6"/>
+													</svg>
+												</span>
+											</div>
 										</div>
 									</div>
-								</button>
+								</div>
 							</Card>
 						{/each}
 					</div>

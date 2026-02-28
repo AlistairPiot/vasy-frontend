@@ -5,6 +5,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
+	import { eventFavorites } from '$lib/stores/eventFavorites';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -66,13 +67,25 @@
 			]}
 		/>
 
-		<a
-			href="/events"
-			class="animate-in group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-			Retour aux événements
-		</a>
+		<div class="animate-in flex items-center justify-between mt-6">
+			<a
+				href="/events"
+				class="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+				Retour aux événements
+			</a>
+			<button
+				type="button"
+				onclick={() => eventFavorites.toggle(data.event.id)}
+				class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-sm {$eventFavorites.includes(data.event.id) ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-input hover:bg-accent text-muted-foreground'}"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={$eventFavorites.includes(data.event.id) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+				</svg>
+				{$eventFavorites.includes(data.event.id) ? 'Favori' : 'Ajouter aux favoris'}
+			</button>
+		</div>
 
 		<div class="grid md:grid-cols-2 gap-8 py-8">
 			<!-- Infos de l'événement -->
