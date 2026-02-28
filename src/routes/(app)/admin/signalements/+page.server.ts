@@ -14,11 +14,15 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 	}
 
 	let reports: any[] = [];
+	let eventReports: any[] = [];
 	try {
-		reports = await serverApi.get('/admin/reports', locals.token);
+		[reports, eventReports] = await Promise.all([
+			serverApi.get('/admin/reports', locals.token),
+			serverApi.get('/admin/event-reports', locals.token),
+		]);
 	} catch (error) {
 		console.error('Error loading reports:', error);
 	}
 
-	return { reports };
+	return { reports, eventReports };
 };

@@ -15,6 +15,13 @@
 		stock: number;
 	}
 
+	interface CreatorResult {
+		id: string;
+		display_name: string;
+		bio: string | null;
+		profile_image_url: string | null;
+	}
+
 	interface Suggestion {
 		id: string;
 		name: string;
@@ -27,6 +34,7 @@
 	let isOpen = $state(false);
 	let isLoading = $state(false);
 	let results = $state<SearchResult[]>([]);
+	let creators = $state<CreatorResult[]>([]);
 	let suggestions = $state<Suggestion[]>([]);
 	let selectedIndex = $state(-1);
 	let hoveredResult = $state<SearchResult | null>(null);
@@ -97,6 +105,7 @@
 			const response = await fetch(`${PUBLIC_API_URL}/search?q=${encodeURIComponent(query)}&limit=8`);
 			const data = await response.json();
 			results = data.results || [];
+			creators = data.creators || [];
 			selectedIndex = -1;
 
 			// Animer l'apparition des résultats
@@ -106,6 +115,7 @@
 		} catch (error) {
 			console.error('Erreur lors de la recherche:', error);
 			results = [];
+			creators = [];
 		} finally {
 			isLoading = false;
 		}
@@ -131,7 +141,8 @@
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		const itemCount = searchQuery.trim() ? results.length : suggestions.length;
+		const allItems = searchQuery.trim() ? [...results, ...creators] : suggestions;
+		const itemCount = allItems.length;
 
 		if (event.key === 'ArrowDown') {
 			event.preventDefault();
@@ -143,9 +154,14 @@
 			scrollToSelected();
 		} else if (event.key === 'Enter' && selectedIndex >= 0) {
 			event.preventDefault();
-			const item = searchQuery.trim() ? results[selectedIndex] : suggestions[selectedIndex];
-			if (item) {
-				navigateToProduct(item.id);
+			if (searchQuery.trim()) {
+				if (selectedIndex < results.length) {
+					navigateToProduct(results[selectedIndex].id);
+				} else {
+					navigateToCreator(creators[selectedIndex - results.length].id);
+				}
+			} else {
+				navigateToProduct(suggestions[selectedIndex].id);
 			}
 		} else if (event.key === 'Escape') {
 			event.preventDefault();
@@ -194,8 +210,13 @@
 		closeSearch();
 	}
 
+	function navigateToCreator(id: string) {
+		goto(`/creators/${id}`);
+		closeSearch();
+	}
+
 	function viewAllResults() {
-		goto(`/products?q=${encodeURIComponent(searchQuery)}`);
+		goto(`/search?q=${encodeURIComponent(searchQuery)}`);
 		closeSearch();
 	}
 
@@ -203,6 +224,7 @@
 		isOpen = false;
 		searchQuery = '';
 		results = [];
+		creators = [];
 		selectedIndex = -1;
 		hoveredResult = null;
 		showPreview = false;
@@ -271,12 +293,48 @@
 						</div>
 					{/each}
 				</div>
-			{:else if searchQuery.trim() && results.length > 0}
-				<!-- Résultats de recherche -->
+			{:else if searchQuery.trim() && (results.length > 0 || creators.length > 0)}
+				<!-- Créateurs -->
+				{#if creators.length > 0}
+					<div class="px-4 pt-3 pb-1">
+						<p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Créateurs</p>
+					</div>
+					{#each creators as creator, index}
+						<button
+							class="search-result-item w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors {selectedIndex === index ? 'bg-gray-100' : ''}"
+							onclick={() => navigateToCreator(creator.id)}
+						>
+							{#if creator.profile_image_url}
+								<img src={creator.profile_image_url} alt={creator.display_name} class="w-10 h-10 object-cover rounded-full shrink-0" />
+							{:else}
+								<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+								</div>
+							{/if}
+							<div class="flex-1 text-left min-w-0">
+								<div class="flex items-center gap-2">
+									<h3 class="font-medium text-sm">{@html highlightText(creator.display_name, searchQuery)}</h3>
+									<span class="shrink-0 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">Créateur</span>
+								</div>
+								{#if creator.bio}
+									<p class="text-xs text-gray-500 truncate mt-0.5">{creator.bio}</p>
+								{/if}
+							</div>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 shrink-0"><path d="M9 18l6-6-6-6"/></svg>
+						</button>
+					{/each}
+					{#if results.length > 0}
+						<div class="px-4 pt-3 pb-1 border-t">
+							<p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Produits</p>
+						</div>
+					{/if}
+				{/if}
+
+				<!-- Résultats de recherche produits -->
 				{#each results as result, index}
 					<button
 						class="search-result-item w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0 {selectedIndex ===
-						index
+						index + creators.length
 							? 'bg-gray-100'
 							: ''}"
 						onclick={() => navigateToProduct(result.id)}
@@ -306,9 +364,9 @@
 				<!-- Bouton voir tous les résultats -->
 				<button
 					onclick={viewAllResults}
-					class="w-full p-4 text-center text-sm font-medium text-primary hover:bg-gray-50 transition-colors"
+					class="w-full p-4 text-center text-sm font-medium text-primary hover:bg-gray-50 transition-colors border-t"
 				>
-					Voir tous les résultats ({results.length}+)
+					Voir tous les résultats ({results.length + creators.length})
 				</button>
 			{:else if searchQuery.trim() && !isLoading}
 				<!-- Aucun résultat -->

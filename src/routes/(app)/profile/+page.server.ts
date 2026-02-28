@@ -59,7 +59,11 @@ export const actions: Actions = {
 				payload.new_password = newPassword;
 			}
 
-			await serverApi.patch('/users/me', payload, locals.token);
+			const result = await serverApi.patch('/users/me', payload, locals.token);
+
+			if (result?.email_change_pending) {
+				return { success: true, emailChangePending: true, newEmail: result.new_email };
+			}
 
 			return { success: true };
 		} catch (err) {

@@ -35,6 +35,28 @@
 	let showCurrentPassword = $state(false);
 	let showNewPassword = $state(false);
 	let showConfirmPassword = $state(false);
+
+	let showEmailConfirmModal = $state(false);
+	let pendingNewEmail = $state('');
+	let formRef: HTMLFormElement;
+
+	function handleSubmitClick() {
+		if (email !== data.user.email) {
+			pendingNewEmail = email;
+			showEmailConfirmModal = true;
+		} else {
+			formRef.requestSubmit();
+		}
+	}
+
+	function confirmEmailChange() {
+		showEmailConfirmModal = false;
+		formRef.requestSubmit();
+	}
+
+	function cancelEmailChange() {
+		showEmailConfirmModal = false;
+	}
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
@@ -78,9 +100,16 @@
 						<h2 class="text-xl font-semibold mb-6">Informations du compte</h2>
 
 						{#if form?.success}
-							<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
-								Profil mis à jour avec succès
-							</div>
+							{#if form?.emailChangePending}
+								<div class="bg-blue-50 text-blue-800 text-sm p-3 rounded-md mb-4 border border-blue-200">
+									<strong>Email de confirmation envoyé</strong><br>
+									Un lien de confirmation a été envoyé à <strong>{form.newEmail}</strong>. Cliquez dessus pour valider le changement.
+								</div>
+							{:else}
+								<div class="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
+									Profil mis à jour avec succès
+								</div>
+							{/if}
 						{/if}
 
 						{#if form?.error}
@@ -89,7 +118,7 @@
 							</div>
 						{/if}
 
-						<form method="POST" action="?/updateProfile" use:enhance class="space-y-6">
+						<form method="POST" action="?/updateProfile" use:enhance bind:this={formRef} class="space-y-6">
 							<div class="space-y-2">
 								<label for="email" class="text-sm font-medium">Email</label>
 								<Input type="email" id="email" name="email" required bind:value={email} />
@@ -203,7 +232,7 @@
 								</div>
 							</div>
 
-							<Button type="submit" class="w-full">
+							<Button type="button" onclick={handleSubmitClick} class="w-full">
 								{#snippet children()}
 									Enregistrer les modifications
 								{/snippet}
@@ -287,3 +316,42 @@
 		</div>
 	</main>
 </div>
+
+<!-- Modale de confirmation de changement d'email -->
+{#if showEmailConfirmModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+		<button class="absolute inset-0 bg-black/50" onclick={cancelEmailChange} aria-label="Fermer"></button>
+		<div class="relative bg-background rounded-lg border shadow-lg w-full max-w-md p-6">
+			<div class="flex items-start justify-between mb-4">
+				<h2 class="text-lg font-semibold">Confirmer le changement d'email</h2>
+				<button onclick={cancelEmailChange} class="text-muted-foreground hover:text-foreground ml-4" aria-label="Fermer">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+			<p class="text-sm text-muted-foreground mb-2">
+				Vous êtes sur le point de modifier votre adresse email.
+			</p>
+			<div class="bg-muted rounded-md px-4 py-3 mb-4 text-sm">
+				<span class="text-muted-foreground">Nouvelle adresse :</span>
+				<span class="font-medium ml-1">{pendingNewEmail}</span>
+			</div>
+			<p class="text-sm text-muted-foreground mb-6">
+				Un email de confirmation vous sera envoyé à cette adresse. Votre adresse actuelle restera active jusqu'à validation.
+			</p>
+			<div class="flex gap-3">
+				<button
+					onclick={cancelEmailChange}
+					class="flex-1 px-4 py-2 rounded-md border border-input text-sm font-medium hover:bg-accent transition-colors"
+				>
+					Annuler
+				</button>
+				<button
+					onclick={confirmEmailChange}
+					class="flex-1 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+				>
+					Envoyer le lien de confirmation
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

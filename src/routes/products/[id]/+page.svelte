@@ -18,7 +18,6 @@
 
 	// Report modal
 	let showReportModal = $state(false);
-	let reportEmail = $state(data.user?.email ?? '');
 	let reportReason = $state('');
 	let reportLoading = $state(false);
 	let reportSuccess = $state(false);
@@ -81,7 +80,6 @@
 	}
 
 	function openReportModal() {
-		reportEmail = data.user?.email ?? '';
 		reportReason = '';
 		reportSuccess = false;
 		reportError = '';
@@ -89,8 +87,8 @@
 	}
 
 	async function submitReport() {
-		if (!reportEmail.trim() || !reportReason.trim()) {
-			reportError = 'Veuillez remplir tous les champs.';
+		if (!reportReason.trim()) {
+			reportError = 'Veuillez indiquer le motif du signalement.';
 			return;
 		}
 		reportLoading = true;
@@ -101,7 +99,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					product_id: data.product.id,
-					reporter_email: reportEmail.trim(),
+					reporter_email: data.user?.email ?? '',
 					reason: reportReason.trim()
 				})
 			});
@@ -311,16 +309,6 @@
 				</div>
 			{:else}
 				<div class="space-y-4">
-					<div>
-						<label for="report-email" class="block text-sm font-medium mb-1">Votre email</label>
-						<input
-							id="report-email"
-							type="email"
-							bind:value={reportEmail}
-							placeholder="votre@email.com"
-							class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-						/>
-					</div>
 					<div>
 						<label for="report-reason" class="block text-sm font-medium mb-1">Motif du signalement</label>
 						<textarea
