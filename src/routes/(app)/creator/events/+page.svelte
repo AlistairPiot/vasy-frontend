@@ -13,6 +13,29 @@
 	let showCreateForm = $state(false);
 	let selectedEventId = $state<string | null>(null);
 
+	// Fichiers à uploader
+	let selectedFiles = $state<File[]>([]);
+
+	function onFilesChange(e: Event) {
+		const input = e.target as HTMLInputElement;
+		if (!input.files) return;
+		selectedFiles = [...selectedFiles, ...Array.from(input.files)];
+		input.value = '';
+	}
+
+	function removeFile(index: number) {
+		selectedFiles = selectedFiles.filter((_, i) => i !== index);
+	}
+
+	function isImage(file: File) {
+		return file.type.startsWith('image/');
+	}
+
+	function formatFileSize(bytes: number): string {
+		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
+		return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+	}
+
 	// Vue actuelle: 'both', 'map', 'list'
 	let viewMode = $state<'both' | 'map' | 'list'>('both');
 
@@ -168,10 +191,12 @@
 				<form
 					method="POST"
 					action="?/create"
+					enctype="multipart/form-data"
 					use:enhance={() => {
 						return async ({ result }) => {
 							if (result.type === 'success') {
 								showCreateForm = false;
+								selectedFiles = [];
 								await invalidateAll();
 							}
 						};
@@ -241,6 +266,39 @@
 							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 							placeholder="Décrivez votre événement..."
 						></textarea>
+					</div>
+
+					<!-- Pièces jointes -->
+					<div>
+						<label class="block text-sm font-medium mb-1">Pièces jointes (optionnel)</label>
+						<p class="text-xs text-muted-foreground mb-2">Images (JPEG, PNG, WebP) ou PDF — max 20 Mo par fichier</p>
+						<label class="flex items-center gap-2 cursor-pointer w-fit px-3 py-2 rounded-lg border border-dashed border-input hover:bg-accent transition-colors text-sm text-muted-foreground">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+							Ajouter des fichiers
+							<input type="file" name="attachments" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" onchange={onFilesChange} />
+						</label>
+						{#if selectedFiles.length > 0}
+							<ul class="mt-3 space-y-2">
+								{#each selectedFiles as file, i}
+									<li class="flex items-center gap-3 p-2 rounded-lg bg-muted/50 border">
+										{#if isImage(file)}
+											<img src={URL.createObjectURL(file)} alt={file.name} class="w-10 h-10 object-cover rounded flex-shrink-0" />
+										{:else}
+											<div class="w-10 h-10 rounded bg-red-100 flex items-center justify-center flex-shrink-0">
+												<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+											</div>
+										{/if}
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-medium truncate">{file.name}</p>
+											<p class="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+										</div>
+										<button type="button" onclick={() => removeFile(i)} class="p-1 rounded hover:bg-muted transition-colors flex-shrink-0" title="Supprimer">
+											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
 					</div>
 
 					<div class="flex justify-end gap-3">

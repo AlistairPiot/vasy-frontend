@@ -68,6 +68,31 @@
 	}
 
 	const badge = getStatusBadge(data.event.status);
+
+	// Pièces jointes
+	const attachmentUrls: string[] = JSON.parse(data.event.attachment_urls || '[]');
+
+	let viewerUrl = $state<string | null>(null);
+	let viewerIsPdf = $state(false);
+
+	function isPdf(url: string) {
+		return url.includes('/raw/') || url.toLowerCase().endsWith('.pdf');
+	}
+
+	function fileName(url: string) {
+		return url.split('/').pop()?.split('?')[0] || 'fichier';
+	}
+
+	function openViewer(url: string) {
+		viewerIsPdf = isPdf(url);
+		viewerUrl = viewerIsPdf
+			? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`
+			: url;
+	}
+
+	function closeViewer() {
+		viewerUrl = null;
+	}
 </script>
 
 <div bind:this={containerRef}>
@@ -164,6 +189,34 @@
 					{:else}
 						<div class="mt-6 pt-4 border-t">
 							<p class="text-muted-foreground text-sm italic">Aucune description.</p>
+						</div>
+					{/if}
+
+					{#if attachmentUrls.length > 0}
+						<div class="mt-6 pt-4 border-t">
+							<h3 class="text-sm font-semibold mb-3">Pièces jointes</h3>
+							<ul class="space-y-2">
+								{#each attachmentUrls as url}
+									<li class="flex items-center gap-3 p-2 rounded-lg bg-muted/50 border">
+										{#if isPdf(url)}
+											<div class="w-9 h-9 rounded bg-red-100 flex items-center justify-center shrink-0">
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+											</div>
+										{:else}
+											<img src={url} alt="aperçu" class="w-9 h-9 object-cover rounded shrink-0" />
+										{/if}
+										<span class="flex-1 text-sm truncate">{fileName(url)}</span>
+										<button
+											type="button"
+											onclick={() => openViewer(url)}
+											class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-input hover:bg-accent transition-colors shrink-0"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+											Voir
+										</button>
+									</li>
+								{/each}
+							</ul>
 						</div>
 					{/if}
 				</div>
@@ -265,6 +318,34 @@
 						>{data.event.description || ''}</textarea>
 					</div>
 
+					{#if attachmentUrls.length > 0}
+						<div class="pt-4 border-t space-y-2">
+							<label class="block text-sm font-medium mb-1">Pièces jointes</label>
+							<ul class="space-y-2">
+								{#each attachmentUrls as url}
+									<li class="flex items-center gap-3 p-2 rounded-lg bg-muted/50 border">
+										{#if isPdf(url)}
+											<div class="w-9 h-9 rounded bg-red-100 flex items-center justify-center shrink-0">
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+											</div>
+										{:else}
+											<img src={url} alt="aperçu" class="w-9 h-9 object-cover rounded shrink-0" />
+										{/if}
+										<span class="flex-1 text-sm truncate">{fileName(url)}</span>
+										<button
+											type="button"
+											onclick={() => openViewer(url)}
+											class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-input hover:bg-accent transition-colors shrink-0"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+											Voir
+										</button>
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
+
 					<div class="flex justify-end gap-3 pt-4 border-t">
 						<Button variant="outline" onclick={() => (activeTab = 'detail')}>
 							{#snippet children()}
@@ -309,3 +390,35 @@
 		{/if}
 	{/if}
 </div>
+
+<!-- Visionneur de pièces jointes -->
+{#if viewerUrl}
+	<div class="fixed inset-0 z-50 flex flex-col bg-black/90" role="dialog" aria-modal="true">
+		<div class="flex items-center justify-between px-4 py-3 shrink-0">
+			<span class="text-white/70 text-sm truncate max-w-xs"></span>
+			<button
+				type="button"
+				onclick={closeViewer}
+				class="p-2 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
+				aria-label="Fermer"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="flex-1 overflow-hidden flex items-center justify-center p-4 relative">
+			<button
+				type="button"
+				class="absolute inset-0 w-full h-full cursor-default"
+				onclick={closeViewer}
+				aria-label="Fermer le visionneur"
+			></button>
+			{#if viewerIsPdf}
+				<div class="w-full h-full max-w-5xl relative z-10">
+					<iframe src={viewerUrl} title="Aperçu PDF" class="w-full h-full rounded-lg"></iframe>
+				</div>
+			{:else}
+				<img src={viewerUrl} alt="Aperçu" class="max-w-full max-h-full object-contain rounded-lg cursor-default relative z-10" />
+			{/if}
+		</div>
+	</div>
+{/if}

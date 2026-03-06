@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -41,6 +42,42 @@
 	}
 
 	const badge = getStatusBadge(data.event.status);
+
+	// Pièces jointes existantes
+	let attachmentUrls = $state<string[]>(JSON.parse(data.event.attachment_urls || '[]'));
+	let removedIndices = $state<Set<number>>(new Set());
+	let newFiles = $state<File[]>([]);
+	let fileInputRef: HTMLInputElement;
+
+	function isPdf(url: string) {
+		return url.includes('/raw/') || url.toLowerCase().endsWith('.pdf');
+	}
+
+	function fileName(url: string) {
+		return url.split('/').pop()?.split('?')[0] || 'fichier';
+	}
+
+	function markForRemoval(i: number) {
+		removedIndices = new Set([...removedIndices, i]);
+	}
+
+	function handleFileSelect(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		if (input.files && input.files.length > 0) {
+			newFiles = [...newFiles, ...Array.from(input.files)];
+			const dt = new DataTransfer();
+			for (const f of newFiles) dt.items.add(f);
+			fileInputRef.files = dt.files;
+			input.value = '';
+		}
+	}
+
+	function removeNewFile(i: number) {
+		newFiles = newFiles.filter((_, idx) => idx !== i);
+		const dt = new DataTransfer();
+		for (const f of newFiles) dt.items.add(f);
+		fileInputRef.files = dt.files;
+	}
 </script>
 
 <div bind:this={containerRef}>
@@ -58,6 +95,12 @@
 		</span>
 	</div>
 
+	{#if form?.success}
+		<div class="animate-in bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+			Événement enregistré avec succès.
+		</div>
+	{/if}
+
 	{#if form?.error}
 		<div class="animate-in bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
 			{form.error}
@@ -66,7 +109,18 @@
 
 	<Card class="animate-in">
 		<div class="p-6">
-			<form method="POST" action="?/update" use:enhance class="space-y-4">
+			<form method="POST" action="?/update" enctype="multipart/form-data" use:enhance={({ formElement }) => {
+				return async ({ result, update }) => {
+					await update({ reset: false });
+					if (result.type === 'success') {
+						removedIndices = new Set();
+						newFiles = [];
+						fileInputRef.files = new DataTransfer().files;
+						await invalidateAll();
+						attachmentUrls = JSON.parse(data.event.attachment_urls || '[]');
+					}
+				};
+			}} class="space-y-4">
 				<div>
 					<label for="name" class="block text-sm font-medium mb-1">
 						Nom de l'événement <span class="text-red-500">*</span>
@@ -138,7 +192,70 @@
 					>{data.event.description || ''}</textarea>
 				</div>
 
-				<div class="flex justify-end gap-3 pt-4 border-t">
+				<!-- Pièces jointes -->
+			<div class="pt-4 border-t space-y-3">
+				<div>
+					<label class="block text-sm font-medium mb-1">Pièces jointes</label>
+					<p class="text-xs text-muted-foreground">Images (JPEG, PNG, WebP) ou PDF — max 20 Mo par fichier</p>
+				</div>
+
+				<!-- Input réel soumis avec le formulaire -->
+				<input type="file" name="attachments" multiple bind:this={fileInputRef} class="hidden" />
+
+				<!-- Inputs cachés pour les suppressions -->
+				{#each [...removedIndices] as idx}
+					<input type="hidden" name="remove_attachment" value={idx} />
+				{/each}
+
+				<!-- Pièces jointes existantes -->
+				{#if attachmentUrls.some((_, i) => !removedIndices.has(i))}
+					<ul class="space-y-2">
+						{#each attachmentUrls as url, i}
+							{#if !removedIndices.has(i)}
+								<li class="flex items-center gap-3 p-2 rounded-lg bg-muted/50 border">
+									{#if isPdf(url)}
+										<div class="w-9 h-9 rounded bg-red-100 flex items-center justify-center shrink-0">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+										</div>
+									{:else}
+										<img src={url} alt="aperçu" class="w-9 h-9 object-cover rounded shrink-0" />
+									{/if}
+									<span class="flex-1 text-sm truncate">{fileName(url)}</span>
+									<button type="button" onclick={() => markForRemoval(i)} class="p-1 rounded hover:bg-muted transition-colors shrink-0" title="Supprimer">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+									</button>
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				{/if}
+
+				<!-- Nouveaux fichiers -->
+				{#if newFiles.length > 0}
+					<ul class="space-y-2">
+						{#each newFiles as file, i}
+							<li class="flex items-center gap-3 p-2 rounded-lg bg-primary/5 border border-primary/20">
+								<div class="w-9 h-9 rounded bg-primary/10 flex items-center justify-center shrink-0">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+								</div>
+								<span class="flex-1 text-sm truncate">{file.name}</span>
+								<span class="text-xs text-muted-foreground shrink-0">{(file.size / 1024 / 1024).toFixed(1)} Mo</span>
+								<button type="button" onclick={() => removeNewFile(i)} class="p-1 rounded hover:bg-muted transition-colors shrink-0" title="Retirer">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+
+				<label class="flex items-center gap-2 cursor-pointer w-fit px-3 py-2 rounded-lg border border-dashed border-input hover:bg-accent transition-colors text-sm text-muted-foreground">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+					Ajouter un fichier
+					<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" onchange={handleFileSelect} />
+				</label>
+			</div>
+
+			<div class="flex justify-end gap-3 pt-4 border-t">
 					<a href="/creator/events">
 						<Button variant="outline">
 							{#snippet children()}

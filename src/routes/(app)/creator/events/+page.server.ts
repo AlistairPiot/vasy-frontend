@@ -14,6 +14,7 @@ interface Event {
 	created_by_name: string;
 	status: 'active' | 'expired' | 'deleted';
 	visibility: 'internal' | 'public';
+	attachment_urls: string | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -46,6 +47,7 @@ export const actions: Actions = {
 		const location_text = formData.get('location_text') as string;
 		const latitudeStr = formData.get('latitude') as string;
 		const longitudeStr = formData.get('longitude') as string;
+		const attachments = formData.getAll('attachments') as File[];
 
 		// Validation
 		if (!name || name.trim().length === 0) {
@@ -60,7 +62,6 @@ export const actions: Actions = {
 			return fail(400, { error: 'Veuillez sélectionner une adresse dans la liste' });
 		}
 
-		// Vérifier que les coordonnées sont présentes (adresse sélectionnée)
 		if (!latitudeStr || !longitudeStr) {
 			return fail(400, { error: 'Veuillez sélectionner une adresse valide dans la liste' });
 		}
@@ -72,11 +73,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Coordonnées invalides. Veuillez resélectionner une adresse.' });
 		}
 
-		// Combiner date et heure
 		const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
 
 		try {
-			await serverApi.post(
+			const event = await serverApi.post<Event>(
 				'/events/',
 				{
 					name: name.trim(),
@@ -88,6 +88,14 @@ export const actions: Actions = {
 				},
 				locals.token
 			);
+
+			// Upload attachments if provided
+			const validFiles = attachments.filter((f) => f && f.size > 0);
+			for (const file of validFiles) {
+				const fd = new FormData();
+				fd.append('file', file);
+				await serverApi.uploadFile(`/events/${event.id}/attachments`, fd, locals.token);
+			}
 
 			return { success: true };
 		} catch (err) {

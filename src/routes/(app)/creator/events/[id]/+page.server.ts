@@ -14,6 +14,7 @@ interface Event {
 	created_by_name: string;
 	status: 'active' | 'expired' | 'deleted';
 	visibility: 'internal' | 'public';
+	attachment_urls: string | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -37,6 +38,8 @@ export const actions: Actions = {
 		const location_text = formData.get('location_text') as string;
 		const latitudeStr = formData.get('latitude') as string;
 		const longitudeStr = formData.get('longitude') as string;
+		const attachments = formData.getAll('attachments') as File[];
+		const removeIndicesRaw = formData.getAll('remove_attachment') as string[];
 
 		// Validation
 		if (!name || name.trim().length === 0) {
@@ -51,7 +54,6 @@ export const actions: Actions = {
 			return fail(400, { error: 'Veuillez sélectionner une adresse dans la liste' });
 		}
 
-		// Vérifier que les coordonnées sont présentes
 		if (!latitudeStr || !longitudeStr) {
 			return fail(400, { error: 'Veuillez sélectionner une adresse valide dans la liste' });
 		}
@@ -63,7 +65,6 @@ export const actions: Actions = {
 			return fail(400, { error: 'Coordonnées invalides. Veuillez resélectionner une adresse.' });
 		}
 
-		// Combiner date et heure
 		const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
 
 		try {
@@ -80,7 +81,24 @@ export const actions: Actions = {
 				locals.token
 			);
 
-			throw redirect(302, '/creator/events');
+			// Remove attachments (descending order to preserve indices)
+			const removeIndices = removeIndicesRaw
+				.map(Number)
+				.filter((n) => !isNaN(n))
+				.sort((a, b) => b - a);
+			for (const index of removeIndices) {
+				await serverApi.delete(`/events/${params.id}/attachments/${index}`, locals.token);
+			}
+
+			// Upload new attachments
+			const validFiles = attachments.filter((f) => f && f.size > 0);
+			for (const file of validFiles) {
+				const fd = new FormData();
+				fd.append('file', file);
+				await serverApi.uploadFile(`/events/${params.id}/attachments`, fd, locals.token);
+			}
+
+			return { success: true };
 		} catch (err) {
 			if (err instanceof Response || (err as any)?.status === 302) {
 				throw err;
@@ -89,6 +107,42 @@ export const actions: Actions = {
 				return fail(400, { error: err.message });
 			}
 			return fail(500, { error: 'Erreur lors de la modification' });
+		}
+	},
+
+	addAttachment: async ({ request, locals, params }) => {
+		const formData = await request.formData();
+		const file = formData.get('file') as File;
+
+		if (!file || file.size === 0) {
+			return fail(400, { error: 'Aucun fichier sélectionné' });
+		}
+
+		try {
+			const fd = new FormData();
+			fd.append('file', file);
+			await serverApi.uploadFile(`/events/${params.id}/attachments`, fd, locals.token);
+			return { success: true };
+		} catch (err) {
+			if (err instanceof Error) {
+				return fail(400, { error: err.message });
+			}
+			return fail(500, { error: "Erreur lors de l'upload" });
+		}
+	},
+
+	removeAttachment: async ({ request, locals, params }) => {
+		const formData = await request.formData();
+		const index = parseInt(formData.get('index') as string);
+
+		try {
+			await serverApi.delete(`/events/${params.id}/attachments/${index}`, locals.token);
+			return { success: true };
+		} catch (err) {
+			if (err instanceof Error) {
+				return fail(400, { error: err.message });
+			}
+			return fail(500, { error: 'Erreur lors de la suppression' });
 		}
 	},
 

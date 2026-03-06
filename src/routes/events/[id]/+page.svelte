@@ -54,6 +54,32 @@
 
 	const eventStatus = getEventStatus(data.event.date);
 
+	const attachments: string[] = JSON.parse(data.event.attachment_urls || '[]');
+
+	function isPdf(url: string) {
+		return url.includes('/raw/') || url.toLowerCase().includes('.pdf');
+	}
+
+	function attachmentLabel(url: string, index: number) {
+		const name = url.split('/').pop()?.split('?')[0] || `fichier-${index + 1}`;
+		return decodeURIComponent(name);
+	}
+
+	// Visionneur de pièces jointes
+	let viewerUrl = $state<string | null>(null);
+	let viewerIsPdf = $state(false);
+
+	function openViewer(url: string) {
+		viewerIsPdf = isPdf(url);
+		viewerUrl = viewerIsPdf
+			? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`
+			: url;
+	}
+
+	function closeViewer() {
+		viewerUrl = null;
+	}
+
 	// Report modal
 	let showReportModal = $state(false);
 	let reportReason = $state('');
@@ -130,16 +156,18 @@
 						Signaler
 					</button>
 				{/if}
-				<button
-					type="button"
-					onclick={() => eventFavorites.toggle(data.event.id)}
-					class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-sm {$eventFavorites.includes(data.event.id) ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-input hover:bg-accent text-muted-foreground'}"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={$eventFavorites.includes(data.event.id) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-					</svg>
-					{$eventFavorites.includes(data.event.id) ? 'Favori' : 'Ajouter aux favoris'}
-				</button>
+				{#if data.user}
+					<button
+						type="button"
+						onclick={() => eventFavorites.toggle(data.event.id)}
+						class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-sm {$eventFavorites.includes(data.event.id) ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-input hover:bg-accent text-muted-foreground'}"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={$eventFavorites.includes(data.event.id) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+						</svg>
+						{$eventFavorites.includes(data.event.id) ? 'Favori' : 'Ajouter aux favoris'}
+					</button>
+				{/if}
 			</div>
 		</div>
 
@@ -207,6 +235,36 @@
 						</p>
 					</div>
 				{/if}
+
+				{#if attachments.length > 0}
+					<div class="animate-in mt-6">
+						<h2 class="text-lg font-semibold mb-3">Documents</h2>
+						<ul class="space-y-2">
+							{#each attachments as url, i}
+								<li class="flex items-center gap-3 p-3 rounded-lg border bg-card">
+									{#if isPdf(url)}
+										<div class="w-9 h-9 rounded bg-red-100 flex items-center justify-center shrink-0">
+											<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+										</div>
+									{:else}
+										<button type="button" onclick={() => openViewer(url)} class="w-9 h-9 shrink-0 rounded overflow-hidden hover:opacity-80 transition-opacity">
+											<img src={url} alt={attachmentLabel(url, i)} class="w-full h-full object-cover" />
+										</button>
+									{/if}
+									<span class="flex-1 text-sm truncate">{attachmentLabel(url, i)}</span>
+									<button
+									type="button"
+									onclick={() => openViewer(url)}
+									class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-input hover:bg-accent transition-colors shrink-0"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+									Voir
+								</button>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Carte -->
@@ -230,6 +288,55 @@
 		</div>
 	</main>
 </div>
+
+<!-- Visionneur de pièces jointes -->
+{#if viewerUrl}
+	<div
+		class="fixed inset-0 z-50 flex flex-col bg-black/90"
+		role="dialog"
+		aria-modal="true"
+	>
+		<!-- Barre supérieure -->
+		<div class="flex items-center justify-between px-4 py-3 shrink-0">
+			<span class="text-white/70 text-sm truncate max-w-xs">{attachmentLabel(viewerUrl, 0)}</span>
+			<div class="flex items-center gap-3">
+				<button
+					type="button"
+					onclick={closeViewer}
+					class="p-2 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
+					aria-label="Fermer"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+		</div>
+
+		<!-- Contenu -->
+		<div class="flex-1 overflow-hidden flex items-center justify-center p-4 relative">
+			<button
+				type="button"
+				class="absolute inset-0 w-full h-full cursor-default"
+				onclick={closeViewer}
+				aria-label="Fermer le visionneur"
+			></button>
+			{#if viewerIsPdf}
+				<div class="w-full h-full max-w-5xl relative z-10">
+					<iframe
+						src={viewerUrl}
+						title="Aperçu PDF"
+						class="w-full h-full rounded-lg"
+					></iframe>
+				</div>
+			{:else}
+				<img
+					src={viewerUrl}
+					alt="Aperçu"
+					class="max-w-full max-h-full object-contain rounded-lg cursor-default relative z-10"
+				/>
+			{/if}
+		</div>
+	</div>
+{/if}
 
 <!-- Modal de signalement -->
 {#if showReportModal}

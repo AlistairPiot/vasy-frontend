@@ -14,6 +14,7 @@ interface Event {
 	created_by_name: string;
 	status: 'active' | 'expired' | 'deleted';
 	visibility: 'internal' | 'public';
+	attachment_urls: string | null;
 	created_at: string;
 	updated_at: string;
 }
