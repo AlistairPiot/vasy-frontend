@@ -50,6 +50,8 @@
 			<a href="/products" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Produits</a>
 			{#if !user || user.role === 'client'}
 				<a href="/events" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Événements</a>
+			{:else if user.role === 'creator'}
+				<a href="/creator/evenements" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Événements</a>
 			{/if}
 			{#if user}
 				{#if user.role === 'creator' || user.role === 'admin'}
