@@ -30,7 +30,7 @@
 	beforeNavigate(() => commitRemovals());
 
 	onMount(async () => {
-		const productIds = $favorites;
+		const productIds = data.favoriteIds ?? [];
 		const eventIds = $eventFavorites;
 
 		const [productResults, eventResults] = await Promise.all([

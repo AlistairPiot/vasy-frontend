@@ -20,11 +20,6 @@ interface Product {
 }
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
-	// Vérifier l'authentification
-	if (!locals.token) {
-		throw redirect(302, '/login');
-	}
-
 	const { user } = await parent();
 
 	// Les admins ne peuvent pas accéder à cette page (ils ont leur propre interface)
@@ -33,16 +28,13 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 	}
 
 	try {
-		const creator = await serverApi.get<Creator>(`/creators/${params.id}`, locals.token);
+		const creator = await serverApi.get<Creator>(`/creators/${params.id}`);
 
-		// Charger tous les produits et filtrer par creator_id
 		let products: Product[] = [];
 		try {
-			const allProducts = await serverApi.get<Product[]>(`/products/`, locals.token);
-			// Filtrer les produits du créateur
+			const allProducts = await serverApi.get<Product[]>(`/products/`);
 			products = (allProducts || []).filter((p: any) => p.creator_id === params.id);
 		} catch {
-			// Si on ne peut pas charger les produits, on continue avec une liste vide
 			products = [];
 		}
 

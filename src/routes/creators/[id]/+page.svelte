@@ -3,6 +3,7 @@
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Header from '$lib/components/Header.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -39,17 +40,9 @@
 </script>
 
 <div class="min-h-screen bg-background" bind:this={containerRef}>
-	<header class="border-b">
-		<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="/" class="text-xl font-bold">Vasy</a>
-			<nav class="flex gap-4 items-center">
-				<a href="/products" class="text-muted-foreground hover:text-foreground">Produits</a>
-				<a href="/login" class="text-muted-foreground hover:text-foreground">Connexion</a>
-			</nav>
-		</div>
-	</header>
+	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-4 py-8 pt-24">
 		<a href="/products" class="group text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-2 transition-colors text-sm">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
 			Retour aux produits
