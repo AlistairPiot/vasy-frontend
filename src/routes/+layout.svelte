@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
+	import { eventFavorites } from '$lib/stores/eventFavorites';
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 
@@ -13,6 +14,7 @@
 		if (typeof window !== 'undefined') {
 			cart.init(data.user?.id || null);
 			favorites.init(data.favoriteIds ?? []);
+			eventFavorites.init(data.user?.id || null);
 		}
 	});
 </script>

@@ -1,21 +1,31 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-const STORAGE_KEY = 'event_favorites';
+const STORAGE_KEY_PREFIX = 'vasy_event_favorites_';
+
+function getKey(userId: string | null): string {
+	return userId ? `${STORAGE_KEY_PREFIX}${userId}` : `${STORAGE_KEY_PREFIX}guest`;
+}
 
 function createEventFavoritesStore() {
-	const stored: string[] = browser
-		? JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-		: [];
+	const { subscribe, set, update } = writable<string[]>([]);
 
-	const { subscribe, update } = writable<string[]>(stored);
+	let currentKey = getKey(null);
 
 	function persist(ids: string[]) {
-		if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+		if (browser) localStorage.setItem(currentKey, JSON.stringify(ids));
 	}
 
 	return {
 		subscribe,
+
+		init(userId: string | null) {
+			currentKey = getKey(userId);
+			if (browser) {
+				const stored = localStorage.getItem(currentKey);
+				set(stored ? JSON.parse(stored) : []);
+			}
+		},
 
 		toggle(eventId: string) {
 			update((ids) => {
