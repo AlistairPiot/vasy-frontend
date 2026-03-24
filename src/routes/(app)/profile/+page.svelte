@@ -89,6 +89,12 @@
 						>
 							Commandes
 						</button>
+						<a
+							href="/fonctionnement"
+							class="block w-full text-left px-4 py-2 rounded-md transition-colors hover:bg-accent text-muted-foreground"
+						>
+							Fonctionnement
+						</a>
 					</nav>
 				</Card>
 			</aside>

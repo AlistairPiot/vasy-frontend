@@ -91,6 +91,12 @@
 						<p class="text-muted-foreground text-sm">Gérez vos informations et commandes</p>
 					</Card>
 				</a>
+				<a href="/fonctionnement">
+					<Card class="animate-in p-6 hover:shadow-md transition-shadow">
+						<h3 class="font-semibold mb-2">Fonctionnement</h3>
+						<p class="text-muted-foreground text-sm">Comprendre les paiements et les statuts de commande</p>
+					</Card>
+				</a>
 			{/if}
 		</div>
 	</main>
