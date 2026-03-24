@@ -6,6 +6,7 @@ interface Product {
 	name: string;
 	price: number;
 	stock: number;
+	reserved_in_carts: number;
 	is_active: boolean;
 	image_urls: string;
 	created_at: string;

@@ -15,6 +15,8 @@
 	let notificationTimeout: ReturnType<typeof setTimeout>;
 
 	const isFavorite = $derived(favorites.isFavorite(data.product.id, $favorites));
+	const cartItem = $derived($cart.items.find((i) => i.id === data.product.id));
+	const isMaxInCart = $derived(!!cartItem && cartItem.quantity >= data.product.stock);
 
 	// Report modal
 	let showReportModal = $state(false);
@@ -57,7 +59,9 @@
 			price: data.product.price,
 			quantity: 1,
 			image_url: images[0] || '',
-			creator_id: data.product.creator_id
+			creator_id: data.product.creator_id,
+			stock: data.product.stock,
+			expires_at: ''
 		});
 
 		showAddedNotification = true;
@@ -220,10 +224,16 @@
 					<div class="flex gap-3 mb-6">
 						<button
 							onclick={addToCart}
-							disabled={data.product.stock === 0}
+							disabled={data.product.stock === 0 || isMaxInCart}
 							class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-10 px-4 py-2 rounded-md font-medium transition-colors"
 						>
-							{data.product.stock > 0 ? 'Ajouter au panier' : 'Produit épuisé'}
+							{#if data.product.stock === 0}
+								Produit épuisé
+							{:else if isMaxInCart}
+								Quantité max dans le panier
+							{:else}
+								Ajouter au panier
+							{/if}
 						</button>
 						{#if data.user}
 							<button

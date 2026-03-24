@@ -7,11 +7,27 @@
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
+	import { onDestroy } from 'svelte';
 
 	let { data } = $props();
 	let showClearCartModal = $state(false);
+	let now = $state(Date.now());
 
 	let containerRef: HTMLDivElement;
+
+	const ticker = setInterval(() => { now = Date.now(); }, 1000);
+	onDestroy(() => clearInterval(ticker));
+
+	function formatExpiry(expiresAt: string): { label: string; urgent: boolean } {
+		const remaining = Math.floor((new Date(expiresAt).getTime() - now) / 1000);
+		if (remaining <= 0) return { label: 'Expiré', urgent: true };
+		if (remaining < 60) return { label: `${remaining}s`, urgent: true };
+		const mins = Math.floor(remaining / 60);
+		const secs = remaining % 60;
+		const urgent = mins < 5;
+		const label = secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+		return { label, urgent };
+	}
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
@@ -33,7 +49,7 @@
 
 	function incrementQuantity(productId: string) {
 		const item = $cart.items.find((i) => i.id === productId);
-		if (item) {
+		if (item && item.quantity < item.stock) {
 			cart.updateQuantity(productId, item.quantity + 1);
 		}
 	}
@@ -131,6 +147,12 @@
 											<h3 class="font-semibold mb-2">{item.name}</h3>
 										</a>
 										<p class="text-lg font-bold text-primary">{formatPrice(item.price)}</p>
+										{#if item.expires_at}
+											{@const expiry = formatExpiry(item.expires_at)}
+											<p class="text-xs mt-1 {expiry.urgent ? 'text-red-500 font-medium' : 'text-muted-foreground'}">
+												Réservé encore {expiry.label}
+											</p>
+										{/if}
 
 										<!-- Quantity Controls -->
 										<div class="flex items-center gap-2 mt-4">
@@ -143,11 +165,15 @@
 											<span class="w-8 text-center font-medium">{item.quantity}</span>
 											<button
 												onclick={() => incrementQuantity(item.id)}
-												class="w-8 h-8 rounded border border-input hover:bg-accent transition-colors flex items-center justify-center"
+												disabled={item.quantity >= item.stock}
+												class="w-8 h-8 rounded border border-input hover:bg-accent transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
 											>
 												+
 											</button>
 										</div>
+										{#if item.quantity >= item.stock}
+											<p class="text-xs text-orange-500 mt-1">Stock maximum atteint</p>
+										{/if}
 									</div>
 
 									<!-- Item Total & Remove -->

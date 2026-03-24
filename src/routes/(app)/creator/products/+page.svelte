@@ -109,9 +109,16 @@
 									Vous recevez: {formatPrice(calculateProductCommission(product.price).creatorEarnings)}
 								</div>
 							</div>
-							<span class="text-sm text-muted-foreground">
-								Stock: {product.stock}
-							</span>
+							<div class="text-right">
+								<div class="text-sm text-muted-foreground">
+									Stock: {product.stock}
+								</div>
+								{#if product.reserved_in_carts > 0}
+									<div class="text-xs text-orange-600 font-medium">
+										{product.reserved_in_carts} en panier
+									</div>
+								{/if}
+							</div>
 						</div>
 						{#if !product.is_active}
 							<span class="inline-block mt-2 text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">
