@@ -156,7 +156,7 @@
 						Signaler
 					</button>
 				{/if}
-				{#if data.user}
+				{#if data.user && data.user.role !== 'creator'}
 					<button
 						type="button"
 						onclick={() => eventFavorites.toggle(data.event.id)}
@@ -224,7 +224,21 @@
 								>
 							</p>
 						</div>
-					</div>
+					{#if data.event.is_paid && data.event.price}
+						<div class="flex items-center gap-3">
+							<span class="text-lg">🎟️</span>
+							<div>
+								<p class="font-medium">{(data.event.price / 100).toFixed(2)} €</p>
+								<p class="text-xs text-muted-foreground">Entrée payante</p>
+							</div>
+						</div>
+					{:else}
+						<div class="flex items-center gap-3">
+							<span class="text-lg">🎟️</span>
+							<p class="font-medium text-green-600">Entrée libre</p>
+						</div>
+					{/if}
+				</div>
 				</Card>
 
 				{#if data.event.description}

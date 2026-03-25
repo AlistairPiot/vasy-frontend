@@ -14,6 +14,8 @@ interface Event {
 	created_by_name: string;
 	status: 'active' | 'expired' | 'deleted';
 	visibility: 'internal' | 'public';
+	is_paid: boolean;
+	price: number | null;
 	attachment_urls: string | null;
 	created_at: string;
 	updated_at: string;
@@ -48,6 +50,8 @@ export const actions: Actions = {
 		const latitudeStr = formData.get('latitude') as string;
 		const longitudeStr = formData.get('longitude') as string;
 		const attachments = formData.getAll('attachments') as File[];
+		const is_paid = formData.get('is_paid') === 'on';
+		const priceStr = formData.get('price') as string;
 
 		// Validation
 		if (!name || name.trim().length === 0) {
@@ -75,6 +79,14 @@ export const actions: Actions = {
 
 		const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
 
+		let price: number | null = null;
+		if (is_paid) {
+			price = Math.round(parseFloat(priceStr) * 100);
+			if (isNaN(price) || price < 100) {
+				return fail(400, { error: 'Le prix doit être d\'au moins 1 €' });
+			}
+		}
+
 		try {
 			const event = await serverApi.post<Event>(
 				'/events/',
@@ -84,7 +96,9 @@ export const actions: Actions = {
 					date: dateTime,
 					location_text: location_text.trim(),
 					latitude,
-					longitude
+					longitude,
+					is_paid,
+					price
 				},
 				locals.token
 			);

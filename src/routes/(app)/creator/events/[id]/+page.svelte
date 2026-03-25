@@ -20,6 +20,9 @@
 	let latitudeValue = $state<number | null>(data.event.latitude);
 	let longitudeValue = $state<number | null>(data.event.longitude);
 
+	// Événement payant
+	let isPaid = $state(data.event.is_paid ?? false);
+
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
@@ -192,7 +195,41 @@
 					>{data.event.description || ''}</textarea>
 				</div>
 
-				<!-- Pièces jointes -->
+				<!-- Événement payant -->
+			<div class="border rounded-lg p-4 space-y-3">
+				<label class="flex items-center gap-3 cursor-pointer">
+					<input
+						type="checkbox"
+						name="is_paid"
+						bind:checked={isPaid}
+						class="w-4 h-4 rounded border-input"
+					/>
+					<span class="text-sm font-medium">Événement payant</span>
+				</label>
+				{#if isPaid}
+					<div>
+						<label for="price" class="block text-sm font-medium mb-1">
+							Prix d'entrée (€) <span class="text-red-500">*</span>
+						</label>
+						<input
+							type="number"
+							id="price"
+							name="price"
+							min="1"
+							step="0.01"
+							required={isPaid}
+							value={data.event.price ? (data.event.price / 100).toFixed(2) : ''}
+							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							placeholder="Ex: 5.00"
+						/>
+						<p class="text-xs text-muted-foreground mt-1">
+							Commission de 10% — vous recevrez 90% du prix.
+						</p>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Pièces jointes -->
 			<div class="pt-4 border-t space-y-3">
 				<div>
 					<label class="block text-sm font-medium mb-1">Pièces jointes</label>

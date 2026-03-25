@@ -14,6 +14,8 @@ interface Event {
 	created_by_name: string;
 	status: 'active' | 'expired' | 'deleted';
 	visibility: 'internal' | 'public';
+	is_paid: boolean;
+	price: number | null;
 	attachment_urls: string | null;
 	created_at: string;
 	updated_at: string;

@@ -180,6 +180,17 @@
 														<span class="shrink-0">👤</span>
 														<span class="truncate">{event.created_by_name}</span>
 													</p>
+													{#if event.is_paid && event.price}
+														<p class="flex items-center gap-2 min-w-0 text-amber-700 font-medium">
+															<span class="shrink-0">🎟️</span>
+															<span>{(event.price / 100).toFixed(2)} €</span>
+														</p>
+													{:else}
+														<p class="flex items-center gap-2 min-w-0 text-green-600">
+															<span class="shrink-0">🎟️</span>
+															<span>Entrée libre</span>
+														</p>
+													{/if}
 												</div>
 
 												{#if event.description}
@@ -189,7 +200,7 @@
 												{/if}
 											</div>
 											<div class="flex items-center gap-1 shrink-0 ml-3">
-												{#if data.user}
+												{#if data.user && data.user.role !== 'creator'}
 													<button
 														type="button"
 														onclick={(e) => { e.stopPropagation(); eventFavorites.toggle(event.id); }}
