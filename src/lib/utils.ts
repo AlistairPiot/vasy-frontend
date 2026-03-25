@@ -5,12 +5,8 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-// Constantes de commission (en pourcentage et centimes)
-export const PLATFORM_COMMISSION_PERCENT = 5.0; // 5%
-export const PLATFORM_COMMISSION_FIXED_PER_PRODUCT = 25; // 0.25€ = 25 centimes par produit distinct
-
-export const STRIPE_COMMISSION_PERCENT = 1.5; // 1.5% (taux carte européenne, estimation)
-export const STRIPE_COMMISSION_FIXED = 25; // 0.25€ = 25 centimes par transaction
+// Commission : 10% fixe tout inclus (Stripe + plateforme)
+export const COMMISSION_PERCENT = 10.0;
 
 /**
  * Calcule les détails de commission pour un produit unique
@@ -18,26 +14,16 @@ export const STRIPE_COMMISSION_FIXED = 25; // 0.25€ = 25 centimes par transact
  * @returns Objet avec les détails de commission
  */
 export function calculateProductCommission(price: number) {
-	// Commission plateforme pour 1 produit
-	const platformPercent = Math.floor((price * PLATFORM_COMMISSION_PERCENT) / 100);
-	const platformFixed = PLATFORM_COMMISSION_FIXED_PER_PRODUCT;
-	const platformTotal = platformPercent + platformFixed;
-
-	// Commission Stripe (estimée pour 1 produit seul)
-	const stripePercent = Math.floor((price * STRIPE_COMMISSION_PERCENT) / 100);
-	const stripeFixed = STRIPE_COMMISSION_FIXED;
-	const stripeTotal = stripePercent + stripeFixed;
-
-	const totalCommission = platformTotal + stripeTotal;
-	const creatorEarnings = price - totalCommission;
+	const commission = Math.round((price * COMMISSION_PERCENT) / 100);
+	const creatorEarnings = price - commission;
 
 	return {
 		price,
-		platformCommission: platformTotal,
-		stripeCommission: stripeTotal,
-		totalCommission,
+		platformCommission: commission,
+		stripeCommission: 0,
+		totalCommission: commission,
 		creatorEarnings,
-		commissionPercent: price > 0 ? Math.round((totalCommission / price) * 10000) / 100 : 0
+		commissionPercent: COMMISSION_PERCENT
 	};
 }
 

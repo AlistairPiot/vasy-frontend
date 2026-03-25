@@ -98,11 +98,13 @@
 		(data.commissions as Commission[]).reduce((sum, c) => sum + c.platform_commission, 0)
 	);
 
-	// Détail ouvert
-	let openId = $state<string | null>(null);
+	// Détails ouverts (plusieurs simultanément)
+	let openIds = $state(new Set<string>());
 
 	function toggle(id: string) {
-		openId = openId === id ? null : id;
+		const next = new Set(openIds);
+		next.has(id) ? next.delete(id) : next.add(id);
+		openIds = next;
 	}
 </script>
 
@@ -114,9 +116,18 @@
 		</div>
 		{#if (data.commissions as Commission[]).length > 0}
 			<div class="text-right">
-				<p class="text-sm text-muted-foreground">Total perçu</p>
+				<p class="text-sm text-muted-foreground">Commission brute (10%)</p>
 				<p class="text-2xl font-bold text-green-600">{formatPrice(totalCommission)}</p>
 				<p class="text-xs text-muted-foreground">{(data.commissions as Commission[]).length} transaction{(data.commissions as Commission[]).length > 1 ? 's' : ''}</p>
+				<a
+					href="https://dashboard.stripe.com/balance/overview"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+				>
+					Voir le net réel sur Stripe
+					<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+				</a>
 			</div>
 		{/if}
 	</div>
@@ -167,7 +178,7 @@
 												type="button"
 												onclick={() => toggle(commission.id)}
 												class="w-full flex items-center gap-4 px-4 py-3 transition-colors text-left"
-												style:background-color={openId === commission.id ? palette.hover : 'transparent'}
+												style:background-color={openIds.has(commission.id) ? palette.hover : 'transparent'}
 												onmouseenter={(e) => { if (openId !== commission.id) (e.currentTarget as HTMLButtonElement).style.backgroundColor = palette.hover; }}
 												onmouseleave={(e) => { if (openId !== commission.id) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
 											>
@@ -197,7 +208,7 @@
 
 												<!-- Chevron -->
 												<svg
-													class="w-4 h-4 shrink-0 transition-transform {openId === commission.id ? 'rotate-180' : ''}"
+													class="w-4 h-4 shrink-0 transition-transform {openIds.has(commission.id) ? 'rotate-180' : ''}"
 													fill="none" stroke="currentColor" viewBox="0 0 24 24"
 													style:color={palette.label}
 												>
@@ -206,7 +217,7 @@
 											</button>
 
 											<!-- Détail dépliable -->
-											{#if openId === commission.id}
+											{#if openIds.has(commission.id)}
 												<div class="px-4 py-4 space-y-4" style:border-top="1px solid {palette.border}" style:background-color={palette.hover}>
 													<!-- Parties prenantes -->
 													<div class="grid grid-cols-2 gap-4">
@@ -247,28 +258,27 @@
 															<span class="text-muted-foreground">Montant client</span>
 															<span class="font-medium">{formatPrice(commission.total_amount)}</span>
 														</div>
-
 														<div class="flex justify-between text-sm">
-															<span class="text-muted-foreground">Commission plateforme (5% + 0,25€/produit)</span>
-															<span class="text-red-500">−{formatPrice(commission.platform_commission)}</span>
+															<span class="text-muted-foreground">Commission (10%)</span>
+															<span class="font-medium">{formatPrice(commission.platform_commission)}</span>
 														</div>
-
 														<div class="flex justify-between text-sm">
-															<span class="text-muted-foreground">Frais Stripe estimés (1,5% + 0,25€)</span>
-															<span class="text-orange-500">−{formatPrice(commission.stripe_commission)}</span>
+															<span class="text-muted-foreground">Reversé au créateur (90%)</span>
+															<span>{formatPrice(commission.creator_earnings)}</span>
 														</div>
 
 														<div class="h-px my-1" style:background-color={palette.border}></div>
 
-														<div class="flex justify-between text-sm font-medium">
-															<span>Reversé au créateur</span>
-															<span>{formatPrice(commission.creator_earnings)}</span>
-														</div>
-
-														<div class="flex justify-between text-sm font-semibold pt-1" style:color={palette.label}>
-															<span>Votre commission nette</span>
-															<span>+{formatPrice(commission.platform_commission)}</span>
-														</div>
+														<p class="text-xs text-muted-foreground">
+															Les frais Stripe sont déduits de votre commission et varient selon le type de carte.
+															Pour connaître votre revenu net exact, consultez votre
+															<a
+																href="https://dashboard.stripe.com/balance/overview"
+																target="_blank"
+																rel="noopener noreferrer"
+																class="text-primary hover:underline font-medium"
+															>dashboard Stripe</a>.
+														</p>
 													</div>
 												</div>
 											{/if}

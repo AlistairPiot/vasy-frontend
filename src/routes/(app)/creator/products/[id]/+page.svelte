@@ -8,8 +8,7 @@
 	import {
 		calculateProductCommission,
 		formatPrice,
-		PLATFORM_COMMISSION_PERCENT,
-		STRIPE_COMMISSION_PERCENT
+		COMMISSION_PERCENT
 	} from '$lib/utils';
 
 	let { data, form } = $props();
@@ -136,7 +135,7 @@
 
 	<!-- Section des commissions -->
 	<Card class="max-w-2xl p-6 mb-6 bg-blue-50 border-blue-200">
-		<h3 class="font-semibold text-blue-900 mb-4">Détail des commissions</h3>
+		<h3 class="font-semibold text-blue-900 mb-4">Commissions</h3>
 		<div class="grid grid-cols-2 gap-4 text-sm">
 			<div>
 				<p class="text-blue-700">Prix de vente</p>
@@ -148,21 +147,11 @@
 			</div>
 		</div>
 		<div class="mt-4 pt-4 border-t border-blue-200">
-			<p class="text-xs text-blue-600 mb-2">Détail des frais :</p>
-			<div class="flex justify-between text-xs text-blue-700">
-				<span>Commission plateforme ({PLATFORM_COMMISSION_PERCENT}% + 0.25€)</span>
-				<span>-{formatPrice(commission.platformCommission)}</span>
-			</div>
-			<div class="flex justify-between text-xs text-blue-700">
-				<span>Commission Stripe ({STRIPE_COMMISSION_PERCENT}% + 0.25€)</span>
-				<span>-{formatPrice(commission.stripeCommission)}</span>
-			</div>
-			<div class="flex justify-between text-xs font-semibold text-blue-900 mt-2 pt-2 border-t border-blue-200">
-				<span>Total des frais ({commission.commissionPercent}%)</span>
+			<div class="flex justify-between text-xs font-semibold text-blue-900">
+				<span>Commission ({COMMISSION_PERCENT}% tout inclus)</span>
 				<span>-{formatPrice(commission.totalCommission)}</span>
 			</div>
 		</div>
-		<p class="text-xs text-blue-500 mt-3 italic">* Estimation basée sur une carte de paiement européenne. Les frais Stripe peuvent varier pour les cartes hors Europe.</p>
 	</Card>
 
 	<Card class="max-w-2xl p-6">
