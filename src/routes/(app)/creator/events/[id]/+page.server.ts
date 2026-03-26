@@ -21,10 +21,24 @@ interface Event {
 	updated_at: string;
 }
 
+interface Registration {
+	id: string;
+	event_id: string;
+	user_id: string;
+	user_email: string;
+	status: 'pending' | 'accepted' | 'refused';
+	amount: number | null;
+	created_at: string;
+	updated_at: string;
+}
+
 export const load: PageServerLoad = async ({ params, locals }) => {
 	try {
-		const event = await serverApi.get<Event>(`/events/${params.id}`, locals.token);
-		return { event };
+		const [event, registrations] = await Promise.all([
+			serverApi.get<Event>(`/events/${params.id}`, locals.token),
+			serverApi.get<Registration[]>(`/event-registrations/event/${params.id}`, locals.token).catch(() => [] as Registration[]),
+		]);
+		return { event, registrations };
 	} catch (err) {
 		throw redirect(302, '/creator/events');
 	}
@@ -121,6 +135,30 @@ export const actions: Actions = {
 				return fail(400, { error: err.message });
 			}
 			return fail(500, { error: 'Erreur lors de la modification' });
+		}
+	},
+
+	acceptRegistration: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const registrationId = formData.get('registrationId') as string;
+		try {
+			await serverApi.post(`/event-registrations/${registrationId}/accept`, undefined, locals.token);
+			return { success: true };
+		} catch (err) {
+			if (err instanceof Error) return fail(400, { error: err.message });
+			return fail(500, { error: 'Erreur' });
+		}
+	},
+
+	refuseRegistration: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const registrationId = formData.get('registrationId') as string;
+		try {
+			await serverApi.post(`/event-registrations/${registrationId}/refuse`, undefined, locals.token);
+			return { success: true };
+		} catch (err) {
+			if (err instanceof Error) return fail(400, { error: err.message });
+			return fail(500, { error: 'Erreur' });
 		}
 	},
 

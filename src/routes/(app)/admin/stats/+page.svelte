@@ -38,16 +38,19 @@
 		<Card class="animate-in p-6">
 			<p class="text-sm text-muted-foreground mb-1">Transactions</p>
 			<p class="text-3xl font-bold">{data.stats.total_transactions}</p>
+			<p class="text-xs text-muted-foreground mt-1">Commandes expédiées + inscriptions acceptées</p>
 		</Card>
 
 		<Card class="animate-in p-6">
-			<p class="text-sm text-muted-foreground mb-1">Chiffre d'affaires</p>
+			<p class="text-sm text-muted-foreground mb-1">Ventes marketplace</p>
 			<p class="text-3xl font-bold">{formatPrice(data.stats.total_revenue)}</p>
+			<p class="text-xs text-muted-foreground mt-1">Montant total encaissé (commandes expédiées + inscriptions acceptées)</p>
 		</Card>
 
 		<Card class="animate-in p-6">
 			<p class="text-sm text-muted-foreground mb-1">Commissions</p>
 			<p class="text-3xl font-bold">{formatPrice(data.stats.total_commission)}</p>
+			<p class="text-xs text-muted-foreground mt-1">10% sur commandes expédiées + inscriptions acceptées</p>
 		</Card>
 	</div>
 </div>

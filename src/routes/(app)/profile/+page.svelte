@@ -12,8 +12,9 @@
 	let containerRef: HTMLDivElement;
 
 	// Initialiser l'onglet actif selon le paramètre URL
-	let activeTab = $state<'profile' | 'orders'>(
-		($page.url.searchParams.get('tab') === 'orders' ? 'orders' : 'profile')
+	let activeTab = $state<'profile' | 'orders' | 'events'>(
+		($page.url.searchParams.get('tab') === 'orders' ? 'orders' :
+		 $page.url.searchParams.get('tab') === 'events' ? 'events' : 'profile')
 	);
 
 	onMount(() => {
@@ -88,6 +89,14 @@
 								: 'hover:bg-accent text-muted-foreground'}"
 						>
 							Commandes
+						</button>
+						<button
+							onclick={() => (activeTab = 'events')}
+							class="w-full text-left px-4 py-2 rounded-md transition-colors {activeTab === 'events'
+								? 'bg-primary text-primary-foreground'
+								: 'hover:bg-accent text-muted-foreground'}"
+						>
+							Événements
 						</button>
 						<a
 							href="/fonctionnement"
@@ -245,7 +254,51 @@
 							</Button>
 						</form>
 					</Card>
-				{:else if activeTab === 'orders'}
+				{:else if activeTab === 'events'}
+					<Card class="animate-in p-6">
+						<h2 class="text-xl font-semibold mb-6">Mes événements</h2>
+
+						{#if data.eventRegistrations.length === 0}
+							<div class="text-center py-12">
+								<p class="text-muted-foreground">Vous n'êtes inscrit à aucun événement.</p>
+								<a href="/events" class="inline-block mt-4 text-sm text-primary underline underline-offset-2">
+									Découvrir les événements
+								</a>
+							</div>
+						{:else}
+							<div class="space-y-4">
+								{#each data.eventRegistrations as reg}
+									<a href="/events/{reg.event_id}" class="block border rounded-lg p-4 hover:bg-muted/40 transition-colors">
+										<div class="flex items-start justify-between gap-4">
+											<div class="flex-1 min-w-0">
+												<p class="font-medium truncate">{reg.event_name}</p>
+												<p class="text-sm text-muted-foreground mt-1">
+													📅 {new Date(reg.event_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+													à {new Date(reg.event_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+												</p>
+												<p class="text-sm text-muted-foreground">📍 {reg.event_location}</p>
+												{#if reg.amount}
+													<p class="text-sm text-muted-foreground mt-1">
+														💳 Paiement : <span class="font-medium text-foreground">{(reg.amount / 100).toFixed(2)} €</span>
+													</p>
+												{:else if !reg.event_is_paid}
+													<p class="text-sm text-muted-foreground mt-1">Entrée libre</p>
+												{/if}
+											</div>
+											<span class="shrink-0 px-3 py-1 rounded-full text-sm font-medium
+												{reg.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+												 reg.status === 'accepted' ? 'bg-green-100 text-green-800' :
+												 'bg-red-100 text-red-800'}">
+												{reg.status === 'pending' ? 'En attente' :
+												 reg.status === 'accepted' ? 'Accepté' : 'Refusé'}
+											</span>
+										</div>
+									</a>
+								{/each}
+							</div>
+						{/if}
+					</Card>
+			{:else if activeTab === 'orders'}
 					<Card class="animate-in p-6">
 						<h2 class="text-xl font-semibold mb-6">Mes commandes</h2>
 

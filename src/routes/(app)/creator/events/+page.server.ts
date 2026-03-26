@@ -27,16 +27,13 @@ interface StripeStatus {
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const events = await serverApi.get<Event[]>('/events/', locals.token);
+	const [events, stripeStatus, pendingCounts] = await Promise.all([
+		serverApi.get<Event[]>('/events/', locals.token),
+		serverApi.get<StripeStatus>('/stripe/connect/status', locals.token).catch(() => ({ connected: false, onboarding_complete: false })),
+		serverApi.get<Record<string, number>>('/event-registrations/pending-counts', locals.token).catch(() => ({} as Record<string, number>)),
+	]);
 
-	let stripeStatus: StripeStatus;
-	try {
-		stripeStatus = await serverApi.get<StripeStatus>('/stripe/connect/status', locals.token);
-	} catch {
-		stripeStatus = { connected: false, onboarding_complete: false };
-	}
-
-	return { events, stripeStatus };
+	return { events, stripeStatus, pendingCounts };
 };
 
 export const actions: Actions = {

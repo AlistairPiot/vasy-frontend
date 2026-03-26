@@ -10,15 +10,12 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 		throw redirect(302, '/dashboard');
 	}
 
-	// Charger les commandes du client
-	let orders: any[] = [];
-	try {
-		orders = await serverApi.get('/orders/my-orders', locals.token);
-	} catch (error) {
-		console.error('Error loading orders:', error);
-	}
+	const [orders, eventRegistrations] = await Promise.all([
+		serverApi.get('/orders/my-orders', locals.token).catch(() => []),
+		serverApi.get('/event-registrations/my-registrations', locals.token).catch(() => []),
+	]);
 
-	return { user, orders };
+	return { user, orders, eventRegistrations };
 };
 
 export const actions: Actions = {

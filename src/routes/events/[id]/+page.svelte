@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
+	import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
+	import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -13,6 +15,88 @@
 	const eventsForMap = [data.event];
 	let selectedEventId = $state<string | null>(data.event.id);
 	const hasCoordinates = data.event.latitude !== null && data.event.longitude !== null;
+
+	// Inscription
+	let myRegistration = $state(data.myRegistration);
+	let registrationStep = $state<'idle' | 'payment' | 'processing' | 'success' | 'error'>('idle');
+	let registrationError = $state('');
+	let stripe: Stripe | null = null;
+	let elements: StripeElements | null = null;
+	let cardElement: any = null;
+
+	async function handleRegister() {
+		if (!data.event.is_paid) {
+			// Événement gratuit : inscription directe
+			registrationStep = 'processing';
+			try {
+				const res = await fetch(`/api/event-registrations/${data.event.id}`, { method: 'POST' });
+				if (!res.ok) {
+					const body = await res.json().catch(() => ({}));
+					registrationError = body.message || "Erreur lors de l'inscription";
+					registrationStep = 'error';
+					return;
+				}
+				const reg = await res.json();
+				myRegistration = { id: reg.registration_id, status: 'pending', amount: null };
+				registrationStep = 'success';
+			} catch {
+				registrationError = 'Erreur réseau';
+				registrationStep = 'error';
+			}
+			return;
+		}
+
+		// Événement payant : afficher le formulaire Stripe
+		registrationStep = 'payment';
+		// Initialiser Stripe au prochain tick
+		setTimeout(async () => {
+			stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
+			if (!stripe) { registrationError = 'Impossible de charger Stripe'; registrationStep = 'error'; return; }
+			elements = stripe.elements();
+			cardElement = elements.create('card', {
+				style: { base: { fontSize: '16px', color: '#424770', '::placeholder': { color: '#aab7c4' } } }
+			});
+			cardElement.mount('#registration-card-element');
+			cardElement.on('change', (e: any) => { registrationError = e.error?.message || ''; });
+		}, 50);
+	}
+
+	let isSubmitting = $state(false);
+
+	async function handlePaymentSubmit() {
+		if (!stripe || !cardElement || isSubmitting) return;
+		isSubmitting = true;
+		registrationError = '';
+
+		try {
+			// 1. Créer la registration + obtenir le client_secret
+			const res = await fetch(`/api/event-registrations/${data.event.id}`, { method: 'POST' });
+			if (!res.ok) {
+				const body = await res.json().catch(() => ({}));
+				registrationError = body.message || "Erreur lors de l'inscription";
+				isSubmitting = false;
+				return;
+			}
+			const { client_secret, registration_id } = await res.json();
+
+			// 2. Confirmer le paiement (le card element doit rester monté dans le DOM)
+			const { error: stripeError } = await stripe.confirmCardPayment(client_secret, {
+				payment_method: { card: cardElement }
+			});
+
+			if (stripeError) {
+				registrationError = stripeError.message || 'Erreur de paiement';
+				isSubmitting = false;
+				return;
+			}
+
+			myRegistration = { id: registration_id, status: 'pending', amount: data.event.price };
+			registrationStep = 'success';
+		} catch (err) {
+			registrationError = err instanceof Error ? err.message : 'Erreur inattendue';
+			isSubmitting = false;
+		}
+	}
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
@@ -240,6 +324,88 @@
 					{/if}
 				</div>
 				</Card>
+
+				<!-- Bloc inscription -->
+				{#if data.user?.role === 'client' && eventStatus !== 'past'}
+					<div class="animate-in mt-4">
+						{#if myRegistration}
+							{#if myRegistration.status === 'pending'}
+								<div class="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
+									<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+									<span class="text-sm font-medium">Inscription en attente de confirmation</span>
+								</div>
+							{:else if myRegistration.status === 'accepted'}
+								<div class="flex items-center gap-3 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
+									<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+									<span class="text-sm font-medium">Votre présence a été confirmée !</span>
+								</div>
+							{:else if myRegistration.status === 'refused'}
+								<div class="flex items-center gap-3 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
+									<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+									<span class="text-sm font-medium">Votre inscription a été refusée</span>
+								</div>
+							{/if}
+						{:else if registrationStep === 'success'}
+							<div class="flex items-center gap-3 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
+								<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+								<span class="text-sm font-medium">
+									{data.event.is_paid ? 'Paiement effectué, inscription en attente de confirmation !' : 'Inscription enregistrée, en attente de confirmation !'}
+								</span>
+							</div>
+						{:else if registrationStep === 'payment'}
+							<!-- Formulaire paiement Stripe -->
+							<Card class="p-5">
+								<h3 class="font-semibold mb-1">Paiement de l'inscription</h3>
+								<p class="text-sm text-muted-foreground mb-4">
+									Montant : <strong>{(data.event.price! / 100).toFixed(2)} €</strong> — votre carte ne sera débitée qu'après confirmation du créateur.
+								</p>
+
+								{#if registrationError}
+									<p class="text-sm text-red-600 mb-3">{registrationError}</p>
+								{/if}
+
+								<div id="registration-card-element" class="border rounded-lg px-3 py-3 mb-4 bg-background"></div>
+
+								<div class="flex gap-3">
+									<button
+										type="button"
+										onclick={() => { if (!isSubmitting) { registrationStep = 'idle'; registrationError = ''; } }}
+										class="flex-1 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-accent transition-colors"
+									>
+										Annuler
+									</button>
+									<button
+										type="button"
+										onclick={handlePaymentSubmit}
+										disabled={isSubmitting}
+										class="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+									>
+										{isSubmitting ? 'Traitement...' : 'Confirmer et payer'}
+									</button>
+								</div>
+							</Card>
+						{:else}
+							<!-- Bouton initial -->
+							{#if registrationError}
+								<p class="text-sm text-red-600 mb-2">{registrationError}</p>
+							{/if}
+							<button
+								type="button"
+								onclick={handleRegister}
+								disabled={registrationStep === 'processing'}
+								class="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+							>
+								{#if registrationStep === 'processing'}
+									Inscription en cours...
+								{:else if data.event.is_paid}
+									S'inscrire — {(data.event.price! / 100).toFixed(2)} €
+								{:else}
+									S'inscrire à cet événement
+								{/if}
+							</button>
+						{/if}
+					</div>
+				{/if}
 
 				{#if data.event.description}
 					<div class="animate-in">

@@ -310,6 +310,74 @@
 		</div>
 	</Card>
 
+	<!-- Inscriptions -->
+	{#if data.registrations && data.registrations.length > 0}
+		<Card class="animate-in mt-6">
+			<div class="p-6">
+				<h3 class="text-lg font-semibold mb-4">
+					Inscriptions
+					<span class="ml-2 text-sm font-normal text-muted-foreground">
+						({data.registrations.length} au total)
+					</span>
+				</h3>
+
+				<div class="space-y-3">
+					{#each data.registrations as reg}
+						{@const statusMap = {
+							pending: { label: 'En attente', class: 'bg-amber-100 text-amber-800' },
+							accepted: { label: 'Accepté', class: 'bg-green-100 text-green-800' },
+							refused: { label: 'Refusé', class: 'bg-red-100 text-red-800' },
+						}}
+						<div class="flex items-center gap-4 p-3 rounded-lg border bg-card">
+							<div class="flex-1 min-w-0">
+								<p class="text-sm font-medium truncate">{reg.user_email}</p>
+								<p class="text-xs text-muted-foreground">
+									{new Date(reg.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+									{#if reg.amount}
+										· {(reg.amount / 100).toFixed(2)} €
+									{/if}
+								</p>
+							</div>
+							<span class="text-xs px-2 py-0.5 rounded shrink-0 {statusMap[reg.status].class}">
+								{statusMap[reg.status].label}
+							</span>
+							{#if reg.status === 'pending'}
+								<div class="flex gap-2 shrink-0">
+									<form method="POST" action="?/acceptRegistration" use:enhance={() => {
+										return async ({ result, update }) => { await update(); };
+									}}>
+										<input type="hidden" name="registrationId" value={reg.id} />
+										<Button type="submit" size="sm">
+											{#snippet children()}
+												Accepter
+											{/snippet}
+										</Button>
+									</form>
+									<form method="POST" action="?/refuseRegistration" use:enhance={() => {
+										return async ({ result, update }) => { await update(); };
+									}}>
+										<input type="hidden" name="registrationId" value={reg.id} />
+										<Button type="submit" size="sm" variant="destructive">
+											{#snippet children()}
+												Refuser
+											{/snippet}
+										</Button>
+									</form>
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		</Card>
+	{:else if data.event.status === 'active'}
+		<Card class="animate-in mt-6">
+			<div class="p-6 text-center text-muted-foreground text-sm">
+				Aucune inscription pour le moment.
+			</div>
+		</Card>
+	{/if}
+
 	<!-- Formulaire de suppression séparé -->
 	<Card class="animate-in mt-6 border-red-200">
 		<div class="p-6">

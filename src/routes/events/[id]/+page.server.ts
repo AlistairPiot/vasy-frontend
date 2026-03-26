@@ -21,7 +21,13 @@ interface Event {
 	updated_at: string;
 }
 
-export const load: PageServerLoad = async ({ params, parent }) => {
+interface Registration {
+	id: string;
+	status: 'pending' | 'accepted' | 'refused';
+	amount: number | null;
+}
+
+export const load: PageServerLoad = async ({ params, parent, locals }) => {
 	const { user } = await parent();
 
 	if (user && user.role === 'admin') {
@@ -30,7 +36,21 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	try {
 		const event = await serverApi.get<Event>(`/events/public/${params.id}`);
-		return { event, user };
+
+		// Charger l'inscription existante si l'utilisateur est connecté (client)
+		let myRegistration: Registration | null = null;
+		if (locals.token && user?.role === 'client') {
+			try {
+				myRegistration = await serverApi.get<Registration | null>(
+					`/event-registrations/check/${params.id}`,
+					locals.token
+				);
+			} catch {
+				// Non authentifié ou erreur → pas d'inscription
+			}
+		}
+
+		return { event, user, myRegistration };
 	} catch {
 		throw error(404, 'Événement non trouvé');
 	}

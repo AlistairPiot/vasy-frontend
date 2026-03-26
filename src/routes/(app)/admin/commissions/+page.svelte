@@ -18,7 +18,8 @@
 	type Item = { product_name: string; quantity: number; unit_price: number };
 	type Commission = {
 		id: string;
-		shipped_at: string;
+		type: 'order' | 'event';
+		date: string;
 		total_amount: number;
 		platform_commission: number;
 		stripe_commission: number;
@@ -27,6 +28,7 @@
 		creator_email: string | null;
 		client_name: string;
 		client_email: string | null;
+		event_name?: string;
 		items: Item[];
 	};
 
@@ -84,7 +86,7 @@
 		// Map<monthKey YYYY-MM, Map<dayKey YYYY-MM-DD, Commission[]>>
 		const months = new Map<string, Map<string, Commission[]>>();
 		for (const c of data.commissions as Commission[]) {
-			const d = new Date(c.shipped_at).toISOString().slice(0, 10);
+			const d = new Date(c.date).toISOString().slice(0, 10);
 			const m = d.slice(0, 7);
 			if (!months.has(m)) months.set(m, new Map());
 			const days = months.get(m)!;
@@ -112,7 +114,7 @@
 	<div class="animate-in flex items-start justify-between">
 		<div>
 			<h1 class="text-3xl font-bold">Commissions</h1>
-			<p class="text-muted-foreground mt-1">Historique des commissions perçues (commandes expédiées)</p>
+			<p class="text-muted-foreground mt-1">Historique des commissions perçues (commandes expédiées + inscriptions événements acceptées)</p>
 		</div>
 		{#if (data.commissions as Commission[]).length > 0}
 			<div class="text-right">
@@ -179,8 +181,8 @@
 												onclick={() => toggle(commission.id)}
 												class="w-full flex items-center gap-4 px-4 py-3 transition-colors text-left"
 												style:background-color={openIds.has(commission.id) ? palette.hover : 'transparent'}
-												onmouseenter={(e) => { if (openId !== commission.id) (e.currentTarget as HTMLButtonElement).style.backgroundColor = palette.hover; }}
-												onmouseleave={(e) => { if (openId !== commission.id) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+												onmouseenter={(e) => { if (!openIds.has(commission.id)) (e.currentTarget as HTMLButtonElement).style.backgroundColor = palette.hover; }}
+												onmouseleave={(e) => { if (!openIds.has(commission.id)) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
 											>
 												<!-- Icône -->
 												<div
@@ -196,7 +198,7 @@
 												<div class="flex-1 min-w-0">
 													<p class="font-medium text-sm truncate">{commission.creator_name}</p>
 													<p class="text-xs text-muted-foreground">
-														{formatTime(commission.shipped_at)} · #{commission.id.slice(0, 8)}
+														{formatTime(commission.date)} · {commission.type === 'event' ? '🎟️ Événement' : '📦 Commande'} · #{commission.id.slice(0, 8)}
 													</p>
 												</div>
 
@@ -237,18 +239,25 @@
 														</div>
 													</div>
 
-													<!-- Produits -->
-													<div>
-														<p class="text-xs text-muted-foreground mb-1.5">Produits</p>
-														<div class="space-y-1">
-															{#each commission.items as item}
-																<div class="flex justify-between text-sm">
-																	<span class="text-muted-foreground">{item.product_name} ×{item.quantity}</span>
-																	<span>{formatPrice(item.unit_price * item.quantity)}</span>
-																</div>
-															{/each}
+													<!-- Événement ou Produits -->
+													{#if commission.type === 'event'}
+														<div>
+															<p class="text-xs text-muted-foreground mb-1.5">Événement</p>
+															<p class="text-sm font-medium">{commission.event_name}</p>
 														</div>
-													</div>
+													{:else}
+														<div>
+															<p class="text-xs text-muted-foreground mb-1.5">Produits</p>
+															<div class="space-y-1">
+																{#each commission.items as item}
+																	<div class="flex justify-between text-sm">
+																		<span class="text-muted-foreground">{item.product_name} ×{item.quantity}</span>
+																		<span>{formatPrice(item.unit_price * item.quantity)}</span>
+																	</div>
+																{/each}
+															</div>
+														</div>
+													{/if}
 
 													<!-- Calcul détaillé -->
 													<div class="rounded-md p-3 space-y-1.5" style:background-color={palette.bg} style:border="1px solid {palette.border}">

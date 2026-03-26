@@ -1,18 +1,118 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { gsap } from 'gsap';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
+
+	type Registration = {
+		id: string;
+		user_email: string;
+		status: 'pending' | 'accepted' | 'refused';
+		amount: number | null;
+		created_at: string;
+	};
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
 	let showCreateForm = $state(false);
 	let selectedEventId = $state<string | null>(null);
 	let isPaid = $state(false);
+
+	// Timer (mise à jour chaque seconde pour le countdown)
+	let now = $state(Date.now());
+	const ticker = setInterval(() => { now = Date.now(); }, 1000);
+	onDestroy(() => clearInterval(ticker));
+
+	const DEADLINE_HOURS = 48;
+
+	function formatDeadline(createdAt: string): { label: string; urgent: boolean; expired: boolean } {
+		const deadline = new Date(createdAt).getTime() + DEADLINE_HOURS * 60 * 60 * 1000;
+		const remaining = Math.floor((deadline - now) / 1000);
+		if (remaining <= 0) return { label: 'Expiré', urgent: true, expired: true };
+		if (remaining < 3600) {
+			const mins = Math.floor(remaining / 60);
+			const secs = remaining % 60;
+			return { label: `${mins}m ${secs}s`, urgent: true, expired: false };
+		}
+		const hours = Math.floor(remaining / 3600);
+		const mins = Math.floor((remaining % 3600) / 60);
+		return { label: `${hours}h ${mins}m`, urgent: hours < 6, expired: false };
+	}
+
+	// Modal de confirmation
+	type PendingAction = { type: 'accept' | 'refuse'; registrationId: string; eventId: string } | null;
+	let pendingAction = $state<PendingAction>(null);
+
+	function confirmAction(type: 'accept' | 'refuse', registrationId: string, eventId: string) {
+		pendingAction = { type, registrationId, eventId };
+	}
+
+	async function executeAction() {
+		if (!pendingAction) return;
+		const { type, registrationId, eventId } = pendingAction;
+		pendingAction = null;
+		if (type === 'accept') {
+			await handleAccept(registrationId, eventId);
+		} else {
+			await handleRefuse(registrationId, eventId);
+		}
+	}
+
+	// Inscriptions par événement
+	let openRegistrations = $state<Record<string, boolean>>({});
+	let registrationsData = $state<Record<string, Registration[]>>({});
+	let registrationsLoading = $state<Record<string, boolean>>({});
+
+	async function toggleRegistrations(eventId: string) {
+		if (openRegistrations[eventId]) {
+			openRegistrations = { ...openRegistrations, [eventId]: false };
+			return;
+		}
+		openRegistrations = { ...openRegistrations, [eventId]: true };
+		if (registrationsData[eventId]) return; // déjà chargé
+
+		registrationsLoading = { ...registrationsLoading, [eventId]: true };
+		try {
+			const res = await fetch(`/api/event-registrations/event/${eventId}`);
+			if (res.ok) {
+				registrationsData = { ...registrationsData, [eventId]: await res.json() };
+			}
+		} finally {
+			registrationsLoading = { ...registrationsLoading, [eventId]: false };
+		}
+	}
+
+	async function handleAccept(registrationId: string, eventId: string) {
+		const res = await fetch(`/api/event-registrations/${registrationId}/accept`, { method: 'POST' });
+		if (res.ok) {
+			registrationsData = {
+				...registrationsData,
+				[eventId]: registrationsData[eventId].map((r) =>
+					r.id === registrationId ? { ...r, status: 'accepted' as const } : r
+				)
+			};
+			// Mettre à jour le pending count localement
+			await invalidateAll();
+		}
+	}
+
+	async function handleRefuse(registrationId: string, eventId: string) {
+		const res = await fetch(`/api/event-registrations/${registrationId}/refuse`, { method: 'POST' });
+		if (res.ok) {
+			registrationsData = {
+				...registrationsData,
+				[eventId]: registrationsData[eventId].map((r) =>
+					r.id === registrationId ? { ...r, status: 'refused' as const } : r
+				)
+			};
+			await invalidateAll();
+		}
+	}
 
 	// Fichiers à uploader
 	let selectedFiles = $state<File[]>([]);
@@ -397,6 +497,11 @@
 												<span class="text-xs px-2 py-0.5 rounded shrink-0 {badge.class}">
 													{badge.text}
 												</span>
+												{#if data.pendingCounts?.[event.id]}
+													<span class="text-xs px-2 py-0.5 rounded-full shrink-0 bg-orange-100 text-orange-700 font-semibold">
+														{data.pendingCounts[event.id]} en attente
+													</span>
+												{/if}
 											</div>
 
 											<div class="space-y-1 text-sm text-muted-foreground">
@@ -428,6 +533,20 @@
 
 							<!-- Actions -->
 							<div class="px-4 pb-4 flex gap-2 border-t pt-3">
+								<Button
+									size="sm"
+									variant="outline"
+									onclick={() => toggleRegistrations(event.id)}
+									class="relative"
+								>
+									{#snippet children()}
+										<svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+										Inscriptions
+										{#if data.pendingCounts?.[event.id]}
+											<span class="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold rounded-full bg-orange-500 text-white">{data.pendingCounts[event.id]}</span>
+										{/if}
+									{/snippet}
+								</Button>
 								<a href="/creator/events/{event.id}" class="flex-1">
 									<Button size="sm" variant="outline" class="w-full">
 										{#snippet children()}
@@ -464,6 +583,55 @@
 								</form>
 							</div>
 						</Card>
+
+						<!-- Panneau inscriptions dépliable -->
+						{#if openRegistrations[event.id]}
+							<div class="mt-1 rounded-lg border bg-card overflow-hidden">
+								<div class="px-4 py-3 border-b bg-muted/40 flex items-center justify-between">
+									<span class="text-sm font-medium">Inscriptions</span>
+									<button type="button" onclick={() => toggleRegistrations(event.id)} class="text-muted-foreground hover:text-foreground">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+									</button>
+								</div>
+
+								{#if registrationsLoading[event.id]}
+									<div class="px-4 py-6 text-center text-sm text-muted-foreground">Chargement...</div>
+								{:else if !registrationsData[event.id] || registrationsData[event.id].length === 0}
+									<div class="px-4 py-6 text-center text-sm text-muted-foreground">Aucune inscription pour le moment.</div>
+								{:else}
+									<ul class="divide-y">
+										{#each registrationsData[event.id] as reg}
+											{@const statusMap = { pending: { label: 'En attente', class: 'bg-amber-100 text-amber-800' }, accepted: { label: 'Accepté', class: 'bg-green-100 text-green-800' }, refused: { label: 'Refusé', class: 'bg-red-100 text-red-800' } }}
+											<li class="flex items-center gap-3 px-4 py-3">
+												<div class="flex-1 min-w-0">
+													<p class="text-sm font-medium truncate">{reg.user_email}</p>
+													{#if reg.amount}
+														<p class="text-xs text-muted-foreground">{(reg.amount / 100).toFixed(2)} €</p>
+													{/if}
+													{#if reg.status === 'pending'}
+														{@const deadline = formatDeadline(reg.created_at)}
+														<p class="text-xs mt-0.5 {deadline.urgent ? 'text-red-500 font-medium' : 'text-muted-foreground'}">
+															⏱ {deadline.expired ? 'Délai dépassé' : `Expire dans ${deadline.label}`}
+														</p>
+													{/if}
+												</div>
+												<span class="text-xs px-2 py-0.5 rounded-full shrink-0 {statusMap[reg.status].class}">{statusMap[reg.status].label}</span>
+												{#if reg.status === 'pending'}
+													<div class="flex gap-1.5 shrink-0">
+														<Button size="sm" onclick={() => confirmAction('accept', reg.id, event.id)}>
+															{#snippet children()}Accepter{/snippet}
+														</Button>
+														<Button size="sm" variant="destructive" onclick={() => confirmAction('refuse', reg.id, event.id)}>
+															{#snippet children()}Refuser{/snippet}
+														</Button>
+													</div>
+												{/if}
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</div>
+						{/if}
 					{/each}
 
 					<div class="text-sm text-muted-foreground pt-2">
@@ -490,3 +658,15 @@
 		</div>
 	{/if}
 </div>
+
+<ConfirmModal
+	isOpen={pendingAction !== null}
+	title={pendingAction?.type === 'accept' ? "Accepter l'inscription" : "Refuser l'inscription"}
+	message={pendingAction?.type === 'accept'
+		? "Êtes-vous sûr de vouloir accepter cette inscription ? Le paiement sera capturé si l'événement est payant."
+		: "Êtes-vous sûr de vouloir refuser cette inscription ? Le paiement sera annulé si l'événement est payant."}
+	confirmText={pendingAction?.type === 'accept' ? 'Accepter' : 'Refuser'}
+	variant={pendingAction?.type === 'refuse' ? 'destructive' : 'default'}
+	onConfirm={executeAction}
+	onCancel={() => (pendingAction = null)}
+/>
