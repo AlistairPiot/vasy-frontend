@@ -506,7 +506,7 @@
 							/>
 							<span class="text-xs text-muted-foreground leading-relaxed">
 								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
-								à prélever une commission de 5% + 0,25€ par produit sur chaque vente,
+								à prélever une commission de 10% sur chaque vente,
 								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
 								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
 							</span>
@@ -591,7 +591,7 @@
 							/>
 							<span class="text-xs text-muted-foreground leading-relaxed">
 								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
-								à prélever une commission de 5% + 0,25€ par produit sur chaque vente,
+								à prélever une commission de 10% sur chaque vente,
 								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
 								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
 							</span>
