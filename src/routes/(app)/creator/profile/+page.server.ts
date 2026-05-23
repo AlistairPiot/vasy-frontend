@@ -100,13 +100,14 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const orderId = formData.get('orderId') as string;
 		const trackingNumber = formData.get('trackingNumber') as string;
+		const carrier = formData.get('carrier') as string | null;
 
 		if (!trackingNumber) {
 			return fail(400, { orderError: 'Numéro de suivi requis' });
 		}
 
 		try {
-			await serverApi.post(`/orders/${orderId}/ship`, { tracking_number: trackingNumber }, locals.token);
+			await serverApi.post(`/orders/${orderId}/ship`, { tracking_number: trackingNumber, carrier: carrier || null }, locals.token);
 			return { orderSuccess: true };
 		} catch (err) {
 			if (err instanceof Error && err.message) {

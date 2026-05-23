@@ -150,7 +150,7 @@
 										{#if item.expires_at}
 											{@const expiry = formatExpiry(item.expires_at)}
 											<p class="text-xs mt-1 {expiry.urgent ? 'text-red-500 font-medium' : 'text-muted-foreground'}">
-												Réservé encore {expiry.label}
+												{expiry.urgent ? expiry.label : `Réservé encore ${expiry.label}`}
 											</p>
 										{/if}
 

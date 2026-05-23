@@ -20,6 +20,7 @@
 		type: 'accept' | 'refuse' | 'ship' | null;
 		orderId: string | null;
 		trackingNumber?: string;
+		carrier?: string;
 	}>({ isOpen: false, type: null, orderId: null });
 
 	onMount(() => {
@@ -156,8 +157,8 @@
 		}, 'image/png', 0.95);
 	}
 
-	function openConfirmModal(type: 'accept' | 'refuse' | 'ship', orderId: string, trackingNumber?: string) {
-		confirmModal = { isOpen: true, type, orderId, trackingNumber };
+	function openConfirmModal(type: 'accept' | 'refuse' | 'ship', orderId: string, trackingNumber?: string, carrier?: string) {
+		confirmModal = { isOpen: true, type, orderId, trackingNumber, carrier };
 	}
 
 	function closeConfirmModal() {
@@ -190,6 +191,14 @@
 			trackingInput.name = 'trackingNumber';
 			trackingInput.value = confirmModal.trackingNumber;
 			form.appendChild(trackingInput);
+
+			if (confirmModal.carrier) {
+				const carrierInput = document.createElement('input');
+				carrierInput.type = 'hidden';
+				carrierInput.name = 'carrier';
+				carrierInput.value = confirmModal.carrier;
+				form.appendChild(carrierInput);
+			}
 		}
 
 		document.body.appendChild(form);
@@ -640,6 +649,12 @@
 		<Card class="p-6">
 			<h2 class="text-2xl font-bold mb-6">Commandes</h2>
 
+			{#if form?.orderError}
+				<div class="bg-red-100 text-red-800 text-sm p-3 rounded-md mb-4">
+					{form.orderError}
+				</div>
+			{/if}
+
 			<!-- Section En attente (en_attente) -->
 			<div class="mb-6">
 				<h3 class="text-lg font-semibold mb-4 pb-2 border-b">En attente</h3>
@@ -746,6 +761,21 @@
 
 								<div class="space-y-2">
 									<div>
+										<label class="text-sm font-medium">Transporteur</label>
+										<select
+											id="carrier-{order.id}"
+											class="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
+										>
+											<option value="">Sélectionner...</option>
+											<option value="Colissimo">Colissimo</option>
+											<option value="Lettre suivie">Lettre suivie</option>
+											<option value="Mondial Relay">Mondial Relay</option>
+											<option value="Chronopost">Chronopost</option>
+											<option value="DPD">DPD</option>
+											<option value="Autre">Autre</option>
+										</select>
+									</div>
+									<div>
 										<label class="text-sm font-medium">Numéro de suivi</label>
 										<input
 											type="text"
@@ -757,17 +787,13 @@
 									</div>
 									<Button onclick={() => {
 										const trackingInput = document.getElementById(`trackingNumber-${order.id}`) as HTMLInputElement;
+										const carrierInput = document.getElementById(`carrier-${order.id}`) as HTMLSelectElement;
 										if (trackingInput && trackingInput.value) {
-											openConfirmModal('ship', order.id, trackingInput.value);
+											openConfirmModal('ship', order.id, trackingInput.value, carrierInput?.value || undefined);
 										}
 									}} class="w-full" size="sm">
 										{#snippet children()}
 											Marquer comme expédié
-										{/snippet}
-									</Button>
-									<Button onclick={() => openConfirmModal('refuse', order.id)} variant="destructive" class="w-full" size="sm">
-										{#snippet children()}
-											Refuser
 										{/snippet}
 									</Button>
 								</div>
@@ -816,7 +842,11 @@
 								</div>
 
 								<div class="text-sm text-muted-foreground">
-									<strong class="text-foreground">Livraison :</strong> {order.shipping_name} · <strong class="text-foreground">Suivi :</strong> <span class="font-mono">{order.tracking_number}</span>
+									<strong class="text-foreground">Livraison :</strong> {order.shipping_name}
+									{#if order.carrier}
+										· <strong class="text-foreground">Transporteur :</strong> {order.carrier}
+									{/if}
+									· <strong class="text-foreground">Suivi :</strong> <span class="font-mono">{order.tracking_number}</span>
 								</div>
 							</div>
 						{/each}
