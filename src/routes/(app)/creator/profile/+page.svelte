@@ -2,8 +2,6 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
-	import { loadStripe } from '@stripe/stripe-js';
-	import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -205,105 +203,25 @@
 		form.submit();
 	}
 
-	// Formulaire coordonnées bancaires
-	let showPayoutForm = $state(false);
-	let payoutLoading = $state(false);
-	let payoutError = $state<string | null>(null);
-	let payoutSuccess = $state(false);
-	let ibanDisplay = $state('');
-	let mandateAccepted = $state(false);
+	// Configuration paiements Stripe Express
+	let onboardingLoading = $state(false);
+	let onboardingError = $state<string | null>(null);
 
-	function handleIbanInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		// Ne garder que lettres et chiffres, majuscules, max 34 chars
-		const raw = input.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 34);
-		// Formater par groupes de 4
-		ibanDisplay = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
-	}
-
-	const ibanRaw = $derived(ibanDisplay.replace(/\s/g, ''));
-	const ibanValid = $derived(ibanRaw.length >= 15 && /^[A-Z]{2}\d{2}/.test(ibanRaw));
-
-	async function handlePayoutSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		const formEl = event.target as HTMLFormElement;
-		const formData = new FormData(formEl);
-
-		payoutLoading = true;
-		payoutError = null;
-
+	async function startOnboarding() {
+		onboardingLoading = true;
+		onboardingError = null;
 		try {
-			const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
-			if (!stripe) throw new Error('Stripe non disponible');
-
-			const firstName = formData.get('first_name') as string;
-			const lastName = formData.get('last_name') as string;
-
-			// 1. Créer le token account avec les données personnelles (obligatoire pour FR)
-			const { token: accountToken, error: accountError } = await stripe.createToken('account', {
-				business_type: 'individual',
-				individual: {
-					first_name: firstName,
-					last_name: lastName,
-					dob: {
-						day: parseInt(formData.get('dob_day') as string),
-						month: parseInt(formData.get('dob_month') as string),
-						year: parseInt(formData.get('dob_year') as string),
-					},
-					address: {
-						line1: formData.get('address_line1') as string,
-						city: formData.get('address_city') as string,
-						postal_code: formData.get('address_postal_code') as string,
-						country: 'FR',
-					},
-					email: data.user.email,
-				},
-				tos_shown_and_accepted: true,
-			} as Parameters<typeof stripe.createToken>[1]);
-
-			if (accountError || !accountToken) {
-				payoutError = accountError?.message ?? 'Erreur lors de la création du token compte';
-				return;
-			}
-
-			// 2. Créer le token bank_account avec l'IBAN
-			const { token: bankToken, error: bankError } = await stripe.createToken('bank_account', {
-				country: 'FR',
-				currency: 'eur',
-				account_number: ibanRaw,
-				account_holder_name: `${firstName} ${lastName}`,
-				account_holder_type: 'individual',
-			});
-
-			if (bankError || !bankToken) {
-				payoutError = bankError?.message ?? "Erreur lors de la validation de l'IBAN";
-				return;
-			}
-
-			// 3. Envoyer les tokens au backend
-			const response = await fetch('/api/stripe/setup-payout', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					account_token: accountToken.id,
-					bank_account_token: bankToken.id,
-					iban_last4: ibanRaw.slice(-4),
-					mandate_accepted: mandateAccepted,
-				}),
-			});
-
-			if (!response.ok) {
-				const err = await response.json().catch(() => ({ detail: 'Erreur inconnue' }));
-				payoutError = err.detail || 'Erreur lors de la configuration';
+			const res = await fetch('/api/stripe/onboarding-link', { method: 'POST' });
+			const data = await res.json();
+			if (data.url) {
+				window.location.href = data.url;
 			} else {
-				payoutSuccess = true;
-				showPayoutForm = false;
-				window.location.reload();
+				onboardingError = data.detail || 'Erreur lors de la génération du lien';
 			}
-		} catch (e) {
-			payoutError = e instanceof Error ? e.message : 'Erreur réseau. Veuillez réessayer.';
+		} catch {
+			onboardingError = 'Erreur réseau. Veuillez réessayer.';
 		} finally {
-			payoutLoading = false;
+			onboardingLoading = false;
 		}
 	}
 </script>
@@ -407,212 +325,36 @@
 			</form>
 		</Card>
 
-		{#if payoutError}
-			<div class="bg-red-100 text-red-800 text-sm p-3 rounded-md">
-				{payoutError}
-			</div>
-		{/if}
-
 		<div id="stripe"></div>
 		{#if !data.stripeStatus.onboarding_complete}
 			<Card class="p-6 border-orange-200 bg-orange-50">
-				<h2 class="font-semibold mb-2">Coordonnées bancaires requises</h2>
+				<h2 class="font-semibold mb-2">Configuration des paiements requise</h2>
 				<p class="text-sm text-muted-foreground mb-4">
-					Pour recevoir vos paiements, renseignez vos coordonnées bancaires. Ces informations sont transmises de manière sécurisée à notre partenaire Stripe.
+					Pour recevoir vos paiements, configurez votre compte bancaire via notre partenaire Stripe. Vous serez redirigé vers une page sécurisée Stripe.
 				</p>
-
-				{#if !showPayoutForm}
-					<Button type="button" onclick={() => (showPayoutForm = true)}>
-						{#snippet children()}
-							Configurer mes coordonnées bancaires
-						{/snippet}
-					</Button>
-				{:else}
-					<form onsubmit={handlePayoutSubmit} class="space-y-4 mt-4">
-						<div class="grid grid-cols-2 gap-3">
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Prénom *</label>
-								<Input type="text" name="first_name" required />
-							</div>
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Nom *</label>
-								<Input type="text" name="last_name" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">Date de naissance *</label>
-							<div class="grid grid-cols-3 gap-2">
-								<Input type="number" name="dob_day" placeholder="JJ" min="1" max="31" required />
-								<Input type="number" name="dob_month" placeholder="MM" min="1" max="12" required />
-								<Input type="number" name="dob_year" placeholder="AAAA" min="1900" max="2005" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">Adresse *</label>
-							<Input type="text" name="address_line1" placeholder="Numéro et nom de rue" required />
-						</div>
-
-						<div class="grid grid-cols-2 gap-3">
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Code postal *</label>
-								<Input type="text" name="address_postal_code" placeholder="75001" required />
-							</div>
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Ville *</label>
-								<Input type="text" name="address_city" placeholder="Paris" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">IBAN *</label>
-							<div class="relative">
-								<input
-									type="text"
-									name="iban"
-									value={ibanDisplay}
-									oninput={handleIbanInput}
-									placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
-									required
-									autocomplete="off"
-									spellcheck="false"
-									class="flex w-full rounded-md border px-3 py-2 text-sm font-mono tracking-wider pr-20
-										{ibanRaw.length > 0
-											? ibanValid
-												? 'border-green-500 focus-visible:ring-green-500'
-												: 'border-red-400 focus-visible:ring-red-400'
-											: 'border-input'}
-										bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2"
-								/>
-								<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-									{#if ibanRaw.length > 0}
-										{#if ibanValid}
-											<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-											</svg>
-										{:else}
-											<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-											</svg>
-										{/if}
-									{/if}
-									<span class="text-xs text-muted-foreground tabular-nums">{ibanRaw.length}/34</span>
-								</div>
-							</div>
-							{#if ibanRaw.length > 0 && !ibanValid}
-								<p class="text-xs text-red-500">Format invalide — doit commencer par 2 lettres suivies de 2 chiffres (ex : FR76…)</p>
-							{/if}
-							<p class="text-xs text-muted-foreground">Votre IBAN est transmis de façon sécurisée à Stripe. Nous ne le stockons pas.</p>
-						</div>
-
-						<label class="flex items-start gap-3 p-3 rounded-md border border-input bg-muted/30 cursor-pointer">
-							<input
-								type="checkbox"
-								bind:checked={mandateAccepted}
-								required
-								class="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-							/>
-							<span class="text-xs text-muted-foreground leading-relaxed">
-								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
-								à prélever une commission de 10% sur chaque vente,
-								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
-								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
-							</span>
-						</label>
-
-						<div class="flex gap-2 pt-2">
-							<Button type="submit" disabled={payoutLoading || !mandateAccepted}>
-								{#snippet children()}
-									{payoutLoading ? 'Enregistrement...' : 'Enregistrer'}
-								{/snippet}
-							</Button>
-							<Button type="button" variant="outline" onclick={() => (showPayoutForm = false)}>
-								{#snippet children()}
-									Annuler
-								{/snippet}
-							</Button>
-						</div>
-					</form>
+				{#if onboardingError}
+					<p class="text-sm text-red-600 mb-3">{onboardingError}</p>
 				{/if}
+				<Button type="button" onclick={startOnboarding} disabled={onboardingLoading}>
+					{#snippet children()}
+						{onboardingLoading ? 'Chargement...' : 'Configurer mes paiements'}
+					{/snippet}
+				</Button>
 			</Card>
 		{:else}
 			<Card class="p-6 border-green-200 bg-green-50">
-				<h2 class="font-semibold mb-2 text-green-800">✓ Coordonnées bancaires configurées</h2>
+				<h2 class="font-semibold mb-2 text-green-800">✓ Paiements configurés</h2>
 				<p class="text-sm text-muted-foreground mb-4">
-					Vos virements seront effectués automatiquement sur votre compte IBAN se terminant par <span class="font-mono font-semibold">{data.stripeStatus.iban_last4 || '····'}</span>.
+					Votre compte bancaire est configuré. Vous recevrez vos virements automatiquement après chaque expédition.
 				</p>
-				<Button type="button" variant="outline" onclick={() => (showPayoutForm = !showPayoutForm)}>
+				{#if onboardingError}
+					<p class="text-sm text-red-600 mb-3">{onboardingError}</p>
+				{/if}
+				<Button type="button" variant="outline" onclick={startOnboarding} disabled={onboardingLoading}>
 					{#snippet children()}
-						{showPayoutForm ? 'Annuler' : 'Modifier les coordonnées'}
+						{onboardingLoading ? 'Chargement...' : 'Modifier mes informations bancaires'}
 					{/snippet}
 				</Button>
-
-				{#if showPayoutForm}
-					<form onsubmit={handlePayoutSubmit} class="space-y-4 mt-4">
-						<div class="grid grid-cols-2 gap-3">
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Prénom *</label>
-								<Input type="text" name="first_name" required />
-							</div>
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Nom *</label>
-								<Input type="text" name="last_name" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">Date de naissance *</label>
-							<div class="grid grid-cols-3 gap-2">
-								<Input type="number" name="dob_day" placeholder="JJ" min="1" max="31" required />
-								<Input type="number" name="dob_month" placeholder="MM" min="1" max="12" required />
-								<Input type="number" name="dob_year" placeholder="AAAA" min="1900" max="2005" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">Adresse *</label>
-							<Input type="text" name="address_line1" placeholder="Numéro et nom de rue" required />
-						</div>
-
-						<div class="grid grid-cols-2 gap-3">
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Code postal *</label>
-								<Input type="text" name="address_postal_code" placeholder="75001" required />
-							</div>
-							<div class="space-y-1">
-								<label class="text-sm font-medium">Ville *</label>
-								<Input type="text" name="address_city" placeholder="Paris" required />
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label class="text-sm font-medium">Nouvel IBAN *</label>
-							<Input type="text" name="iban" placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" required />
-						</div>
-
-						<label class="flex items-start gap-3 p-3 rounded-md border border-input bg-muted/30 cursor-pointer">
-							<input
-								type="checkbox"
-								bind:checked={mandateAccepted}
-								required
-								class="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-							/>
-							<span class="text-xs text-muted-foreground leading-relaxed">
-								J'autorise <strong>Vasy</strong> à encaisser les paiements de mes clients en mon nom,
-								à prélever une commission de 10% sur chaque vente,
-								et à me reverser le solde net sur le compte bancaire renseigné ci-dessus.
-								<span class="text-foreground font-medium">Ce mandat d'encaissement est obligatoire pour recevoir vos paiements.</span>
-							</span>
-						</label>
-
-						<Button type="submit" disabled={payoutLoading || !mandateAccepted}>
-							{#snippet children()}
-								{payoutLoading ? 'Enregistrement...' : 'Mettre à jour'}
-							{/snippet}
-						</Button>
-					</form>
-				{/if}
 			</Card>
 		{/if}
 

@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 	}
 
 	// Charger le statut bancaire
-	let stripeStatus = { connected: false, onboarding_complete: false, iban_last4: null as string | null };
+	let stripeStatus = { connected: false, onboarding_complete: false };
 	try {
 		stripeStatus = await serverApi.get('/stripe/connect/status', locals.token);
 	} catch (error) {
