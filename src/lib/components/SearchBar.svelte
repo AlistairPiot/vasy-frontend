@@ -2,7 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { gsap } from 'gsap';
 	import { goto } from '$app/navigation';
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
+const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 
 	interface SearchResult {
 		id: string;
