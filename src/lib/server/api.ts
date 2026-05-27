@@ -1,6 +1,6 @@
-import { API_URL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
-const baseUrl = API_URL || 'http://localhost:8000/api';
+const baseUrl = env.API_URL || 'http://localhost:8000/api';
 
 export async function api<T>(
 	endpoint: string,
