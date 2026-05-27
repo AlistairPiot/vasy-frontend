@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import { beforeNavigate } from '$app/navigation';
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
+	const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
