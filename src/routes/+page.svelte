@@ -193,6 +193,7 @@
 			<button
 				onclick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
 				class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer"
+				aria-label="Défiler vers le bas"
 			>
 				<svg
 					class="w-10 h-10 text-white/60 hover:text-white transition-colors"

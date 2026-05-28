@@ -10,23 +10,25 @@
 			<h2 class="text-2xl font-semibold mb-4">1. Éditeur du site</h2>
 			<p class="mb-4">
 				<strong>Raison sociale :</strong> Vasy<br/>
-				<strong>Siège social :</strong> [À compléter]<br/>
+				<strong>Siège social :</strong> 13 Rue Georges Braque, 86550 Mignaloux-Beauvoir, France<br/>
 				<strong>Email :</strong> <a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a><br/>
-				<strong>SIRET :</strong> [À compléter]<br/>
-				<strong>Capital social :</strong> [À compléter]
+				<strong>SIRET :</strong> 989 593 447 00018
 			</p>
 
 			<h2 class="text-2xl font-semibold mb-4 mt-8">2. Directeur de la publication</h2>
 			<p class="mb-4">
-				[À compléter]
+				Alistair Piot
 			</p>
 
 			<h2 class="text-2xl font-semibold mb-4 mt-8">3. Hébergement</h2>
 			<p class="mb-4">
-				Le site est hébergé par :<br/>
-				[Nom de l'hébergeur]<br/>
-				[Adresse de l'hébergeur]<br/>
-				[Téléphone de l'hébergeur]
+				Le site est hébergé par plusieurs prestataires techniques :<br/><br/>
+				<strong>Frontend (interface utilisateur)</strong><br/>
+				Vercel Inc. — <a href="https://vercel.com" class="text-primary hover:underline">vercel.com</a><br/><br/>
+				<strong>Backend (serveur applicatif)</strong><br/>
+				Railway Corp. — <a href="https://railway.app" class="text-primary hover:underline">railway.app</a><br/><br/>
+				<strong>Base de données</strong><br/>
+				Neon Inc. — <a href="https://neon.tech" class="text-primary hover:underline">neon.tech</a>
 			</p>
 
 			<h2 class="text-2xl font-semibold mb-4 mt-8">4. Protection des données</h2>

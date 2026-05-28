@@ -8,7 +8,7 @@
 			<!-- À propos -->
 			<div>
 				<h3 class="font-semibold text-lg mb-4">Vasy</h3>
-				<p class="text-sm text-muted-foreground">
+				<p class="text-sm text-foreground/70">
 					La plateforme qui connecte créateurs et clients pour des produits uniques et authentiques.
 				</p>
 			</div>
@@ -18,27 +18,27 @@
 				<h3 class="font-semibold text-lg mb-4">Légal</h3>
 				<ul class="space-y-2">
 					<li>
-						<a href="/legal/about" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						<a href="/legal/about" class="text-sm text-foreground/70 hover:text-foreground transition-colors">
 							À propos de nous
 						</a>
 					</li>
 					<li>
-						<a href="/legal/cgv" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						<a href="/legal/cgv" class="text-sm text-foreground/70 hover:text-foreground transition-colors">
 							CGV
 						</a>
 					</li>
 					<li>
-						<a href="/legal/cgu" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						<a href="/legal/cgu" class="text-sm text-foreground/70 hover:text-foreground transition-colors">
 							CGU
 						</a>
 					</li>
 					<li>
-						<a href="/legal/privacy" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						<a href="/legal/privacy" class="text-sm text-foreground/70 hover:text-foreground transition-colors">
 							Confidentialité
 						</a>
 					</li>
 					<li>
-						<a href="/legal/mentions" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						<a href="/legal/mentions" class="text-sm text-foreground/70 hover:text-foreground transition-colors">
 							Mentions légales
 						</a>
 					</li>
@@ -49,7 +49,7 @@
 			<div>
 				<h3 class="font-semibold text-lg mb-4">Contact</h3>
 				<ul class="space-y-2">
-					<li class="text-sm text-muted-foreground">
+					<li class="text-sm text-foreground/70">
 						Email : <a href="mailto:vasy.creation.contact@gmail.com" class="hover:text-foreground transition-colors">vasy.creation.contact@gmail.com</a>
 					</li>
 				</ul>
@@ -58,7 +58,7 @@
 
 		<!-- Copyright -->
 		<div class="border-t mt-8 pt-6 text-center">
-			<p class="text-sm text-muted-foreground">
+			<p class="text-sm text-foreground/70">
 				© {currentYear} Vasy. Tous droits réservés.
 			</p>
 		</div>
