@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon_vasy.png';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
