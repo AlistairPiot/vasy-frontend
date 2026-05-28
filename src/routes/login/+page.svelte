@@ -70,6 +70,7 @@
 							name="email"
 							value={form?.email ?? ''}
 							required
+							autocomplete="email"
 							placeholder="vous@exemple.com"
 							class={form?.errors?.email ? 'border-destructive' : ''}
 						/>
@@ -90,6 +91,7 @@
 							id="password"
 							name="password"
 							required
+							autocomplete="current-password"
 							placeholder="••••••••"
 							class={form?.errors?.password ? 'border-destructive' : ''}
 						/>

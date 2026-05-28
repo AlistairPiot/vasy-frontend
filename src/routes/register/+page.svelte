@@ -70,6 +70,7 @@
 							name="email"
 							value={form?.email ?? ''}
 							required
+							autocomplete="email"
 							placeholder="vous@exemple.com"
 							class={form?.errors?.email ? 'border-destructive' : ''}
 						/>
@@ -85,6 +86,7 @@
 							id="password"
 							name="password"
 							required
+							autocomplete="new-password"
 							placeholder="••••••••"
 							minlength={8}
 							class={form?.errors?.password ? 'border-destructive' : ''}
@@ -101,6 +103,7 @@
 							id="confirmPassword"
 							name="confirmPassword"
 							required
+							autocomplete="new-password"
 							placeholder="••••••••"
 							minlength={8}
 							class={form?.errors?.confirmPassword ? 'border-destructive' : ''}
