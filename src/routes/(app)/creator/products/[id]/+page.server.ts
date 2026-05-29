@@ -10,10 +10,12 @@ interface Product {
 	stock: number;
 	is_active: boolean;
 	image_urls: string;
+	reserved_in_carts?: number;
 }
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const product = await serverApi.get<Product>(`/products/${params.id}`, locals.token);
+	// Endpoint dédié créateur : retourne le produit même s'il est inactif
+	const product = await serverApi.get<Product>(`/products/creator/${params.id}`, locals.token);
 	return { product };
 };
 
@@ -53,12 +55,15 @@ export const actions: Actions = {
 		}
 	},
 
-	toggleActive: async ({ params, locals }) => {
+	toggleActive: async ({ request, params, locals }) => {
+		const formData = await request.formData();
+		// L'état courant est transmis par le formulaire — pas besoin de re-fetcher le produit
+		const currentIsActive = formData.get('current_is_active') === 'true';
+
 		try {
-			const product = await serverApi.get<Product>(`/products/${params.id}`, locals.token);
 			await serverApi.patch(
 				`/products/${params.id}`,
-				{ is_active: !product.is_active },
+				{ is_active: !currentIsActive },
 				locals.token
 			);
 			return { success: true };

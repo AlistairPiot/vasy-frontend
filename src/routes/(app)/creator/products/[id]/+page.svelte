@@ -113,6 +113,7 @@
 		<h1 class="text-2xl font-bold">Modifier le produit</h1>
 		<div class="flex gap-3">
 			<form method="POST" action="?/toggleActive" use:enhance>
+				<input type="hidden" name="current_is_active" value={String(data.product.is_active)} />
 				<Button type="submit" variant="outline">
 					{#snippet children()}
 						{data.product.is_active ? 'Désactiver' : 'Activer'}
