@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { gsap } from 'gsap';
+	import { lenisStore } from '$lib/stores/lenis';
 
 	let buttonRef: HTMLButtonElement;
 	let isVisible = $state(false);
@@ -39,10 +41,12 @@
 	});
 
 	function scrollToTop() {
-		window.scrollTo({
-			top: 0,
-			behavior: 'smooth'
-		});
+		const lenis = get(lenisStore);
+		if (lenis) {
+			lenis.scrollTo(0, { duration: 1.2 });
+		} else {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
 	}
 </script>
 

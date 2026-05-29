@@ -11,6 +11,7 @@
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
+	import { lenisStore } from '$lib/stores/lenis';
 
 	let { children, data } = $props();
 
@@ -43,9 +44,12 @@
 		gsap.ticker.add((time) => { lenisInstance.raf(time * 1000); });
 		gsap.ticker.lagSmoothing(0);
 
+		lenisStore.set(lenisInstance);
+
 		return () => {
 			lenisInstance?.destroy();
 			lenisInstance = null;
+			lenisStore.set(null);
 		};
 	});
 

@@ -17,6 +17,33 @@
 	let scrollY = $state(0);
 	let mobileMenuOpen = $state(false);
 
+	// Spotlight lerp — position + opacité cible et courante par card
+	const _spotTarget  = [{ x: 50, y: 50, op: 0 }, { x: 50, y: 50, op: 0 }, { x: 50, y: 50, op: 0 }];
+	const _spotCurrent = [{ x: 50, y: 50, op: 0 }, { x: 50, y: 50, op: 0 }, { x: 50, y: 50, op: 0 }];
+	const _spotRafs: number[] = [0, 0, 0];
+
+	function startSpotLerp(el: HTMLElement, i: number) {
+		cancelAnimationFrame(_spotRafs[i]);
+		function frame() {
+			const c = _spotCurrent[i], t = _spotTarget[i];
+			c.x += (t.x - c.x) * 0.07;
+			c.y += (t.y - c.y) * 0.07;
+			// fadeIn plus rapide que fadeOut
+			const opLerp = t.op > c.op ? 0.12 : 0.07;
+			c.op += (t.op - c.op) * opLerp;
+			el.style.setProperty('--mx', c.x.toFixed(2) + '%');
+			el.style.setProperty('--my', c.y.toFixed(2) + '%');
+			el.style.setProperty('--spot-op', c.op.toFixed(3));
+			// s'arrête tout seul une fois fondu
+			if (t.op === 0 && c.op < 0.005) {
+				el.style.setProperty('--spot-op', '0');
+				return;
+			}
+			_spotRafs[i] = requestAnimationFrame(frame);
+		}
+		_spotRafs[i] = requestAnimationFrame(frame);
+	}
+
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 
@@ -319,32 +346,41 @@
 				<div
 					use:tilt={{ intensity: 6 }}
 					class="group relative overflow-hidden bg-white/4 p-8 transition-colors duration-500 cursor-default {i === 0 ? 'step-0' : i === 1 ? 'step-1' : 'step-2'}"
-					style="z-index: {i + 1}; --mx: 50%; --my: 50%;"
+					style="z-index: {i + 1}; --mx: 50%; --my: 50%; --spot-op: 0;"
+					onmouseenter={(e) => {
+						const r = e.currentTarget.getBoundingClientRect();
+						const x = (e.clientX - r.left) / r.width * 100;
+						const y = (e.clientY - r.top) / r.height * 100;
+						_spotTarget[i].x = x; _spotTarget[i].y = y; _spotTarget[i].op = 1;
+						_spotCurrent[i].x = x; _spotCurrent[i].y = y;
+						startSpotLerp(e.currentTarget as HTMLElement, i);
+					}}
 					onmousemove={(e) => {
 						const r = e.currentTarget.getBoundingClientRect();
-						e.currentTarget.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
-						e.currentTarget.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+						_spotTarget[i].x = (e.clientX - r.left) / r.width * 100;
+						_spotTarget[i].y = (e.clientY - r.top) / r.height * 100;
 					}}
+					onmouseleave={() => { _spotTarget[i].op = 0; }}
 				>
-					<!-- Texture layer -->
+					<!-- Texture spotlight sous le curseur -->
 					<div
-						class="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity duration-700 pointer-events-none"
-						style="background-image: url({step.texture}); background-size: cover; background-position: center;"
+						class="absolute inset-0 pointer-events-none"
+						style="opacity: calc(var(--spot-op) * 0.7); background-image: url({step.texture}); background-size: cover; background-position: center; mask-image: radial-gradient(circle 90px at var(--mx) var(--my), black 20%, transparent 100%); -webkit-mask-image: radial-gradient(circle 90px at var(--mx) var(--my), black 20%, transparent 100%);"
 					></div>
-					<!-- Glow overlay -->
+					<!-- Glow couleur au curseur -->
 					<div
-						class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-						style="background: radial-gradient(ellipse 90% 80% at var(--mx) var(--my), {step.glow} 0%, transparent 70%);"
+						class="absolute inset-0 pointer-events-none"
+						style="opacity: var(--spot-op); background: radial-gradient(circle 70px at var(--mx) var(--my), {step.glow} 0%, transparent 100%);"
 					></div>
 					<!-- Top highlight line -->
-					<div class="absolute inset-x-0 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background: linear-gradient(90deg, transparent, {step.glow}, transparent);"></div>
+					<div class="absolute inset-x-0 top-0 h-px pointer-events-none" style="opacity: calc(var(--spot-op) * 0.6); background: linear-gradient(90deg, transparent, {step.glow}, transparent);"></div>
 
 					<div class="relative z-10">
 						<div class="flex justify-end mb-10">
-							<span class="text-white/15 text-xs tracking-widest font-bold tabular-nums">{step.n}</span>
+							<span class="text-white/15 text-xs tracking-widest font-bold tabular-nums transition-colors duration-500 group-hover:text-white/50">{step.n}</span>
 						</div>
-						<h3 class="text-xl font-semibold text-white mb-3 group-hover:text-white transition-colors">{step.title}</h3>
-						<p class="text-white/38 text-sm leading-relaxed group-hover:text-white/55 transition-colors duration-500">{step.text}</p>
+						<h3 class="text-xl font-semibold text-white/70 mb-3 transition-colors duration-300 group-hover:text-white">{step.title}</h3>
+						<p class="text-white/30 text-sm leading-relaxed transition-colors duration-500 group-hover:text-white/80">{step.text}</p>
 					</div>
 				</div>
 			{/each}
