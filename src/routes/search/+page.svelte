@@ -5,18 +5,22 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { formatPrice } from '$lib/utils';
+	import { tilt } from '$lib/actions/tilt';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
-			y: 20,
-			opacity: 0,
-			duration: 0.5,
-			stagger: 0.06,
-			ease: 'power3.out'
+			y: 20, opacity: 0, duration: 0.5, stagger: 0.06, ease: 'power3.out'
 		});
+		const cards = containerRef.querySelectorAll('.product-card');
+		if (cards.length) {
+			gsap.fromTo(cards,
+				{ y: 20, opacity: 0 },
+				{ y: 0, opacity: 1, duration: 0.5, stagger: 0.06, delay: 0.2, ease: 'power3.out' }
+			);
+		}
 	});
 
 	function getFirstImage(imageUrls: string): string | null {
@@ -104,26 +108,36 @@
 						Produits
 						<span class="text-sm font-normal text-muted-foreground">({data.products.length})</span>
 					</h2>
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					<div class="columns-2 md:columns-3 xl:columns-4 gap-4">
 						{#each data.products as product}
-							<a href="/products/{product.id}">
-								<Card class="p-0 overflow-hidden hover:shadow-md transition-shadow">
+							<a href="/products/{product.id}" use:tilt class="block break-inside-avoid mb-4 group">
+								<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">
 									{#if getFirstImage(product.image_urls)}
-										<img src={getFirstImage(product.image_urls)} alt={product.name} class="w-full h-48 object-cover" />
+										<div class="overflow-hidden">
+											<img
+												src={getFirstImage(product.image_urls)}
+												alt={product.name}
+												class="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-500"
+											/>
+										</div>
 									{:else}
-										<div class="w-full h-48 bg-muted flex items-center justify-center">
-											<span class="text-muted-foreground text-sm">Pas d'image</span>
+										<div class="aspect-4/3 bg-muted flex items-center justify-center">
+											<svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+											</svg>
 										</div>
 									{/if}
-									<div class="p-4">
-										<h3 class="font-semibold truncate mb-1">{product.name}</h3>
-										<p class="text-xs text-muted-foreground mb-2">{product.creator_name}</p>
-										<p class="text-lg font-bold text-primary">{formatPrice(product.price)}</p>
-										{#if product.stock === 0}
-											<span class="text-xs text-red-500 mt-1 inline-block">Épuisé</span>
-										{/if}
+									<div class="p-3">
+										<h3 class="font-medium text-sm text-foreground truncate">{product.name}</h3>
+										<p class="text-xs text-muted-foreground truncate mt-0.5">{product.creator_name}</p>
+										<div class="flex justify-between items-center mt-1.5">
+											<span class="text-sm font-semibold text-primary">{formatPrice(product.price)}</span>
+											{#if product.stock === 0}
+												<span class="text-xs text-muted-foreground">Épuisé</span>
+											{/if}
+										</div>
 									</div>
-								</Card>
+								</div>
 							</a>
 						{/each}
 					</div>
