@@ -3,10 +3,10 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import { tilt } from '$lib/actions/tilt';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
-	let previousProductsLength = 0;
 	let sortBy = $state<'default' | 'price_asc' | 'price_desc'>('default');
 	let isLoading = $state(false);
 
@@ -39,35 +39,18 @@
 		}, 100);
 	}
 
-	// Animer les éléments quand les produits changent
 	$effect(() => {
-		// Vérifier si les produits ont changé
-		const currentLength = data.products.length;
+		void data.products.length; // tracked
+		if (isLoading || !containerRef) return;
 
-		if (containerRef && currentLength !== previousProductsLength) {
-			previousProductsLength = currentLength;
-
-			// Petit délai pour s'assurer que le DOM est mis à jour
-			setTimeout(() => {
-				const elements = containerRef.querySelectorAll('.animate-in');
-
-				// D'abord, définir l'état initial (caché)
-				gsap.set(elements, {
-					y: 20,
-					opacity: 0
-				});
-
-				// Puis animer vers l'état visible
-				gsap.to(elements, {
-					y: 0,
-					opacity: 1,
-					duration: 0.5,
-					stagger: 0.08,
-					ease: 'power3.out',
-					clearProps: 'all'
-				});
-			}, 10);
-		}
+		setTimeout(() => {
+			const elements = containerRef.querySelectorAll('.product-card');
+			gsap.fromTo(
+				elements,
+				{ y: 20, opacity: 0 },
+				{ y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out' }
+			);
+		}, 10);
 	});
 
 	function formatPrice(cents: number): string {
@@ -141,8 +124,8 @@
 		{:else}
 			<div class="columns-2 md:columns-3 xl:columns-4 gap-4">
 				{#each sortedProducts as product}
-					<a href="/products/{product.id}" class="block break-inside-avoid mb-4 group">
-						<div class="animate-in overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">
+					<a href="/products/{product.id}" use:tilt class="block break-inside-avoid mb-4 group">
+						<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">
 							{#if getFirstImage(product.image_urls)}
 								<div class="overflow-hidden">
 									<img

@@ -4,6 +4,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import { tilt } from '$lib/actions/tilt';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -87,7 +88,7 @@
 			{#if data.products && data.products.length > 0}
 				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each data.products as product (product.id)}
-						<a href="/products/{product.id}">
+						<a href="/products/{product.id}" use:tilt>
 							<Card class="overflow-hidden hover:shadow-lg transition-shadow h-full">
 								<div class="aspect-square bg-muted overflow-hidden">
 									{#if getFirstImage(product.image_urls)}

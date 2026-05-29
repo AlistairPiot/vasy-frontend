@@ -6,22 +6,31 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import backgroundImage from '$lib/assets/sac.jpg';
 	import logo from '$lib/assets/vasy.svg';
+	import { tilt } from '$lib/actions/tilt';
 
 	let { data } = $props();
 	let heroRef: HTMLDivElement;
+	let h1Ref: HTMLHeadingElement;
 	let scrollY = $state(0);
 	let mobileMenuOpen = $state(false);
 
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 
-		gsap.to(heroRef.querySelectorAll('.animate-in'), {
-			y: 0,
-			opacity: 1,
-			duration: 1,
-			stagger: 0.2,
-			ease: 'power3.out'
+		gsap.set(h1Ref.querySelectorAll('.word-inner'), { y: '110%' });
+
+		gsap.to('.hero-tagline', { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.1 });
+
+		gsap.to(h1Ref.querySelectorAll('.word-inner'), {
+			y: '0%',
+			duration: 0.85,
+			stagger: 0.07,
+			ease: 'power3.out',
+			delay: 0.3
 		});
+
+		gsap.to('.hero-subtitle', { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 1.0 });
+		gsap.to('.hero-cta',      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 1.2 });
 
 		gsap.to('.hero-bg', {
 			y: 180,
@@ -138,20 +147,26 @@
 	<div class="relative z-10 min-h-screen flex items-center">
 		<div class="container mx-auto px-6 py-32 text-center">
 
-			<p class="animate-in opacity-0 translate-y-[30px] text-white/60 text-sm tracking-[0.25em] uppercase mb-8 font-medium">
+			<p class="hero-tagline opacity-0 translate-y-5 text-white/60 text-sm tracking-[0.25em] uppercase mb-8 font-medium">
 				Artisanat français
 			</p>
 
-			<h1 class="animate-in opacity-0 translate-y-[30px] text-5xl md:text-7xl text-white mb-6 leading-tight">
-				Fait avec les mains,<br />
-				<em class="not-italic text-[#E8A882]">vendu avec le cœur.</em>
+			<h1 bind:this={h1Ref} class="text-5xl md:text-7xl text-white mb-6 leading-tight">
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">Fait</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">avec</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">les</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">mains,</span></span><br />
+				<em class="not-italic text-[#E8A882]"><span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">vendu</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">avec</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">le</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">cœur.</span></span></em>
 			</h1>
 
-			<p class="animate-in opacity-0 translate-y-[30px] text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+			<p class="hero-subtitle opacity-0 translate-y-5 text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
 				Découvrez des créations uniques imaginées et façonnées par des artisans passionnés.
 			</p>
 
-			<div class="animate-in opacity-0 translate-y-[30px] flex flex-col sm:flex-row gap-4 justify-center">
+			<div class="hero-cta opacity-0 translate-y-5 flex flex-col sm:flex-row gap-4 justify-center">
 				<a href="/products">
 					<Button size="lg" class="bg-[#C4704A]! text-white! border-transparent! hover:bg-[#B5623C]! cursor-pointer">
 						{#snippet children()}
@@ -288,7 +303,7 @@
 				{ h: 'aspect-square', label: 'Textile', creator: 'Fil Rouge' },
 				{ h: 'aspect-[4/3]', label: 'Poterie', creator: 'La Terre Cuite' },
 			] as card}
-				<div class="break-inside-avoid group cursor-pointer">
+				<div use:tilt class="break-inside-avoid group cursor-pointer">
 					<div class="{card.h} bg-muted rounded-lg overflow-hidden relative">
 						<div class="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-300"></div>
 					</div>

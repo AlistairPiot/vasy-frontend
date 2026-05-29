@@ -231,7 +231,7 @@
 							? 'h-[calc(100vh-200px)]'
 							: 'h-[calc(100vh-280px)]'}"
 					>
-						<Card class="h-full overflow-hidden">
+						<Card class="h-full overflow-hidden" data-lenis-prevent>
 							<EventsMap
 								events={data.events}
 								bind:selectedEventId

@@ -1,5 +1,10 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
+	import { browser } from '$app/environment';
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import favicon from '$lib/assets/favicon_vasy.png';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
@@ -9,12 +14,47 @@
 
 	let { children, data } = $props();
 
-	// Initialize cart and favorites with user ID when component mounts or user changes
+	let lenisInstance: any = null;
+
 	$effect(() => {
 		if (typeof window !== 'undefined') {
 			cart.init(data.user?.id || null);
 			favorites.init(data.favoriteIds ?? []);
 			eventFavorites.init(data.user?.id || null);
+		}
+	});
+
+	onMount(async () => {
+		if (!browser) return;
+
+		gsap.registerPlugin(ScrollTrigger);
+
+		const { default: Lenis } = await import('lenis');
+
+		lenisInstance = new Lenis({
+			duration: 1.2,
+			easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+			orientation: 'vertical',
+			smoothWheel: true,
+		});
+
+		lenisInstance.on('scroll', ScrollTrigger.update);
+
+		gsap.ticker.add((time) => { lenisInstance.raf(time * 1000); });
+		gsap.ticker.lagSmoothing(0);
+
+		return () => {
+			lenisInstance?.destroy();
+			lenisInstance = null;
+		};
+	});
+
+	// Retour en haut à chaque navigation (compatible Lenis)
+	afterNavigate(() => {
+		if (lenisInstance) {
+			lenisInstance.scrollTo(0, { immediate: true });
+		} else if (browser) {
+			window.scrollTo(0, 0);
 		}
 	});
 </script>

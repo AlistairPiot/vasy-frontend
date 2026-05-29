@@ -65,14 +65,19 @@
 		events = eventResults.filter(Boolean);
 		loading = false;
 
-		const cards = containerRef?.querySelectorAll('.fav-card');
-		if (cards?.length) {
-			gsap.from(cards, { y: 20, opacity: 0, duration: 0.5, stagger: 0.08, ease: 'power3.out' });
-		}
-
 		// beforeunload pour fermeture onglet / navigation externe
 		window.addEventListener('beforeunload', commitRemovals);
 		return () => window.removeEventListener('beforeunload', commitRemovals);
+	});
+
+	$effect(() => {
+		if (loading || !containerRef) return;
+		const cards = containerRef.querySelectorAll('.fav-card');
+		if (!cards.length) return;
+		gsap.set(cards, { y: 20, opacity: 0 });
+		setTimeout(() => {
+			gsap.to(cards, { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out' });
+		}, 10);
 	});
 
 	function toggleProductRemoval(productId: string) {
