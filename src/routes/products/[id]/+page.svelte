@@ -123,40 +123,31 @@
 <div class="min-h-screen bg-background" bind:this={containerRef}>
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-6 py-8">
 		<Breadcrumb items={[
 			{ label: 'Accueil', href: '/' },
 			{ label: 'Produits', href: '/products' },
 			{ label: data.product.name }
 		]} />
 
-		<a
-			href="/products"
-			class="animate-in group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
-		>
+		<a href="/products" class="animate-in group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-			Retour aux produits
+			Retour aux créations
 		</a>
 
-		<div class="grid md:grid-cols-2 gap-8 py-8">
+		<div class="grid md:grid-cols-2 gap-12 py-10">
 			<!-- Images -->
 			<div class="animate-in">
 				{#if images.length > 0}
-					<div class="aspect-square rounded-lg overflow-hidden bg-muted mb-4">
-						<img
-							src={images[selectedImage]}
-							alt={data.product.name}
-							class="w-full h-full object-cover"
-						/>
+					<div class="rounded-xl overflow-hidden bg-muted mb-3 aspect-square">
+						<img src={images[selectedImage]} alt={data.product.name} class="w-full h-full object-cover" />
 					</div>
 					{#if images.length > 1}
 						<div class="grid grid-cols-5 gap-2">
 							{#each images as image, i}
 								<button
 									onclick={() => (selectedImage = i)}
-									class="aspect-square rounded overflow-hidden border-2 {selectedImage === i
-										? 'border-primary'
-										: 'border-transparent'}"
+									class="aspect-square rounded-lg overflow-hidden border-2 transition-colors {selectedImage === i ? 'border-primary' : 'border-transparent hover:border-border'}"
 								>
 									<img src={image} alt="" class="w-full h-full object-cover" />
 								</button>
@@ -164,73 +155,63 @@
 						</div>
 					{/if}
 				{:else}
-					<div class="aspect-square rounded-lg bg-muted flex items-center justify-center">
-						<span class="text-muted-foreground">Pas d'image</span>
+					<div class="aspect-square rounded-xl bg-muted flex items-center justify-center">
+						<span class="text-muted-foreground text-sm">Pas d'image</span>
 					</div>
 				{/if}
 			</div>
 
 			<!-- Infos -->
-			<div class="animate-in">
+			<div class="animate-in flex flex-col">
 				{#if data.creator}
-					<a href="/creators/{data.creator.id}" class="text-muted-foreground hover:text-foreground transition-colors mb-2 inline-flex items-center gap-2">
+					<a href="/creators/{data.creator.id}" class="inline-flex items-center gap-2 mb-5 group w-fit">
 						{#if data.creator.profile_image_url}
-							<img
-								src={data.creator.profile_image_url}
-								alt={data.creator.display_name}
-								class="w-8 h-8 rounded-full object-cover"
-							/>
+							<img src={data.creator.profile_image_url} alt={data.creator.display_name} class="w-8 h-8 rounded-full object-cover" />
 						{:else}
-							<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-semibold">
+							<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">
 								{data.creator.display_name.charAt(0).toUpperCase()}
 							</div>
 						{/if}
-						<span class="text-sm font-medium">{data.creator.display_name}</span>
+						<span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">{data.creator.display_name}</span>
 					</a>
 				{/if}
 
-				<h1 class="text-3xl font-bold mb-4">{data.product.name}</h1>
+				<h1 class="text-3xl md:text-4xl text-foreground mb-3 leading-tight">{data.product.name}</h1>
 
-				<p class="text-4xl font-bold text-primary mb-6">
-					{formatPrice(data.product.price)}
-				</p>
+				<p class="text-3xl font-semibold text-primary mb-6">{formatPrice(data.product.price)}</p>
 
 				{#if data.product.description}
-					<div class="prose prose-sm mb-6">
-						<p class="text-muted-foreground whitespace-pre-wrap">{data.product.description}</p>
-					</div>
+					<p class="text-muted-foreground leading-relaxed mb-6 text-sm whitespace-pre-wrap">{data.product.description}</p>
 				{/if}
 
-				<Card class="p-4 mb-6">
-					<div class="flex justify-between items-center">
-						<span class="text-sm">Disponibilité</span>
-						{#if data.product.stock > 0}
-							<span class="text-sm text-green-600 font-medium">
-								En stock ({data.product.stock} disponibles)
-							</span>
-						{:else}
-							<span class="text-sm text-red-600 font-medium">Épuisé</span>
-						{/if}
-					</div>
-				</Card>
+				<!-- Stock -->
+				<div class="flex items-center gap-2 mb-6 py-3 border-y border-border/50">
+					{#if data.product.stock > 0}
+						<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+						<span class="text-sm text-foreground/70">En stock — {data.product.stock} disponible{data.product.stock > 1 ? 's' : ''}</span>
+					{:else}
+						<span class="w-2 h-2 rounded-full bg-muted-foreground shrink-0"></span>
+						<span class="text-sm text-muted-foreground">Épuisé</span>
+					{/if}
+				</div>
 
 				{#if showAddedNotification}
-					<div class="notification bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
+					<div class="notification bg-primary/10 text-primary text-sm p-3 rounded-lg mb-4 border border-primary/20">
 						Produit ajouté au panier !
 					</div>
 				{/if}
 
 				{#if !data.user || data.user.role === 'client'}
-					<div class="flex gap-3 mb-6">
+					<div class="flex gap-3 mb-4">
 						<button
 							onclick={addToCart}
 							disabled={data.product.stock === 0 || isMaxInCart}
-							class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-10 px-4 py-2 rounded-md font-medium transition-colors"
+							class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed h-11 px-6 rounded-lg font-medium transition-colors text-sm"
 						>
 							{#if data.product.stock === 0}
-								Produit épuisé
+								Épuisé
 							{:else if isMaxInCart}
-								Quantité max dans le panier
+								Quantité max atteinte
 							{:else}
 								Ajouter au panier
 							{/if}
@@ -238,39 +219,30 @@
 						{#if data.user}
 							<button
 								onclick={toggleFavorite}
-								class="px-4 py-2 rounded-md border border-input transition-colors hover:bg-accent {isFavorite ? 'bg-red-100 text-red-600 border-red-300' : 'bg-background'}"
+								class="px-4 h-11 rounded-lg border transition-colors {isFavorite ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-background hover:bg-secondary text-muted-foreground'}"
+								aria-label="{isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
 							>
-								{#if isFavorite}
-									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-									</svg>
-								{:else}
-									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-									</svg>
-								{/if}
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="{isFavorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+								</svg>
 							</button>
 						{/if}
 					</div>
 
 					{#if data.user}
-						<div class="text-center">
-							<a href="/cart" class="text-primary hover:underline text-sm">Voir le panier</a>
-						</div>
+						<a href="/cart" class="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
+							Voir le panier
+						</a>
 					{/if}
 				{/if}
 
-				<!-- Signaler le produit -->
 				{#if data.user}
-				<div class="mt-6 pt-4 border-t">
-					<button
-						onclick={openReportModal}
-						class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-						Signaler ce produit
-					</button>
-				</div>
+					<div class="mt-auto pt-6 border-t border-border/40">
+						<button onclick={openReportModal} class="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+							Signaler ce produit
+						</button>
+					</div>
 				{/if}
 			</div>
 		</div>

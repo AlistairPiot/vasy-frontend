@@ -14,12 +14,12 @@
 <div class="min-h-screen bg-background">
 	<Header user={data.user} />
 
-	<div class="container mx-auto px-4 py-6 pt-24">
-		<nav class="flex gap-4 mb-8 border-b pb-4">
+	<div class="container mx-auto px-4 md:px-6 py-6 pt-24">
+		<nav class="flex gap-1 mb-8 border-b pb-4 overflow-x-auto">
 			{#each navItems as item}
 				<a
 					href={item.href}
-					class="px-3 py-2 rounded-md text-sm font-medium transition-colors {$page.url.pathname.startsWith(
+					class="px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap shrink-0 {$page.url.pathname.startsWith(
 						item.href
 					)
 						? 'bg-primary text-primary-foreground'

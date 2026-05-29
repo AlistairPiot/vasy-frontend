@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -8,24 +9,22 @@
 
 	let { data } = $props();
 	let heroRef: HTMLDivElement;
-	let headerRef: HTMLElement;
 	let scrollY = $state(0);
+	let mobileMenuOpen = $state(false);
 
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 
-		// Animation hero au chargement
 		gsap.to(heroRef.querySelectorAll('.animate-in'), {
 			y: 0,
 			opacity: 1,
-			duration: 0.8,
-			stagger: 0.15,
+			duration: 1,
+			stagger: 0.2,
 			ease: 'power3.out'
 		});
 
-		// Parallax sur l'image de fond
 		gsap.to('.hero-bg', {
-			y: 200,
+			y: 180,
 			ease: 'none',
 			scrollTrigger: {
 				trigger: heroRef,
@@ -35,375 +34,300 @@
 			}
 		});
 
-		// Animation des sections au scroll
 		gsap.utils.toArray('.fade-in-section').forEach((section: any) => {
 			gsap.from(section, {
-				y: 50,
+				y: 60,
 				opacity: 0,
-				duration: 1,
+				duration: 1.2,
 				scrollTrigger: {
 					trigger: section,
-					start: 'top 80%',
-					end: 'top 50%',
+					start: 'top 82%',
+					end: 'top 55%',
 					scrub: 1
 				}
 			});
 		});
 
-		// Effet glassmorphism au scroll
-		const handleScroll = () => {
-			scrollY = window.scrollY;
-		};
+		const handleScroll = () => { scrollY = window.scrollY; };
 		window.addEventListener('scroll', handleScroll);
-
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
-			ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+			ScrollTrigger.getAll().forEach(t => t.kill());
 		};
 	});
 </script>
 
-<!-- Header avec effet glassmorphism -->
-<header
-	bind:this={headerRef}
-	class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 {scrollY > 50
-		? 'bg-white/80 backdrop-blur-md shadow-lg'
-		: 'bg-transparent'}"
->
-	<div class="container mx-auto px-4 py-4 flex justify-between items-center">
-		<a href="/" class="flex items-center gap-2 cursor-pointer">
-			<img src={logo} alt="Vasy" class="h-10 w-auto {scrollY > 50 ? '' : 'brightness-0 invert'}" />
-		</a>
-		<nav class="flex gap-6 items-center">
-			{#if data.user}
-				<a href="/dashboard" class="cursor-pointer">
-					<Button size="sm">
-						{#snippet children()}
-							Tableau de bord
-						{/snippet}
-					</Button>
-				</a>
-			{:else}
-				<a
-					href="/login"
-					class="text-sm font-medium transition-colors cursor-pointer {scrollY > 50
-						? 'text-gray-700 hover:text-primary'
-						: 'text-white hover:text-gray-200'}"
-				>
-					Connexion
-				</a>
-				<a href="/register" class="cursor-pointer">
-					<Button size="sm" class="cursor-pointer">
-						{#snippet children()}
-							S'inscrire
-						{/snippet}
-					</Button>
-				</a>
-			{/if}
-		</nav>
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b {scrollY > 50 ? 'bg-background/90 backdrop-blur-md shadow-sm border-border' : 'bg-transparent border-transparent'}">
+	<div class="container mx-auto px-4 md:px-6 py-4">
+		<div class="flex justify-between items-center">
+			<a href="/" class="flex items-center gap-2 cursor-pointer">
+				<img src={logo} alt="Vasy" class="h-9 w-auto {scrollY > 50 ? '' : 'brightness-0 invert'}" />
+			</a>
+
+			<!-- Desktop nav -->
+			<nav class="hidden sm:flex gap-6 items-center">
+				{#if data.user}
+					<a href="/dashboard">
+						<Button size="sm">
+							{#snippet children()}Tableau de bord{/snippet}
+						</Button>
+					</a>
+				{:else}
+					<a href="/login" class="text-sm font-medium transition-colors {scrollY > 50 ? 'text-foreground/70 hover:text-foreground' : 'text-white/80 hover:text-white'}">
+						Connexion
+					</a>
+					<a href="/register">
+						<Button size="sm" class="{scrollY > 50 ? '' : 'bg-white/15! text-white! border-white/30! backdrop-blur-sm hover:bg-white/25!'}">
+							{#snippet children()}S'inscrire{/snippet}
+						</Button>
+					</a>
+				{/if}
+			</nav>
+
+			<!-- Mobile hamburger -->
+			<button
+				onclick={() => mobileMenuOpen = !mobileMenuOpen}
+				class="sm:hidden p-1 transition-colors {scrollY > 50 ? 'text-foreground/70 hover:text-foreground' : 'text-white/80 hover:text-white'}"
+				aria-label="Menu"
+			>
+				{#if mobileMenuOpen}
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+					</svg>
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+					</svg>
+				{/if}
+			</button>
+		</div>
+
+		<!-- Mobile menu -->
+		{#if mobileMenuOpen}
+			<div transition:slide={{ duration: 200 }} class="sm:hidden mt-3 pt-3 border-t {scrollY > 50 ? 'border-border/40' : 'border-white/20'}">
+				{#if data.user}
+					<a href="/dashboard" onclick={() => mobileMenuOpen = false} class="block py-2 text-sm font-medium {scrollY > 50 ? 'text-foreground' : 'text-white'}">
+						Tableau de bord
+					</a>
+				{:else}
+					<div class="flex flex-col gap-2 pb-2">
+						<a href="/login" onclick={() => mobileMenuOpen = false} class="py-2 text-sm font-medium {scrollY > 50 ? 'text-foreground/80' : 'text-white/80'}">
+							Connexion
+						</a>
+						<a href="/register" onclick={() => mobileMenuOpen = false}>
+							<Button size="sm" class="w-full {scrollY > 50 ? '' : 'bg-white/15! text-white! border-white/30!'}">
+								{#snippet children()}S'inscrire{/snippet}
+							</Button>
+						</a>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
 </header>
 
-<!-- Hero Section -->
+<!-- Hero -->
 <div class="min-h-screen relative overflow-hidden" bind:this={heroRef}>
-	<!-- Image de fond avec parallax -->
 	<div class="absolute inset-0 z-0 hero-bg">
-		<img src={backgroundImage} alt="Background" class="w-full h-full object-cover" />
-		<div
-			class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80"
-		></div>
-		<!-- Gradient radial pour focus central -->
-		<div
-			class="absolute inset-0 bg-gradient-radial from-transparent via-black/20 to-black/50"
-		></div>
+		<img src={backgroundImage} alt="Artisan au travail" class="w-full h-full object-cover" />
+		<div class="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/70"></div>
+		<div class="absolute inset-0 bg-[#2C1F14]/30"></div>
 	</div>
 
-	<!-- Contenu hero -->
 	<div class="relative z-10 min-h-screen flex items-center">
-		<div class="container mx-auto px-4 py-32 text-center">
-			<!-- Badge -->
-			<div class="animate-in opacity-0 translate-y-[30px] mb-6 inline-block">
-				<span
-					class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white text-sm font-medium"
-				>
-					<span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-					100% Artisans français
-				</span>
-			</div>
+		<div class="container mx-auto px-6 py-32 text-center">
 
-			<!-- Titre principal avec meilleure hiérarchie -->
-			<h1
-				class="animate-in text-6xl md:text-7xl font-bold mb-6 opacity-0 translate-y-[30px] text-white leading-tight"
-			>
-				La plateforme des
-				<span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-					créateurs français
-				</span>
-			</h1>
-
-			<!-- Sous-titre -->
-			<p
-				class="animate-in text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto opacity-0 translate-y-[30px] leading-relaxed"
-			>
-				Découvrez des produits artisanaux uniques créés par des artisans passionnés. Vendez vos
-				créations en toute simplicité.
+			<p class="animate-in opacity-0 translate-y-[30px] text-white/60 text-sm tracking-[0.25em] uppercase mb-8 font-medium">
+				Artisanat français
 			</p>
 
-			<!-- CTA avec micro-interactions -->
-			<div class="animate-in flex flex-col sm:flex-row gap-4 justify-center opacity-0 translate-y-[30px]">
-				<a href="/products" class="group cursor-pointer">
-					<Button size="lg" class="relative overflow-hidden cursor-pointer">
+			<h1 class="animate-in opacity-0 translate-y-[30px] text-5xl md:text-7xl text-white mb-6 leading-tight">
+				Fait avec les mains,<br />
+				<em class="not-italic text-[#E8A882]">vendu avec le cœur.</em>
+			</h1>
+
+			<p class="animate-in opacity-0 translate-y-[30px] text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+				Découvrez des créations uniques imaginées et façonnées par des artisans passionnés.
+			</p>
+
+			<div class="animate-in opacity-0 translate-y-[30px] flex flex-col sm:flex-row gap-4 justify-center">
+				<a href="/products">
+					<Button size="lg" class="bg-[#C4704A]! text-white! border-transparent! hover:bg-[#B5623C]! cursor-pointer">
 						{#snippet children()}
-							<span class="relative z-10 flex items-center gap-2">
-								Explorer les produits
-								<svg
-									class="w-5 h-5 transition-transform group-hover:translate-x-1"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M13 7l5 5m0 0l-5 5m5-5H6"
-									/>
-								</svg>
-							</span>
-							<span
-								class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
-							></span>
+							Explorer les créations
 						{/snippet}
 					</Button>
 				</a>
-				<a href="/legal/about" class="cursor-pointer">
-					<Button
-						variant="outline"
-						size="lg"
-						class="!border-white !text-white !bg-transparent hover:!bg-white hover:!text-primary backdrop-blur-sm cursor-pointer"
-					>
+				<a href="/legal/about">
+					<Button variant="outline" size="lg" class="border-white/40! text-white! bg-transparent! hover:bg-white/10! cursor-pointer">
 						{#snippet children()}
-							En savoir plus
+							Notre histoire
 						{/snippet}
 					</Button>
 				</a>
 			</div>
-
-			<!-- Scroll indicator -->
-			<button
-				onclick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
-				class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer"
-				aria-label="Défiler vers le bas"
-			>
-				<svg
-					class="w-10 h-10 text-white/60 hover:text-white transition-colors"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M19 14l-7 7m0 0l-7-7m7 7V3"
-					/>
-				</svg>
-			</button>
 		</div>
 	</div>
+
+	<button
+		onclick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
+		class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer"
+		aria-label="Défiler vers le bas"
+	>
+		<svg class="w-8 h-8 text-white/40 hover:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+		</svg>
+	</button>
 </div>
 
 <!-- Bandeau événements -->
-<section class="py-10 bg-gradient-to-r from-primary/5 to-purple-50 border-b border-gray-200 fade-in-section">
-	<div class="container mx-auto px-4">
+<section class="py-8 border-b border-border fade-in-section">
+	<div class="container mx-auto px-6">
 		<a href="/events" class="group flex items-center justify-center gap-6">
-			<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-				<svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+				<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 				</svg>
 			</div>
-			<div class="text-center">
-				<h2 class="text-lg font-semibold text-foreground">Découvrez nos événements</h2>
-				<p class="text-sm text-muted-foreground">Rencontrez vos créateurs préférés en personne</p>
+			<div>
+				<p class="font-semibold text-foreground">Rencontrez vos créateurs en personne</p>
+				<p class="text-sm text-muted-foreground">Marchés, ateliers et expositions — voir les événements</p>
 			</div>
-			<svg class="w-8 h-8 text-primary transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="w-5 h-5 text-primary transition-transform group-hover:translate-x-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
 			</svg>
 		</a>
 	</div>
 </section>
 
-<!-- Badges de réassurance -->
-<section class="py-12 bg-white border-y border-gray-200 fade-in-section">
-	<div class="container mx-auto px-4">
+<!-- Réassurance -->
+<section class="py-16 fade-in-section">
+	<div class="container mx-auto px-6">
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
 			<div class="flex flex-col items-center gap-3">
-				<svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
-				<p class="text-sm font-medium text-gray-700">Paiement sécurisé</p>
+				<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+					<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<p class="text-sm font-medium text-foreground">Paiement sécurisé</p>
 			</div>
 			<div class="flex flex-col items-center gap-3">
-				<svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
-				<p class="text-sm font-medium text-gray-700">Livraison rapide</p>
+				<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+					<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+					</svg>
+				</div>
+				<p class="text-sm font-medium text-foreground">Livraison soignée</p>
 			</div>
 			<div class="flex flex-col items-center gap-3">
-				<svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-					/>
-				</svg>
-				<p class="text-sm font-medium text-gray-700">Fait avec passion</p>
+				<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+					<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+					</svg>
+				</div>
+				<p class="text-sm font-medium text-foreground">Fait main</p>
 			</div>
 			<div class="flex flex-col items-center gap-3">
-				<svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-					/>
-				</svg>
-				<p class="text-sm font-medium text-gray-700">Support 7j/7</p>
+				<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+					<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+					</svg>
+				</div>
+				<p class="text-sm font-medium text-foreground">100% français</p>
 			</div>
 		</div>
 	</div>
 </section>
 
 <!-- Comment ça marche -->
-<section class="py-24 bg-gray-50 fade-in-section">
-	<div class="container mx-auto px-4">
+<section class="py-24 bg-muted/40 border-y border-border fade-in-section">
+	<div class="container mx-auto px-6">
 		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-900 mb-4">Comment ça marche ?</h2>
-			<p class="text-xl text-gray-600 max-w-2xl mx-auto">
+			<h2 class="text-4xl md:text-5xl text-foreground mb-4">Comment ça marche ?</h2>
+			<p class="text-muted-foreground max-w-xl mx-auto leading-relaxed">
 				Rejoignez notre communauté en quelques étapes simples
 			</p>
 		</div>
 
 		<div class="grid md:grid-cols-3 gap-12">
-			<!-- Étape 1 -->
-			<div class="text-center group">
-				<div
-					class="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 group-hover:scale-110 transition-transform"
-				>
-					1
+			{#each [
+				{ n: '01', title: 'Inscrivez-vous', text: 'Créez votre compte gratuitement. Choisissez votre rôle : créateur ou client.' },
+				{ n: '02', title: 'Explorez ou créez', text: 'Découvrez des produits artisanaux uniques ou ajoutez vos propres créations.' },
+				{ n: '03', title: 'Profitez', text: 'Recevez vos commandes ou développez votre activité avec nos outils dédiés.' }
+			] as step}
+				<div class="text-center group">
+					<p class="text-6xl font-serif text-primary/20 font-bold mb-4 group-hover:text-primary/40 transition-colors">{step.n}</p>
+					<h3 class="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
+					<p class="text-muted-foreground leading-relaxed text-sm">{step.text}</p>
 				</div>
-				<h3 class="text-2xl font-bold text-gray-900 mb-4">Inscrivez-vous</h3>
-				<p class="text-gray-600 leading-relaxed">
-					Créez votre compte gratuitement en quelques secondes. Choisissez votre rôle : créateur ou
-					client.
-				</p>
-			</div>
-
-			<!-- Étape 2 -->
-			<div class="text-center group">
-				<div
-					class="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 group-hover:scale-110 transition-transform"
-				>
-					2
-				</div>
-				<h3 class="text-2xl font-bold text-gray-900 mb-4">Explorez ou vendez</h3>
-				<p class="text-gray-600 leading-relaxed">
-					Découvrez des milliers de produits artisanaux ou ajoutez vos propres créations à notre
-					catalogue.
-				</p>
-			</div>
-
-			<!-- Étape 3 -->
-			<div class="text-center group">
-				<div
-					class="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 group-hover:scale-110 transition-transform"
-				>
-					3
-				</div>
-				<h3 class="text-2xl font-bold text-gray-900 mb-4">Profitez</h3>
-				<p class="text-gray-600 leading-relaxed">
-					Recevez vos commandes rapidement ou développez votre activité avec nos outils dédiés.
-				</p>
-			</div>
+			{/each}
 		</div>
 	</div>
 </section>
 
-<!-- Mise en avant créateurs/produits -->
-<section class="py-24 bg-white fade-in-section">
-	<div class="container mx-auto px-4">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-900 mb-4">Nos créateurs passionnés</h2>
-			<p class="text-xl text-gray-600 max-w-2xl mx-auto">
-				Découvrez le talent et le savoir-faire de nos artisans
-			</p>
+<!-- Section produits -->
+<section class="py-24 fade-in-section">
+	<div class="container mx-auto px-6">
+		<div class="flex items-end justify-between mb-12">
+			<h2 class="text-4xl md:text-5xl text-foreground max-w-xs leading-tight">
+				Nos créateurs<br /><em class="not-italic text-primary">passionnés</em>
+			</h2>
+			<a href="/products" class="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
+				Tout voir →
+			</a>
 		</div>
 
-		<div class="grid md:grid-cols-3 gap-8 mb-12">
-			{#each Array(3) as _, i}
-				<div
-					class="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
-				>
-					<div class="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 relative overflow-hidden">
-						<div
-							class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-						></div>
+		<div class="columns-2 md:columns-3 gap-4 space-y-4">
+			{#each [
+				{ h: 'aspect-[3/4]', label: 'Céramique', creator: 'Atelier du Midi' },
+				{ h: 'aspect-square', label: 'Maroquinerie', creator: 'L\'Atelier cuir' },
+				{ h: 'aspect-[4/5]', label: 'Bijoux', creator: 'Créations Léa' },
+				{ h: 'aspect-[3/5]', label: 'Bois tourné', creator: 'Bois & Sens' },
+				{ h: 'aspect-square', label: 'Textile', creator: 'Fil Rouge' },
+				{ h: 'aspect-[4/3]', label: 'Poterie', creator: 'La Terre Cuite' },
+			] as card}
+				<div class="break-inside-avoid group cursor-pointer">
+					<div class="{card.h} bg-muted rounded-lg overflow-hidden relative">
+						<div class="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-300"></div>
 					</div>
-					<div class="p-6">
-						<h3 class="text-xl font-bold text-gray-900 mb-2">Artisan {i + 1}</h3>
-						<p class="text-gray-600 mb-4">Créateur de maroquinerie artisanale</p>
-						<a href="/products" class="text-primary hover:underline font-medium cursor-pointer">
-							Voir les produits →
-						</a>
+					<div class="pt-2 pb-1">
+						<p class="text-sm font-medium text-foreground">{card.label}</p>
+						<p class="text-xs text-muted-foreground">{card.creator}</p>
 					</div>
 				</div>
 			{/each}
 		</div>
 
-		<div class="text-center">
-			<a href="/products" class="cursor-pointer">
-				<Button size="lg" class="cursor-pointer">
-					{#snippet children()}
-						Découvrir tous les produits
-					{/snippet}
+		<div class="text-center mt-14">
+			<a href="/products">
+				<Button size="lg">
+					{#snippet children()}Découvrir tous les produits{/snippet}
 				</Button>
 			</a>
 		</div>
 	</div>
 </section>
 
-<!-- CTA Final -->
-<section class="py-24 bg-primary text-white fade-in-section">
-	<div class="container mx-auto px-4 text-center">
-		<h2 class="text-4xl font-bold mb-6">Prêt à rejoindre l'aventure ?</h2>
-		<p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-			Que vous soyez créateur ou client, Vasy est la plateforme idéale pour découvrir et partager
-			l'artisanat français.
+<!-- CTA final -->
+<section class="py-24 bg-[#2C1F14] text-white fade-in-section">
+	<div class="container mx-auto px-6 text-center">
+		<h2 class="text-4xl md:text-5xl mb-6 leading-tight">
+			Prêt à rejoindre<br /><em class="not-italic text-[#E8A882]">l'aventure ?</em>
+		</h2>
+		<p class="text-white/60 mb-10 max-w-xl mx-auto leading-relaxed">
+			Que vous soyez créateur ou client, Vasy est la plateforme idéale pour découvrir et partager l'artisanat français.
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 justify-center">
-			<a href="/register" class="cursor-pointer">
-				<Button size="lg" class="bg-white text-primary hover:bg-gray-100 cursor-pointer">
-					{#snippet children()}
-						Créer un compte
-					{/snippet}
+			<a href="/register">
+				<Button size="lg" class="bg-[#C4704A]! text-white! border-transparent! hover:bg-[#B5623C]!">
+					{#snippet children()}Créer un compte{/snippet}
 				</Button>
 			</a>
-			<a href="/products" class="cursor-pointer">
-				<Button size="lg" variant="outline" class="!border-white !text-white !bg-transparent hover:!bg-white hover:!text-primary cursor-pointer">
-					{#snippet children()}
-						Explorer les produits
-					{/snippet}
+			<a href="/products">
+				<Button size="lg" variant="outline" class="border-white/30! text-white! bg-transparent! hover:bg-white/10!">
+					{#snippet children()}Explorer les produits{/snippet}
 				</Button>
 			</a>
 		</div>
@@ -411,19 +335,8 @@
 </section>
 
 <style>
-	/* Gradient radial personnalisé */
-	.bg-gradient-radial {
-		background: radial-gradient(circle at center, var(--tw-gradient-stops));
-	}
-
-	/* Animation personnalisée pour le scroll indicator */
 	@keyframes bounce {
-		0%,
-		100% {
-			transform: translateY(0) translateX(-50%);
-		}
-		50% {
-			transform: translateY(-10px) translateX(-50%);
-		}
+		0%, 100% { transform: translateY(0) translateX(-50%); }
+		50% { transform: translateY(-10px) translateX(-50%); }
 	}
 </style>

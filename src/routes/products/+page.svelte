@@ -87,37 +87,35 @@
 <div class="min-h-screen bg-background" bind:this={containerRef}>
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-6 py-8">
 		<Breadcrumb items={[
 			{ label: 'Accueil', href: '/' },
 			{ label: 'Produits' }
 		]} />
 
-		<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-8 mb-8">
+		<div class="flex flex-col sm:flex-row justify-between items-end gap-4 pt-10 mb-10">
 			<div>
 				{#if data.searchQuery}
-					<h1 class="animate-in text-3xl font-bold mb-2">
-						Résultats pour "{data.searchQuery}"
+					<h1 class="animate-in text-4xl text-foreground mb-1">
+						Résultats pour<br /><em class="not-italic text-primary">"{data.searchQuery}"</em>
 					</h1>
-					<p class="animate-in text-muted-foreground">
+					<p class="animate-in text-sm text-muted-foreground">
 						{data.products.length} produit{data.products.length > 1 ? 's' : ''} trouvé{data.products.length > 1 ? 's' : ''}
 					</p>
 				{:else}
-					<h1 class="animate-in text-3xl font-bold">Tous les produits</h1>
+					<h1 class="animate-in text-4xl text-foreground">Toutes les créations</h1>
+					<p class="animate-in text-sm text-muted-foreground mt-1">Pièces uniques façonnées à la main</p>
 				{/if}
 			</div>
 
-			<!-- Menu de tri -->
 			{#if data.products.length > 0}
-				<div class="animate-in flex items-center gap-3">
-					<label for="sort" class="text-sm font-medium text-muted-foreground">
-						Trier par :
-					</label>
+				<div class="animate-in flex items-center gap-3 shrink-0">
+					<label for="sort" class="text-sm text-muted-foreground">Trier par :</label>
 					<select
 						id="sort"
 						value={sortBy}
 						onchange={handleSortChange}
-						class="px-4 py-2 border border-input bg-background rounded-md text-sm font-medium cursor-pointer hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+						class="px-3 py-1.5 border border-input bg-background rounded-md text-sm cursor-pointer hover:bg-secondary transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
 					>
 						<option value="default">Par défaut</option>
 						<option value="price_asc">Prix croissant</option>
@@ -128,49 +126,48 @@
 		</div>
 
 		{#if data.products.length === 0}
-			<Card class="animate-in p-8 text-center">
+			<div class="animate-in py-20 text-center">
 				{#if data.searchQuery}
 					<p class="text-muted-foreground">Aucun produit trouvé pour "{data.searchQuery}"</p>
 				{:else}
-					<p class="text-muted-foreground">Aucun produit disponible pour le moment</p>
+					<p class="text-muted-foreground">Aucune création disponible pour le moment</p>
 				{/if}
-			</Card>
+			</div>
 		{:else if isLoading}
-			<!-- Loader -->
 			<div class="flex flex-col items-center justify-center py-20">
-				<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-				<p class="text-muted-foreground text-sm">Tri en cours...</p>
+				<div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
+				<p class="text-muted-foreground text-sm">Tri en cours…</p>
 			</div>
 		{:else}
-			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div class="columns-2 md:columns-3 xl:columns-4 gap-4">
 				{#each sortedProducts as product}
-					<a href="/products/{product.id}" class="block">
-						<Card class="animate-in overflow-hidden hover:shadow-lg transition-shadow">
+					<a href="/products/{product.id}" class="block break-inside-avoid mb-4 group">
+						<div class="animate-in overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">
 							{#if getFirstImage(product.image_urls)}
-								<img
-									src={getFirstImage(product.image_urls)}
-									alt={product.name}
-									class="w-full h-48 object-cover"
-								/>
+								<div class="overflow-hidden">
+									<img
+										src={getFirstImage(product.image_urls)}
+										alt={product.name}
+										class="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-500"
+									/>
+								</div>
 							{:else}
-								<div class="w-full h-48 bg-muted flex items-center justify-center">
-									<span class="text-muted-foreground text-sm">Pas d'image</span>
+								<div class="aspect-4/3 bg-muted flex items-center justify-center">
+									<svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
 								</div>
 							{/if}
-							<div class="p-4">
-								<h3 class="font-semibold truncate">{product.name}</h3>
-								<div class="flex justify-between items-center mt-2">
-									<span class="text-lg font-bold text-primary">
-										{formatPrice(product.price)}
-									</span>
-									{#if product.stock > 0}
-										<span class="text-xs text-green-600">En stock</span>
-									{:else}
-										<span class="text-xs text-red-600">Épuisé</span>
+							<div class="p-3">
+								<h3 class="font-medium text-sm text-foreground truncate">{product.name}</h3>
+								<div class="flex justify-between items-center mt-1.5">
+									<span class="text-sm font-semibold text-primary">{formatPrice(product.price)}</span>
+									{#if product.stock === 0}
+										<span class="text-xs text-muted-foreground">Épuisé</span>
 									{/if}
 								</div>
 							</div>
-						</Card>
+						</div>
 					</a>
 				{/each}
 			</div>

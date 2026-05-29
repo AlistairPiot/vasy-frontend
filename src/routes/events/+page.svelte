@@ -54,11 +54,11 @@
 		const status = getEventStatus(dateStr);
 		switch (status) {
 			case 'past':
-				return { text: 'Passé', class: 'bg-red-100 text-red-800' };
+				return { text: 'Passé', class: 'bg-muted text-muted-foreground' };
 			case 'today':
-				return { text: "Aujourd'hui", class: 'bg-blue-100 text-blue-800' };
+				return { text: "Aujourd'hui", class: 'bg-primary/15 text-primary font-medium' };
 			case 'upcoming':
-				return { text: 'À venir', class: 'bg-green-100 text-green-800' };
+				return { text: 'À venir', class: 'bg-secondary text-foreground/70' };
 		}
 	}
 
@@ -81,13 +81,11 @@
 			items={[{ label: 'Accueil', href: '/' }, { label: 'Événements' }]}
 		/>
 
-		<div
-			class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-8 mb-8"
-		>
+		<div class="flex flex-col sm:flex-row justify-between items-end gap-4 pt-10 mb-8">
 			<div>
-				<h1 class="animate-in text-3xl font-bold">Événements</h1>
-				<p class="animate-in text-muted-foreground mt-1">
-					{data.events.length} événement{data.events.length > 1 ? 's' : ''} à venir
+				<h1 class="animate-in text-4xl text-foreground">Événements</h1>
+				<p class="animate-in text-sm text-muted-foreground mt-1">
+					{data.events.length} événement{data.events.length > 1 ? 's' : ''} à découvrir
 				</p>
 			</div>
 
@@ -181,12 +179,12 @@
 														<span class="truncate">{event.created_by_name}</span>
 													</p>
 													{#if event.is_paid && event.price}
-														<p class="flex items-center gap-2 min-w-0 text-amber-700 font-medium">
+														<p class="flex items-center gap-2 min-w-0 text-primary font-medium">
 															<span class="shrink-0">🎟️</span>
 															<span>{(event.price / 100).toFixed(2)} €</span>
 														</p>
 													{:else}
-														<p class="flex items-center gap-2 min-w-0 text-green-600">
+														<p class="flex items-center gap-2 min-w-0 text-muted-foreground">
 															<span class="shrink-0">🎟️</span>
 															<span>Entrée libre</span>
 														</p>

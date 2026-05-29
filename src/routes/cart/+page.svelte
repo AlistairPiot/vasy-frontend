@@ -29,7 +29,17 @@
 		return { label, urgent };
 	}
 
-	onMount(() => {
+	onMount(async () => {
+		// Remove inactive or deleted products from cart
+		for (const item of [...$cart.items]) {
+			try {
+				const res = await fetch(`/api/products/${item.id}`);
+				if (!res.ok) cart.removeItem(item.id);
+			} catch {
+				// silently ignore network errors
+			}
+		}
+
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
 			opacity: 0,
@@ -104,12 +114,12 @@
 			{ label: 'Panier' }
 		]} />
 
-		<div class="grid md:grid-cols-3 gap-8 py-8">
+		<div class="grid md:grid-cols-3 gap-8 py-10">
 			<!-- Cart Items -->
 			<div class="md:col-span-2">
-				<div class="animate-in">
-					<h1 class="text-3xl font-bold mb-2">Mon panier</h1>
-					<p class="text-muted-foreground mb-6">
+				<div class="animate-in mb-8">
+					<h1 class="text-4xl text-foreground mb-1">Mon panier</h1>
+					<p class="text-sm text-muted-foreground">
 						{$cart.items.length} article{$cart.items.length !== 1 ? 's' : ''}
 					</p>
 				</div>
@@ -172,7 +182,7 @@
 											</button>
 										</div>
 										{#if item.quantity >= item.stock}
-											<p class="text-xs text-orange-500 mt-1">Stock maximum atteint</p>
+											<p class="text-xs text-muted-foreground mt-1">Stock maximum atteint</p>
 										{/if}
 									</div>
 
@@ -195,8 +205,8 @@
 
 			<!-- Order Summary -->
 			<div>
-				<Card class="p-6 animate-in sticky top-4">
-					<h2 class="text-xl font-bold mb-6">Résumé de la commande</h2>
+				<Card class="p-6 animate-in sticky top-24">
+					<h2 class="text-xl font-semibold mb-6">Résumé</h2>
 
 					<div class="space-y-4 mb-6 border-b pb-6">
 						<div class="flex justify-between text-sm">

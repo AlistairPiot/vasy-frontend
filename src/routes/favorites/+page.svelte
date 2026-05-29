@@ -53,6 +53,14 @@
 			)
 		]);
 
+		// Purger immédiatement les favoris obsolètes (badge mis à jour)
+		eventIds.forEach((id, i) => {
+			if (!eventResults[i]) eventFavorites.remove(id);
+		});
+		productIds.forEach((id, i) => {
+			if (!productResults[i]) favorites.remove(id);
+		});
+
 		products = productResults.filter(Boolean);
 		events = eventResults.filter(Boolean);
 		loading = false;
