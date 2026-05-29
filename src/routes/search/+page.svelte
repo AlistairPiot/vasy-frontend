@@ -7,6 +7,7 @@
 	import { formatPrice } from '$lib/utils';
 	import { tilt } from '$lib/actions/tilt';
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -60,13 +61,17 @@
 		</div>
 
 		{#if totalCount === 0}
-			<Card class="animate-in p-12 text-center">
-				<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-muted-foreground">
-					<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-				</svg>
-				<p class="text-muted-foreground">Aucun résultat pour "{data.searchQuery}"</p>
-				<p class="text-sm text-muted-foreground mt-2">Essayez avec d'autres mots-clés</p>
-			</Card>
+			<div class="animate-in">
+				<EmptyState
+					variant="search"
+					title='Aucun résultat pour "{data.searchQuery}"'
+					description="Essayez avec d'autres mots-clés ou explorez nos collections."
+					ctas={[
+						{ label: 'Voir tous les produits', href: '/products' },
+						{ label: 'Voir les événements', href: '/events' }
+					]}
+				/>
+			</div>
 		{:else}
 			<!-- Section Créateurs -->
 			{#if data.creators.length > 0}
@@ -111,7 +116,7 @@
 						Produits
 						<span class="text-sm font-normal text-muted-foreground">({data.products.length})</span>
 					</h2>
-					<div class="columns-2 md:columns-3 xl:columns-4 gap-4">
+					<div class="columns-2 md:columns-3 xl:columns-4 gap-2 md:gap-4">
 						{#each data.products as product}
 							<a href="/products/{product.id}" use:tilt class="block break-inside-avoid mb-4 group">
 								<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">

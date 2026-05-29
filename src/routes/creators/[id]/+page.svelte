@@ -6,6 +6,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import { tilt } from '$lib/actions/tilt';
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -122,9 +123,13 @@
 					{/each}
 				</div>
 			{:else}
-				<Card class="p-8 text-center text-muted-foreground animate-in">
-					<p>Ce créateur n'a pas encore de produits</p>
-				</Card>
+				<div class="animate-in">
+					<EmptyState
+						variant="products"
+						title="Pas encore de créations"
+						description="Ce créateur prépare de belles choses. Revenez bientôt !"
+					/>
+				</div>
 			{/if}
 		</div>
 	</main>

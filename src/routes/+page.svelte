@@ -175,13 +175,13 @@
 	</div>
 
 	<div class="relative z-10 min-h-screen flex items-center">
-		<div class="container mx-auto px-6 py-32 text-center">
+		<div class="container mx-auto px-5 md:px-6 py-20 md:py-32 text-center">
 
 			<p class="hero-tagline opacity-0 translate-y-5 text-white/60 text-sm tracking-[0.25em] uppercase mb-8 font-medium">
 				Artisanat français
 			</p>
 
-			<h1 bind:this={h1Ref} class="text-5xl md:text-7xl text-white mb-6 leading-tight">
+			<h1 bind:this={h1Ref} class="text-4xl md:text-7xl text-white mb-6 leading-tight">
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">Fait</span></span>
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">avec</span></span>
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">les</span></span>
@@ -228,7 +228,7 @@
 
 <!-- Bandeau événements -->
 <section class="py-8 border-b border-border fade-in-section">
-	<div class="container mx-auto px-6">
+	<div class="container mx-auto px-4 md:px-6">
 		<a href="/events" class="group flex items-center justify-center gap-6">
 			<div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
 				<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +248,7 @@
 
 <!-- Réassurance -->
 <section class="py-16 fade-in-section">
-	<div class="container mx-auto px-6">
+	<div class="container mx-auto px-4 md:px-6">
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
 			<div class="flex flex-col items-center gap-3">
 				<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -309,14 +309,14 @@
 </svg>
 
 <!-- Comment ça marche -->
-<section class="relative py-28 overflow-hidden fade-in-section">
+<section class="relative py-16 md:py-28 overflow-hidden fade-in-section">
 	<div class="absolute inset-0 bg-[#0E0804]"></div>
 	<div class="absolute inset-0 opacity-[0.06]" style="background-image: radial-gradient(circle, #C4704A 1px, transparent 1px); background-size: 32px 32px;"></div>
 
-	<div class="relative container mx-auto px-6">
+	<div class="relative container mx-auto px-4 md:px-6">
 		<div class="text-center mb-16">
 			<p class="text-[#E8A882]/60 text-xs tracking-[0.35em] uppercase mb-4 font-medium">Fonctionnement</p>
-			<h2 class="text-4xl md:text-5xl text-white mb-4">Comment ça marche ?</h2>
+			<h2 class="text-3xl md:text-5xl text-white mb-4">Comment ça marche ?</h2>
 			<p class="text-white/35 max-w-xl mx-auto leading-relaxed">
 				Rejoignez notre communauté en quelques étapes simples
 			</p>
@@ -345,7 +345,7 @@
 			] as step, i}
 				<div
 					use:tilt={{ intensity: 6 }}
-					class="group relative overflow-hidden bg-white/4 p-8 transition-colors duration-500 cursor-default {i === 0 ? 'step-0' : i === 1 ? 'step-1' : 'step-2'}"
+					class="group relative overflow-hidden bg-white/4 p-6 md:p-8 transition-colors duration-500 cursor-default {i === 0 ? 'step-0' : i === 1 ? 'step-1' : 'step-2'}"
 					style="z-index: {i + 1}; --mx: 50%; --my: 50%; --spot-op: 0;"
 					onmouseenter={(e) => {
 						const r = e.currentTarget.getBoundingClientRect();
@@ -389,10 +389,10 @@
 </section>
 
 <!-- Section produits -->
-<section class="py-24 fade-in-section">
-	<div class="container mx-auto px-6">
-		<div class="flex items-end justify-between mb-12">
-			<h2 class="text-4xl md:text-5xl text-foreground max-w-xs leading-tight">
+<section class="py-14 md:py-24 fade-in-section">
+	<div class="container mx-auto px-4 md:px-6">
+		<div class="flex items-end justify-between mb-6 md:mb-12">
+			<h2 class="text-2xl md:text-4xl md:text-5xl text-foreground max-w-xs leading-tight">
 				Nos créateurs<br /><em class="not-italic text-primary">passionnés</em>
 			</h2>
 			<a href="/products" class="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -403,7 +403,7 @@
 			</a>
 		</div>
 
-		<div class="columns-2 md:columns-3 gap-4 space-y-4">
+		<div class="columns-2 md:columns-3 gap-2 md:gap-4 space-y-2 md:space-y-4">
 			{#each [
 				{ h: 'aspect-[3/4]', label: 'Céramique', creator: 'Atelier du Midi' },
 				{ h: 'aspect-square', label: 'Maroquinerie', creator: 'L\'Atelier cuir' },
@@ -435,9 +435,9 @@
 </section>
 
 <!-- CTA final -->
-<section class="py-24 bg-[#2C1F14] text-white fade-in-section">
-	<div class="container mx-auto px-6 text-center">
-		<h2 class="text-4xl md:text-5xl mb-6 leading-tight">
+<section class="py-14 md:py-24 bg-[#2C1F14] text-white fade-in-section">
+	<div class="container mx-auto px-4 md:px-6 text-center">
+		<h2 class="text-2xl md:text-5xl mb-4 md:mb-6 leading-tight">
 			Prêt à rejoindre<br /><em class="not-italic text-[#E8A882]">l'aventure ?</em>
 		</h2>
 		<p class="text-white/60 mb-10 max-w-xl mx-auto leading-relaxed">

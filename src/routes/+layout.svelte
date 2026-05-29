@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -16,6 +16,8 @@
 	let { children, data } = $props();
 
 	let lenisInstance: any = null;
+	let pageContent: HTMLDivElement;
+
 
 	$effect(() => {
 		if (typeof window !== 'undefined') {
@@ -53,13 +55,21 @@
 		};
 	});
 
-	// Retour en haut à chaque navigation (compatible Lenis)
-	afterNavigate(() => {
+	// Retour en haut + fade-in du contenu à l'arrivée
+	afterNavigate(({ type }) => {
 		if (lenisInstance) {
 			lenisInstance.scrollTo(0, { immediate: true });
 		} else if (browser) {
 			window.scrollTo(0, 0);
 		}
+
+		if (type === 'enter') return;
+
+		gsap.killTweensOf(pageContent);
+		gsap.fromTo(pageContent,
+			{ opacity: 0, y: 8 },
+			{ opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', clearProps: 'transform' }
+		);
 	});
 </script>
 
@@ -68,7 +78,7 @@
 </svelte:head>
 
 <div class="flex flex-col min-h-screen">
-	<div class="flex-1">
+	<div class="flex-1" bind:this={pageContent}>
 		{@render children()}
 	</div>
 	<Footer />

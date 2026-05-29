@@ -11,6 +11,8 @@
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 	import { formatPrice } from '$lib/utils';
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -138,20 +140,53 @@
 		</div>
 
 		{#if loading}
-			<div class="flex justify-center py-16">
-				<div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-			</div>
-		{:else if products.length === 0 && events.length === 0}
-			<Card class="p-12 text-center">
-				<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-muted-foreground">
-					<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-				</svg>
-				<p class="text-muted-foreground mb-4">Vous n'avez pas encore de favoris</p>
-				<div class="flex justify-center gap-4">
-					<a href="/products" class="text-primary hover:underline text-sm">Explorer les produits</a>
-					<a href="/events" class="text-primary hover:underline text-sm">Explorer les événements</a>
+			<!-- Skeleton produits -->
+			<section class="mb-10">
+				<div class="flex items-center gap-2 mb-4">
+					<Skeleton class="h-5 w-20" />
+					<Skeleton class="h-4 w-6" />
 				</div>
-			</Card>
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					{#each Array(4) as _}
+						<div class="rounded-lg overflow-hidden border border-border/40 bg-card">
+							<Skeleton class="w-full h-48 rounded-none" />
+							<div class="p-4 space-y-2">
+								<Skeleton class="h-4 w-3/4" />
+								<Skeleton class="h-5 w-1/3 mt-1" />
+							</div>
+						</div>
+					{/each}
+				</div>
+			</section>
+			<!-- Skeleton événements -->
+			<section>
+				<div class="flex items-center gap-2 mb-4">
+					<Skeleton class="h-5 w-24" />
+					<Skeleton class="h-4 w-6" />
+				</div>
+				<div class="space-y-3">
+					{#each Array(2) as _}
+						<div class="rounded-lg border border-border/40 bg-card p-4 flex gap-4 items-center">
+							<Skeleton class="w-16 h-16 shrink-0" />
+							<div class="flex-1 space-y-2">
+								<Skeleton class="h-4 w-2/3" />
+								<Skeleton class="h-3 w-1/2" />
+								<Skeleton class="h-3 w-1/3" />
+							</div>
+						</div>
+					{/each}
+				</div>
+			</section>
+		{:else if products.length === 0 && events.length === 0}
+			<EmptyState
+				variant="favorites"
+				title="Aucun favori pour l'instant"
+				description="Explorez les créations artisanales et ajoutez vos coups de cœur ici."
+				ctas={[
+					{ label: 'Voir les produits', href: '/products' },
+					{ label: 'Voir les événements', href: '/events' }
+				]}
+			/>
 		{:else}
 			<!-- Section Produits -->
 			<section class="mb-10">

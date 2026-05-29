@@ -19,6 +19,48 @@
 	const cartItem = $derived($cart.items.find((i) => i.id === data.product.id));
 	const isMaxInCart = $derived(!!cartItem && cartItem.quantity >= data.product.stock);
 
+	// Lightbox
+	let lightboxOpen = $state(false);
+	let lightboxContainer: HTMLDivElement | undefined = $state();
+	let lightboxImg: HTMLImageElement | undefined = $state();
+
+	$effect(() => {
+		if (lightboxOpen && lightboxContainer && lightboxImg) {
+			document.body.style.overflow = 'hidden';
+			gsap.fromTo(lightboxContainer, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' });
+			gsap.fromTo(lightboxImg, { scale: 0.88, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power3.out' });
+		} else if (!lightboxOpen) {
+			document.body.style.overflow = '';
+		}
+	});
+
+	function openLightbox() {
+		lightboxOpen = true;
+	}
+
+	function closeLightbox() {
+		if (!lightboxContainer || !lightboxImg) { lightboxOpen = false; return; }
+		gsap.to(lightboxImg, { scale: 0.88, opacity: 0, duration: 0.2, ease: 'power2.in' });
+		gsap.to(lightboxContainer, { opacity: 0, duration: 0.2, ease: 'power2.in', onComplete: () => { lightboxOpen = false; } });
+	}
+
+	function lightboxPrev(e: MouseEvent) {
+		e.stopPropagation();
+		selectedImage = (selectedImage - 1 + images.length) % images.length;
+	}
+
+	function lightboxNext(e: MouseEvent) {
+		e.stopPropagation();
+		selectedImage = (selectedImage + 1) % images.length;
+	}
+
+	function handleLightboxKey(e: KeyboardEvent) {
+		if (!lightboxOpen) return;
+		if (e.key === 'Escape') closeLightbox();
+		if (e.key === 'ArrowRight' && images.length > 1) selectedImage = (selectedImage + 1) % images.length;
+		if (e.key === 'ArrowLeft' && images.length > 1) selectedImage = (selectedImage - 1 + images.length) % images.length;
+	}
+
 	// Report modal
 	let showReportModal = $state(false);
 	let reportReason = $state('');
@@ -121,12 +163,14 @@
 	}
 </script>
 
+<svelte:window onkeydown={handleLightboxKey} />
+
 <div class="relative min-h-screen bg-background" bind:this={containerRef}>
 	<WoodBackground />
 	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-6 py-8">
+	<main class="container mx-auto px-4 md:px-6 py-6 md:py-8">
 		<Breadcrumb items={[
 			{ label: 'Accueil', href: '/' },
 			{ label: 'Produits', href: '/products' },
@@ -138,15 +182,23 @@
 			Retour aux créations
 		</a>
 
-		<div class="grid md:grid-cols-2 gap-12 py-10">
+		<div class="grid md:grid-cols-2 gap-6 md:gap-12 py-6 md:py-10">
 			<!-- Images -->
 			<div class="animate-in">
 				{#if images.length > 0}
-					<div class="rounded-xl overflow-hidden bg-muted mb-3 aspect-square">
-						<img src={images[selectedImage]} alt={data.product.name} class="w-full h-full object-cover" />
-					</div>
+					<button
+						onclick={openLightbox}
+						class="block w-full rounded-xl overflow-hidden bg-muted mb-3 aspect-square cursor-zoom-in group"
+						aria-label="Agrandir l'image"
+					>
+						<img
+							src={images[selectedImage]}
+							alt={data.product.name}
+							class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+						/>
+					</button>
 					{#if images.length > 1}
-						<div class="grid grid-cols-5 gap-2">
+						<div class="grid grid-cols-5 gap-1 md:gap-2">
 							{#each images as image, i}
 								<button
 									onclick={() => (selectedImage = i)}
@@ -252,6 +304,78 @@
 	</main>
 	</div>
 </div>
+
+<!-- Lightbox -->
+{#if lightboxOpen}
+	<div
+		bind:this={lightboxContainer}
+		class="fixed inset-0 z-200 flex items-center justify-center bg-black/92 backdrop-blur-sm"
+		onclick={closeLightbox}
+		role="dialog"
+		aria-modal="true"
+		aria-label="Galerie"
+	>
+		<!-- Fermer -->
+		<button
+			onclick={closeLightbox}
+			class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+			aria-label="Fermer"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+				<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+			</svg>
+		</button>
+
+		<!-- Flèche gauche -->
+		{#if images.length > 1}
+			<button
+				onclick={lightboxPrev}
+				class="absolute left-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+				aria-label="Image précédente"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+					<path d="M15 18l-6-6 6-6"/>
+				</svg>
+			</button>
+		{/if}
+
+		<!-- Image -->
+		<img
+			bind:this={lightboxImg}
+			src={images[selectedImage]}
+			alt={data.product.name}
+			class="max-w-[90vw] max-h-[88vh] object-contain rounded-lg select-none"
+			onclick={(e) => e.stopPropagation()}
+			draggable="false"
+		/>
+
+		<!-- Flèche droite -->
+		{#if images.length > 1}
+			<button
+				onclick={lightboxNext}
+				class="absolute right-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+				aria-label="Image suivante"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+					<path d="M9 18l6-6-6-6"/>
+				</svg>
+			</button>
+		{/if}
+
+		<!-- Indicateurs -->
+		{#if images.length > 1}
+			<div class="absolute bottom-5 flex gap-2 items-center">
+				{#each images as _, i}
+					<button
+						onclick={(e) => { e.stopPropagation(); selectedImage = i; }}
+						class="rounded-full transition-all duration-200 {selectedImage === i ? 'w-5 h-2 bg-white' : 'w-2 h-2 bg-white/40 hover:bg-white/70'}"
+						aria-label="Image {i + 1}"
+					></button>
+				{/each}
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <!-- Modal de signalement -->
 {#if showReportModal}

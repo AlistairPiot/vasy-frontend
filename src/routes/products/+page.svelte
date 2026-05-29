@@ -5,6 +5,8 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { tilt } from '$lib/actions/tilt';
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -114,20 +116,36 @@
 		</div>
 
 		{#if data.products.length === 0}
-			<div class="animate-in py-20 text-center">
+			<div class="animate-in">
 				{#if data.searchQuery}
-					<p class="text-muted-foreground">Aucun produit trouvé pour "{data.searchQuery}"</p>
+					<EmptyState
+						variant="search"
+						title='Aucun résultat pour "{data.searchQuery}"'
+						description="Essayez avec d'autres mots-clés."
+					/>
 				{:else}
-					<p class="text-muted-foreground">Aucune création disponible pour le moment</p>
+					<EmptyState
+						variant="products"
+						title="Aucune création disponible"
+						description="Les artisans préparent de belles choses. Revenez bientôt !"
+					/>
 				{/if}
 			</div>
 		{:else if isLoading}
-			<div class="flex flex-col items-center justify-center py-20">
-				<div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-				<p class="text-muted-foreground text-sm">Tri en cours…</p>
+			<div class="columns-2 md:columns-3 xl:columns-4 gap-2 md:gap-4">
+				{#each [180, 220, 160, 240, 200, 170, 230, 190] as h}
+					<div class="break-inside-avoid mb-4 rounded-lg overflow-hidden border border-border/40 bg-card">
+						<Skeleton class="w-full rounded-none" style="height: {h}px;" />
+						<div class="p-3 space-y-2">
+							<Skeleton class="h-4 w-3/4" />
+							<Skeleton class="h-3 w-1/2" />
+							<Skeleton class="h-4 w-1/4 mt-1" />
+						</div>
+					</div>
+				{/each}
 			</div>
 		{:else}
-			<div class="columns-2 md:columns-3 xl:columns-4 gap-4">
+			<div class="columns-2 md:columns-3 xl:columns-4 gap-2 md:gap-4">
 				{#each sortedProducts as product}
 					<a href="/products/{product.id}" use:tilt class="block break-inside-avoid mb-4 group">
 						<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">

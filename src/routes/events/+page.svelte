@@ -7,6 +7,7 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 
 	let { data } = $props();
@@ -123,9 +124,14 @@
 		</div>
 
 		{#if data.events.length === 0}
-			<Card class="animate-in p-8 text-center">
-				<p class="text-muted-foreground">Aucun événement à venir pour le moment.</p>
-			</Card>
+			<div class="animate-in">
+				<EmptyState
+					variant="events"
+					title="Aucun événement à venir"
+					description="Les artisans organisent régulièrement des marchés et ateliers. Revenez bientôt !"
+					ctas={[{ label: 'Voir les créations', href: '/products' }]}
+				/>
+			</div>
 		{:else}
 			<div
 				class="animate-in grid gap-6"

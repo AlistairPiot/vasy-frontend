@@ -8,6 +8,7 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
 	import { onDestroy } from 'svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 
 	let { data } = $props();
 	let showClearCartModal = $state(false);
@@ -125,16 +126,12 @@
 				</div>
 
 				{#if $cart.items.length === 0}
-					<Card class="p-8 text-center animate-in">
-						<p class="text-muted-foreground mb-6">Votre panier est vide</p>
-						<a href="/products">
-							<Button>
-								{#snippet children()}
-									Continuer les achats
-								{/snippet}
-							</Button>
-						</a>
-					</Card>
+					<EmptyState
+						variant="cart"
+						title="Votre panier est vide"
+						description="Découvrez les créations de nos artisans et ajoutez vos coups de cœur."
+						ctas={[{ label: 'Explorer les créations', href: '/products' }]}
+					/>
 				{:else}
 					<div class="space-y-4">
 						{#each $cart.items as item, index (item.id)}

@@ -7,6 +7,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
@@ -259,12 +260,12 @@
 						<h2 class="text-xl font-semibold mb-6">Mes événements</h2>
 
 						{#if data.eventRegistrations.length === 0}
-							<div class="text-center py-12">
-								<p class="text-muted-foreground">Vous n'êtes inscrit à aucun événement.</p>
-								<a href="/events" class="inline-block mt-4 text-sm text-primary underline underline-offset-2">
-									Découvrir les événements
-								</a>
-							</div>
+							<EmptyState
+								variant="events"
+								title="Aucune inscription à un événement"
+								description="Parcourez les marchés et ateliers artisanaux près de chez vous."
+								ctas={[{ label: 'Voir les événements', href: '/events' }]}
+							/>
 						{:else}
 							<div class="space-y-4">
 								{#each data.eventRegistrations as reg}
@@ -303,9 +304,12 @@
 						<h2 class="text-xl font-semibold mb-6">Mes commandes</h2>
 
 						{#if data.orders.length === 0}
-							<div class="text-center py-12">
-								<p class="text-muted-foreground">Vous n'avez pas encore de commandes.</p>
-							</div>
+							<EmptyState
+								variant="orders"
+								title="Aucune commande pour l'instant"
+								description="Vos commandes auprès de nos artisans apparaîtront ici."
+								ctas={[{ label: 'Découvrir les créations', href: '/products' }]}
+							/>
 						{:else}
 							<div class="space-y-4">
 								{#each data.orders as order}

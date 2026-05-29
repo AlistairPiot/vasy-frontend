@@ -19,6 +19,7 @@
 
 	let showLogoutModal = $state(false);
 	let mobileMenuOpen = $state(false);
+	let mobileSearchOpen = $state(false);
 	let logoutFormRef: HTMLFormElement;
 
 	function handleLogoutClick(event: Event) {
@@ -40,6 +41,11 @@
 
 	function closeMenu() {
 		mobileMenuOpen = false;
+	}
+
+	function toggleMobileSearch() {
+		mobileSearchOpen = !mobileSearchOpen;
+		if (mobileSearchOpen) mobileMenuOpen = false;
 	}
 
 	const eventsHref = user?.role === 'creator' ? '/creator/evenements' : '/events';
@@ -108,10 +114,27 @@
 				{/if}
 			</nav>
 
-			<!-- Mobile right: cart + hamburger -->
-			<div class="flex items-center gap-3 md:hidden ml-auto">
+			<!-- Mobile right: search + cart + hamburger -->
+			<div class="flex items-center gap-2 md:hidden ml-auto">
+				<!-- Icône recherche -->
+				<button
+					onclick={toggleMobileSearch}
+					class="p-2 rounded-md transition-colors {mobileSearchOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}"
+					aria-label="Rechercher"
+				>
+					{#if mobileSearchOpen}
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+							<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+						</svg>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+							<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+						</svg>
+					{/if}
+				</button>
+
 				{#if user?.role === 'client'}
-					<a href="/cart" class="relative text-muted-foreground hover:text-foreground">
+					<a href="/cart" class="relative p-1 text-muted-foreground hover:text-foreground">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="9" cy="21" r="1"/>
 							<circle cx="20" cy="21" r="1"/>
@@ -125,7 +148,7 @@
 					</a>
 				{/if}
 				<button
-					onclick={() => mobileMenuOpen = !mobileMenuOpen}
+					onclick={() => { mobileMenuOpen = !mobileMenuOpen; mobileSearchOpen = false; }}
 					class="p-1 text-muted-foreground hover:text-foreground transition-colors"
 					aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
 					aria-expanded={mobileMenuOpen}
@@ -143,14 +166,16 @@
 			</div>
 		</div>
 
+		<!-- Mobile search bar (slide-down) -->
+		{#if mobileSearchOpen}
+			<div transition:slide={{ duration: 180 }} class="md:hidden pt-3 pb-2 border-t border-border/40 mt-2">
+				<SearchBar />
+			</div>
+		{/if}
+
 		<!-- Mobile menu -->
 		{#if mobileMenuOpen}
 			<div transition:slide={{ duration: 200 }} class="md:hidden pt-4 pb-2 border-t border-border/40 mt-3 space-y-1">
-				<!-- Search -->
-				<div class="mb-4">
-					<SearchBar />
-				</div>
-
 				<!-- Nav links -->
 				<a href="/products" onclick={closeMenu} class="flex items-center py-2.5 px-1 text-sm text-foreground/80 hover:text-foreground border-b border-border/30">Produits</a>
 				{#if !user || user.role === 'client' || user.role === 'creator'}
