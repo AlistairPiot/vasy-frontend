@@ -6,6 +6,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 
@@ -209,7 +210,9 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="relative min-h-screen bg-background" bind:this={containerRef}>
+	<WoodBackground />
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-4 py-8">
@@ -234,7 +237,7 @@
 					<button
 						type="button"
 						onclick={openReportModal}
-						class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-input hover:bg-accent text-muted-foreground transition-colors text-sm"
+						class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-input hover:bg-primary hover:text-primary-foreground text-muted-foreground transition-colors text-sm"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
 						Signaler
@@ -467,6 +470,7 @@
 			</div>
 		</div>
 	</main>
+	</div>
 </div>
 
 <!-- Visionneur de pièces jointes -->

@@ -4,6 +4,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { tilt } from '$lib/actions/tilt';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -67,7 +68,11 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="min-h-screen bg-background relative" bind:this={containerRef}>
+
+	<WoodBackground />
+
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-6 py-8">
@@ -156,4 +161,5 @@
 			</div>
 		{/if}
 	</main>
+	</div>
 </div>

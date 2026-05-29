@@ -109,7 +109,7 @@
 				{#if data.user}
 					<a href="/dashboard">
 						<Button size="sm">
-							{#snippet children()}Tableau de bord{/snippet}
+							{#snippet children()}Mon espace{/snippet}
 						</Button>
 					</a>
 				{:else}
@@ -147,7 +147,7 @@
 			<div transition:slide={{ duration: 200 }} class="sm:hidden mt-3 pt-3 border-t {scrollY > 50 ? 'border-border/40' : 'border-white/20'}">
 				{#if data.user}
 					<a href="/dashboard" onclick={() => mobileMenuOpen = false} class="block py-2 text-sm font-medium {scrollY > 50 ? 'text-foreground' : 'text-white'}">
-						Tableau de bord
+						Mon espace
 					</a>
 				{:else}
 					<div class="flex flex-col gap-2 pb-2">

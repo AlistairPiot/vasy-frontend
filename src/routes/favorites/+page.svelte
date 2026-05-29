@@ -10,6 +10,7 @@
 	import { favorites } from '$lib/stores/favorites';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 	import { formatPrice } from '$lib/utils';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -118,7 +119,9 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="relative min-h-screen bg-background" bind:this={containerRef}>
+	<WoodBackground />
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-4 py-8">
@@ -263,4 +266,5 @@
 			</section>
 		{/if}
 	</main>
+	</div>
 </div>

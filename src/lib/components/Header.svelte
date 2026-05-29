@@ -67,7 +67,7 @@
 				{/if}
 				{#if user}
 					{#if user.role === 'creator' || user.role === 'admin'}
-						<a href="/dashboard" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Tableau de bord</a>
+						<a href="/dashboard" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Mon espace</a>
 					{:else}
 						<a href="/profile" class="text-muted-foreground hover:text-foreground whitespace-nowrap">Profil</a>
 					{/if}
@@ -158,7 +158,7 @@
 				{/if}
 				{#if user}
 					{#if user.role === 'creator' || user.role === 'admin'}
-						<a href="/dashboard" onclick={closeMenu} class="flex items-center py-2.5 px-1 text-sm text-foreground/80 hover:text-foreground border-b border-border/30">Tableau de bord</a>
+						<a href="/dashboard" onclick={closeMenu} class="flex items-center py-2.5 px-1 text-sm text-foreground/80 hover:text-foreground border-b border-border/30">Mon espace</a>
 					{:else}
 						<a href="/profile" onclick={closeMenu} class="flex items-center py-2.5 px-1 text-sm text-foreground/80 hover:text-foreground border-b border-border/30">Profil</a>
 					{/if}

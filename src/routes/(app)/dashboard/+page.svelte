@@ -23,10 +23,10 @@
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-4 md:px-6 py-8 pt-24">
-		<Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Tableau de bord' }]} />
+		<Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Mon espace' }]} />
 
 		<div class="pt-8 mb-8">
-			<h1 class="animate-in text-3xl md:text-4xl text-foreground">Tableau de bord</h1>
+			<h1 class="animate-in text-3xl md:text-4xl text-foreground">Mon espace</h1>
 			<p class="animate-in text-sm text-muted-foreground mt-1">{data.user.email}</p>
 		</div>
 

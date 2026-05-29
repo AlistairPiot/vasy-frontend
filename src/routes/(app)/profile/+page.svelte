@@ -78,7 +78,7 @@
 							onclick={() => (activeTab = 'profile')}
 							class="w-full text-left px-4 py-2 rounded-md transition-colors {activeTab === 'profile'
 								? 'bg-primary text-primary-foreground'
-								: 'hover:bg-accent text-muted-foreground'}"
+								: 'hover:bg-primary hover:text-primary-foreground text-muted-foreground'}"
 						>
 							Mon profil
 						</button>
@@ -86,7 +86,7 @@
 							onclick={() => (activeTab = 'orders')}
 							class="w-full text-left px-4 py-2 rounded-md transition-colors {activeTab === 'orders'
 								? 'bg-primary text-primary-foreground'
-								: 'hover:bg-accent text-muted-foreground'}"
+								: 'hover:bg-primary hover:text-primary-foreground text-muted-foreground'}"
 						>
 							Commandes
 						</button>
@@ -94,13 +94,13 @@
 							onclick={() => (activeTab = 'events')}
 							class="w-full text-left px-4 py-2 rounded-md transition-colors {activeTab === 'events'
 								? 'bg-primary text-primary-foreground'
-								: 'hover:bg-accent text-muted-foreground'}"
+								: 'hover:bg-primary hover:text-primary-foreground text-muted-foreground'}"
 						>
 							Événements
 						</button>
 						<a
 							href="/fonctionnement"
-							class="block w-full text-left px-4 py-2 rounded-md transition-colors hover:bg-accent text-muted-foreground"
+							class="block w-full text-left px-4 py-2 rounded-md transition-colors hover:bg-primary hover:text-primary-foreground text-muted-foreground"
 						>
 							Fonctionnement
 						</a>

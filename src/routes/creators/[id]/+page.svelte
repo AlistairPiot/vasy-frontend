@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { tilt } from '$lib/actions/tilt';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -40,7 +41,9 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="relative min-h-screen bg-background" bind:this={containerRef}>
+	<WoodBackground />
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-4 py-8 pt-24">
@@ -53,7 +56,7 @@
 		<Card class="p-8 mb-8 animate-in">
 			<div class="flex gap-6 items-start md:items-center flex-col md:flex-row">
 				<!-- Avatar -->
-				<div class="flex-shrink-0">
+				<div class="shrink-0">
 					{#if data.creator.profile_image_url}
 						<img
 							src={data.creator.profile_image_url}
@@ -125,4 +128,5 @@
 			{/if}
 		</div>
 	</main>
+	</div>
 </div>

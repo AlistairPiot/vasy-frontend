@@ -6,6 +6,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 
 	let { data } = $props();
@@ -73,7 +74,9 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="relative min-h-screen bg-background" bind:this={containerRef}>
+	<WoodBackground />
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-4 py-8">
@@ -244,4 +247,5 @@
 			</div>
 		{/if}
 	</main>
+	</div>
 </div>

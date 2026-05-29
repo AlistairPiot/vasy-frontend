@@ -6,6 +6,7 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import { cart } from '$lib/stores/cart';
 	import { favorites } from '$lib/stores/favorites';
+	import WoodBackground from '$lib/components/WoodBackground.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -120,7 +121,9 @@
 	}
 </script>
 
-<div class="min-h-screen bg-background" bind:this={containerRef}>
+<div class="relative min-h-screen bg-background" bind:this={containerRef}>
+	<WoodBackground />
+	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
 	<main class="container mx-auto px-6 py-8">
@@ -247,6 +250,7 @@
 			</div>
 		</div>
 	</main>
+	</div>
 </div>
 
 <!-- Modal de signalement -->

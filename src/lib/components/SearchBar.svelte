@@ -279,6 +279,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 	{#if isOpen}
 		<div
 			bind:this={resultsContainer}
+			data-lenis-prevent
 			class="absolute z-50 w-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto"
 		>
 			{#if isLoading}
