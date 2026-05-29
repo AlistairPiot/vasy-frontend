@@ -7,6 +7,9 @@
 	import backgroundImage from '$lib/assets/sac.jpg';
 	import logo from '$lib/assets/vasy.svg';
 	import { tilt } from '$lib/actions/tilt';
+	import textureCuir from '$lib/assets/cuir.jpg';
+	import textureBois from '$lib/assets/bois.jpg';
+	import textureLifege from '$lib/assets/liege.jpg';
 
 	let { data } = $props();
 	let heroRef: HTMLDivElement;
@@ -256,26 +259,93 @@
 	</div>
 </section>
 
+<!-- SVG clip-path definitions (hidden) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+	<defs>
+		<!--
+			outer r=0.025 (Q), depth=4%, inner wall 20%–80%
+			single 45° diagonal per corner: face→inner wall direct, no horizontal lip
+			Card 1: right notch only
+		-->
+		<clipPath id="clip-step-0" clipPathUnits="objectBoundingBox">
+			<path d="M 0.025,0 L 0.975,0 Q 1,0 1,0.025 L 1,0.16 L 0.96,0.20 L 0.96,0.80 L 1,0.84 L 1,0.975 Q 1,1 0.975,1 L 0.025,1 Q 0,1 0,0.975 L 0,0.025 Q 0,0 0.025,0 Z"/>
+		</clipPath>
+		<!-- Card 2: left protrusion + right notch -->
+		<clipPath id="clip-step-1" clipPathUnits="objectBoundingBox">
+			<path d="M 0.065,0 L 0.975,0 Q 1,0 1,0.025 L 1,0.16 L 0.96,0.20 L 0.96,0.80 L 1,0.84 L 1,0.975 Q 1,1 0.975,1 L 0.065,1 Q 0.04,1 0.04,0.975 L 0.04,0.84 L 0,0.80 L 0,0.20 L 0.04,0.16 L 0.04,0.025 Q 0.04,0 0.065,0 Z"/>
+		</clipPath>
+		<!-- Card 3: left protrusion only -->
+		<clipPath id="clip-step-2" clipPathUnits="objectBoundingBox">
+			<path d="M 0.065,0 L 0.975,0 Q 1,0 1,0.025 L 1,0.975 Q 1,1 0.975,1 L 0.065,1 Q 0.04,1 0.04,0.975 L 0.04,0.84 L 0,0.80 L 0,0.20 L 0.04,0.16 L 0.04,0.025 Q 0.04,0 0.065,0 Z"/>
+		</clipPath>
+	</defs>
+</svg>
+
 <!-- Comment ça marche -->
-<section class="py-24 bg-muted/40 border-y border-border fade-in-section">
-	<div class="container mx-auto px-6">
+<section class="relative py-28 overflow-hidden fade-in-section">
+	<div class="absolute inset-0 bg-[#0E0804]"></div>
+	<div class="absolute inset-0 opacity-[0.06]" style="background-image: radial-gradient(circle, #C4704A 1px, transparent 1px); background-size: 32px 32px;"></div>
+
+	<div class="relative container mx-auto px-6">
 		<div class="text-center mb-16">
-			<h2 class="text-4xl md:text-5xl text-foreground mb-4">Comment ça marche ?</h2>
-			<p class="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+			<p class="text-[#E8A882]/60 text-xs tracking-[0.35em] uppercase mb-4 font-medium">Fonctionnement</p>
+			<h2 class="text-4xl md:text-5xl text-white mb-4">Comment ça marche ?</h2>
+			<p class="text-white/35 max-w-xl mx-auto leading-relaxed">
 				Rejoignez notre communauté en quelques étapes simples
 			</p>
 		</div>
 
-		<div class="grid md:grid-cols-3 gap-12">
+		<div class="grid md:grid-cols-3 gap-y-6 md:gap-x-8">
 			{#each [
-				{ n: '01', title: 'Inscrivez-vous', text: 'Créez votre compte gratuitement. Choisissez votre rôle : créateur ou client.' },
-				{ n: '02', title: 'Explorez ou créez', text: 'Découvrez des produits artisanaux uniques ou ajoutez vos propres créations.' },
-				{ n: '03', title: 'Profitez', text: 'Recevez vos commandes ou développez votre activité avec nos outils dédiés.' }
-			] as step}
-				<div class="text-center group">
-					<p class="text-6xl font-serif text-primary/20 font-bold mb-4 group-hover:text-primary/40 transition-colors">{step.n}</p>
-					<h3 class="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
-					<p class="text-muted-foreground leading-relaxed text-sm">{step.text}</p>
+				{
+					n: '01', title: 'Inscrivez-vous',
+					text: 'Créez votre compte gratuitement. Choisissez votre rôle : créateur ou client.',
+					texture: textureCuir,
+					glow: 'rgba(196,80,45,0.5)',
+				},
+				{
+					n: '02', title: 'Explorez ou créez',
+					text: 'Découvrez des produits artisanaux uniques ou ajoutez vos propres créations.',
+					texture: textureBois,
+					glow: 'rgba(196,138,55,0.5)',
+				},
+				{
+					n: '03', title: 'Profitez',
+					text: 'Recevez vos commandes ou développez votre activité avec nos outils dédiés.',
+					texture: textureLifege,
+					glow: 'rgba(220,165,85,0.5)',
+				}
+			] as step, i}
+				<div
+					use:tilt={{ intensity: 6 }}
+					class="group relative overflow-hidden bg-white/4 p-8 transition-colors duration-500 cursor-default {i === 0 ? 'step-0' : i === 1 ? 'step-1' : 'step-2'}"
+					style="z-index: {i + 1}; --mx: 50%; --my: 50%;"
+					onmousemove={(e) => {
+						const r = e.currentTarget.getBoundingClientRect();
+						e.currentTarget.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+						e.currentTarget.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+					}}
+				>
+					<!-- Texture layer -->
+					<div
+						class="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity duration-700 pointer-events-none"
+						style="background-image: url({step.texture}); background-size: cover; background-position: center;"
+					></div>
+					<!-- Glow overlay -->
+					<div
+						class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+						style="background: radial-gradient(ellipse 90% 80% at var(--mx) var(--my), {step.glow} 0%, transparent 70%);"
+					></div>
+					<!-- Top highlight line -->
+					<div class="absolute inset-x-0 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background: linear-gradient(90deg, transparent, {step.glow}, transparent);"></div>
+
+					<div class="relative z-10">
+						<div class="flex justify-end mb-10">
+							<span class="text-white/15 text-xs tracking-widest font-bold tabular-nums">{step.n}</span>
+						</div>
+						<h3 class="text-xl font-semibold text-white mb-3 group-hover:text-white transition-colors">{step.title}</h3>
+						<p class="text-white/38 text-sm leading-relaxed group-hover:text-white/55 transition-colors duration-500">{step.text}</p>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -289,8 +359,11 @@
 			<h2 class="text-4xl md:text-5xl text-foreground max-w-xs leading-tight">
 				Nos créateurs<br /><em class="not-italic text-primary">passionnés</em>
 			</h2>
-			<a href="/products" class="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
-				Tout voir →
+			<a href="/products" class="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+				Tout voir
+				<svg class="w-4 h-4 transition-transform group-hover:translate-x-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+				</svg>
 			</a>
 		</div>
 
@@ -353,5 +426,17 @@
 	@keyframes bounce {
 		0%, 100% { transform: translateY(0) translateX(-50%); }
 		50% { transform: translateY(-10px) translateX(-50%); }
+	}
+
+	@media (min-width: 768px) {
+		.step-0 {
+			clip-path: url(#clip-step-0);
+		}
+		.step-1 {
+			clip-path: url(#clip-step-1);
+		}
+		.step-2 {
+			clip-path: url(#clip-step-2);
+		}
 	}
 </style>
