@@ -33,6 +33,18 @@
 		});
 	});
 
+	function sanitizePrice(e: Event) {
+		const input = e.target as HTMLInputElement;
+		let val = input.value.replace(',', '.');
+		val = val.replace(/[^0-9.]/g, '');
+		const dot = val.indexOf('.');
+		if (dot !== -1) {
+			val = val.slice(0, dot + 1) + val.slice(dot + 1).replace(/\./g, '');
+			if (val.length > dot + 3) val = val.slice(0, dot + 3);
+		}
+		input.value = val;
+	}
+
 	function getStatusBadge(status: string) {
 		switch (status) {
 			case 'active':
@@ -212,12 +224,12 @@
 							Prix d'entrée (€) <span class="text-red-500">*</span>
 						</label>
 						<input
-							type="number"
+							type="text"
+							inputmode="decimal"
 							id="price"
 							name="price"
-							min="1"
-							step="0.01"
 							required={isPaid}
+							oninput={sanitizePrice}
 							value={data.event.price ? (data.event.price / 100).toFixed(2) : ''}
 							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 							placeholder="Ex: 5.00"
