@@ -21,21 +21,9 @@
 
 	let open = $state(false);
 	let dropdownEl: HTMLDivElement;
-	let containerEl: HTMLDivElement;
 
 	const selectedLabel = $derived(options.find(o => o.value === value)?.label);
 
-	// Listener actif uniquement quand le dropdown est ouvert
-	$effect(() => {
-		if (!open) return;
-		function handle(e: MouseEvent) {
-			if (!containerEl.contains(e.target as Node)) open = false;
-		}
-		document.addEventListener('click', handle, true);
-		return () => document.removeEventListener('click', handle, true);
-	});
-
-	// Animation GSAP à l'ouverture
 	$effect(() => {
 		if (open && dropdownEl) {
 			gsap.fromTo(dropdownEl,
@@ -46,7 +34,12 @@
 	});
 </script>
 
-<div class="relative {className}" bind:this={containerEl}>
+<div
+	class="relative {className}"
+	onfocusout={(e) => {
+		if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) open = false;
+	}}
+>
 	{#if name}<input type="hidden" {name} value={value ?? ''} />{/if}
 
 	<button

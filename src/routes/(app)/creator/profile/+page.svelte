@@ -5,12 +5,17 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import { formatPrice } from '$lib/utils';
 
 	let { data, form } = $props();
 	let formRef: HTMLFormElement;
 	let profileImageUrl = $state(data.creator.profile_image_url || '');
 	let uploading = $state(false);
+	let carrierValues = $state<Record<string, string>>(
+		Object.fromEntries(data.orders.map((o: { id: string }) => [o.id, '']))
+	);
+
 	// États pour les modales de confirmation
 	let confirmModal = $state<{
 		isOpen: boolean;
@@ -498,18 +503,18 @@
 								<div class="space-y-2">
 									<div>
 										<label class="text-sm font-medium">Transporteur</label>
-										<select
-											id="carrier-{order.id}"
-											class="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-										>
-											<option value="">Sélectionner...</option>
-											<option value="Colissimo">Colissimo</option>
-											<option value="Lettre suivie">Lettre suivie</option>
-											<option value="Mondial Relay">Mondial Relay</option>
-											<option value="Chronopost">Chronopost</option>
-											<option value="DPD">DPD</option>
-											<option value="Autre">Autre</option>
-										</select>
+										<Select
+											bind:value={carrierValues[order.id]}
+											placeholder="Sélectionner..."
+											options={[
+												{ value: 'Colissimo', label: 'Colissimo' },
+												{ value: 'Lettre suivie', label: 'Lettre suivie' },
+												{ value: 'Mondial Relay', label: 'Mondial Relay' },
+												{ value: 'Chronopost', label: 'Chronopost' },
+												{ value: 'DPD', label: 'DPD' },
+												{ value: 'Autre', label: 'Autre' },
+											]}
+										/>
 									</div>
 									<div>
 										<label class="text-sm font-medium">Numéro de suivi</label>
@@ -523,9 +528,8 @@
 									</div>
 									<Button onclick={() => {
 										const trackingInput = document.getElementById(`trackingNumber-${order.id}`) as HTMLInputElement;
-										const carrierSelect = document.getElementById(`carrier-${order.id}`) as HTMLSelectElement;
 										if (trackingInput && trackingInput.value) {
-											openConfirmModal('ship', order.id, trackingInput.value, carrierSelect?.value || undefined);
+											openConfirmModal('ship', order.id, trackingInput.value, carrierValues[order.id] || undefined);
 										}
 									}} class="w-full" size="sm">
 										{#snippet children()}
