@@ -151,7 +151,7 @@
 							name="date"
 							required
 							value={dateValue}
-							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
 						/>
 					</div>
 					<div>
@@ -161,7 +161,7 @@
 							id="time"
 							name="time"
 							value={timeValue}
-							class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
 						/>
 					</div>
 				</div>

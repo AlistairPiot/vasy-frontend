@@ -58,6 +58,7 @@
 	afterNavigate(({ type }) => {
 		if (lenisInstance) {
 			lenisInstance.scrollTo(0, { immediate: true });
+			lenisInstance.resize();
 		} else if (browser) {
 			window.scrollTo(0, 0);
 		}

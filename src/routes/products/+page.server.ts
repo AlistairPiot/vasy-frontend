@@ -9,18 +9,17 @@ interface Product {
 	price: number;
 	stock: number;
 	image_urls: string;
+	category: string | null;
+	material: string | null;
+	style: string;
+	technique: string;
 	created_at: string;
 }
 
 export const load: PageServerLoad = async ({ url, parent }) => {
-	const skip = parseInt(url.searchParams.get('skip') || '0');
-	const limit = parseInt(url.searchParams.get('limit') || '20');
 	const searchQuery = url.searchParams.get('q');
-
-	// Récupérer l'utilisateur depuis le layout parent (peut être null si déconnecté)
 	const { user } = await parent();
 
-	// Si une recherche est fournie, utiliser l'endpoint de recherche
 	if (searchQuery) {
 		const searchResponse = await serverApi.get<{ results: Product[] }>(
 			`/search?q=${encodeURIComponent(searchQuery)}&limit=100`
@@ -28,7 +27,25 @@ export const load: PageServerLoad = async ({ url, parent }) => {
 		return { products: searchResponse.results, searchQuery, user };
 	}
 
-	// Sinon, récupérer tous les produits
-	const products = await serverApi.get<Product[]>(`/products/?skip=${skip}&limit=${limit}`);
+	const params = new URLSearchParams();
+	params.set('limit', '100');
+
+	const category  = url.searchParams.get('category');
+	const material  = url.searchParams.get('material');
+	const styles    = url.searchParams.getAll('style');
+	const techniques = url.searchParams.getAll('technique');
+	const priceMin  = url.searchParams.get('price_min');
+	const priceMax  = url.searchParams.get('price_max');
+	const sort      = url.searchParams.get('sort');
+
+	if (category) params.set('category', category);
+	if (material) params.set('material', material);
+	styles.forEach(s => params.append('style', s));
+	techniques.forEach(t => params.append('technique', t));
+	if (priceMin) params.set('price_min', priceMin);
+	if (priceMax) params.set('price_max', priceMax);
+	if (sort) params.set('sort', sort);
+
+	const products = await serverApi.get<Product[]>(`/products/?${params.toString()}`);
 	return { products, searchQuery: null, user };
 };

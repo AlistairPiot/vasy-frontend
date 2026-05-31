@@ -11,7 +11,6 @@
 	let formRef: HTMLFormElement;
 	let profileImageUrl = $state(data.creator.profile_image_url || '');
 	let uploading = $state(false);
-
 	// États pour les modales de confirmation
 	let confirmModal = $state<{
 		isOpen: boolean;
@@ -22,12 +21,7 @@
 	}>({ isOpen: false, type: null, orderId: null });
 
 	onMount(() => {
-		gsap.from(formRef, {
-			y: 20,
-			opacity: 0,
-			duration: 0.5,
-			ease: 'power3.out'
-		});
+		// Pas d'animation ici — le layout gère l'entrée de page
 	});
 
 	// Recadrage photo de profil
@@ -506,7 +500,7 @@
 										<label class="text-sm font-medium">Transporteur</label>
 										<select
 											id="carrier-{order.id}"
-											class="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
+											class="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 										>
 											<option value="">Sélectionner...</option>
 											<option value="Colissimo">Colissimo</option>
@@ -523,15 +517,15 @@
 											type="text"
 											id="trackingNumber-{order.id}"
 											required
-											class="w-full px-3 py-2 border rounded-md text-sm"
+											class="w-full px-3 py-2 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 											placeholder="Ex: 1Z999AA10123456784"
 										/>
 									</div>
 									<Button onclick={() => {
 										const trackingInput = document.getElementById(`trackingNumber-${order.id}`) as HTMLInputElement;
-										const carrierInput = document.getElementById(`carrier-${order.id}`) as HTMLSelectElement;
+										const carrierSelect = document.getElementById(`carrier-${order.id}`) as HTMLSelectElement;
 										if (trackingInput && trackingInput.value) {
-											openConfirmModal('ship', order.id, trackingInput.value, carrierInput?.value || undefined);
+											openConfirmModal('ship', order.id, trackingInput.value, carrierSelect?.value || undefined);
 										}
 									}} class="w-full" size="sm">
 										{#snippet children()}

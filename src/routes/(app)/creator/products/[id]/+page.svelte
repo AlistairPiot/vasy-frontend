@@ -5,11 +5,13 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import {
 		calculateProductCommission,
 		formatPrice,
 		COMMISSION_PERCENT
 	} from '$lib/utils';
+	import { CATEGORIES, MATERIALS, STYLES, TECHNIQUES } from '$lib/productFilters';
 
 	let { data, form } = $props();
 
@@ -19,21 +21,34 @@
 	let imageUrls = $state<string[]>([]);
 	let uploading = $state(false);
 	let showDeleteConfirm = $state(false);
+	let selectedStyles = $state<string[]>([]);
+	let selectedTechniques = $state<string[]>([]);
+	let descriptionFocused = $state(false);
+	let selectedCategory = $state(data.product.category ?? '');
+	let selectedMaterial = $state(data.product.material ?? '');
+
+	function toggleStyle(s: string) {
+		selectedStyles = selectedStyles.includes(s)
+			? selectedStyles.filter(x => x !== s)
+			: [...selectedStyles, s];
+	}
+
+	function toggleTechnique(t: string) {
+		selectedTechniques = selectedTechniques.includes(t)
+			? selectedTechniques.filter(x => x !== t)
+			: [...selectedTechniques, t];
+	}
 
 	onMount(() => {
-		// Parse existing images
 		try {
 			imageUrls = JSON.parse(data.product.image_urls);
 		} catch {
 			imageUrls = [];
 		}
+		try { selectedStyles = JSON.parse(data.product.style ?? '[]'); } catch { selectedStyles = []; }
+		try { selectedTechniques = JSON.parse(data.product.technique ?? '[]'); } catch { selectedTechniques = []; }
 
-		gsap.from(formRef, {
-			y: 20,
-			opacity: 0,
-			duration: 0.5,
-			ease: 'power3.out'
-		});
+		// Pas d'animation ici — le layout gère l'entrée de page
 	});
 
 	$effect(() => {
@@ -173,8 +188,11 @@
 				<textarea
 					id="description"
 					name="description"
-					rows={4}
-					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					rows={8}
+					data-lenis-prevent={descriptionFocused ? '' : undefined}
+					onfocus={() => (descriptionFocused = true)}
+					onblur={() => (descriptionFocused = false)}
+					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
 				>{data.product.description || ''}</textarea>
 			</div>
 
@@ -264,6 +282,58 @@
 			</div>
 
 			<input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
+
+			<!-- Catégorie & Matière -->
+			<div class="grid grid-cols-2 gap-4">
+				<div class="space-y-2">
+					<label for="category" class="text-sm font-medium">Catégorie</label>
+					<Select
+						id="category"
+						name="category"
+						bind:value={selectedCategory}
+						options={CATEGORIES.map(c => ({ value: c, label: c }))}
+					/>
+				</div>
+				<div class="space-y-2">
+					<label for="material" class="text-sm font-medium">Matière principale</label>
+					<Select
+						id="material"
+						name="material"
+						bind:value={selectedMaterial}
+						options={MATERIALS.map(m => ({ value: m, label: m }))}
+					/>
+				</div>
+			</div>
+
+			<!-- Style -->
+			<div class="space-y-2">
+				<label class="text-sm font-medium">Style <span class="text-muted-foreground font-normal">(plusieurs possibles)</span></label>
+				<div class="flex flex-wrap gap-2">
+					{#each STYLES as s}
+						<button
+							type="button"
+							onclick={() => toggleStyle(s)}
+							class="px-3 py-1.5 rounded-full text-sm border transition-colors {selectedStyles.includes(s) ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground hover:border-primary hover:bg-primary/10 hover:text-primary'}"
+						>{s}</button>
+					{/each}
+				</div>
+				<input type="hidden" name="style" value={JSON.stringify(selectedStyles)} />
+			</div>
+
+			<!-- Technique -->
+			<div class="space-y-2">
+				<label class="text-sm font-medium">Technique <span class="text-muted-foreground font-normal">(plusieurs possibles)</span></label>
+				<div class="flex flex-wrap gap-2">
+					{#each TECHNIQUES as t}
+						<button
+							type="button"
+							onclick={() => toggleTechnique(t)}
+							class="px-3 py-1.5 rounded-full text-sm border transition-colors {selectedTechniques.includes(t) ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground hover:border-primary hover:bg-primary/10 hover:text-primary'}"
+						>{t}</button>
+					{/each}
+				</div>
+				<input type="hidden" name="technique" value={JSON.stringify(selectedTechniques)} />
+			</div>
 
 			<div class="flex gap-4">
 				<a href="/creator/products" class="flex-1">

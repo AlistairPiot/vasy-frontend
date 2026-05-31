@@ -10,6 +10,10 @@ interface Product {
 	stock: number;
 	is_active: boolean;
 	image_urls: string;
+	category: string | null;
+	material: string | null;
+	style: string;
+	technique: string;
 	reserved_in_carts?: number;
 }
 
@@ -28,6 +32,10 @@ export const actions: Actions = {
 		const price = parseFloat(formData.get('price') as string) * 100;
 		const stock = parseInt(formData.get('stock') as string);
 		const imageUrls = formData.get('imageUrls') as string;
+		const category = (formData.get('category') as string) || null;
+		const material = (formData.get('material') as string) || null;
+		const style = (formData.get('style') as string) || '[]';
+		const technique = (formData.get('technique') as string) || '[]';
 
 		if (!name || !price || stock === undefined) {
 			return fail(400, { error: 'Champs requis manquants' });
@@ -41,7 +49,11 @@ export const actions: Actions = {
 					description: description || null,
 					price: Math.round(price),
 					stock,
-					image_urls: imageUrls || '[]'
+					image_urls: imageUrls || '[]',
+					category,
+					material,
+					style,
+					technique,
 				},
 				locals.token
 			);

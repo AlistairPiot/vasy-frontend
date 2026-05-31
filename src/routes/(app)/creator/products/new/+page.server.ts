@@ -32,6 +32,10 @@ export const actions: Actions = {
 		const priceStr = formData.get('price') as string;
 		const stockStr = formData.get('stock') as string;
 		const imageUrls = formData.get('imageUrls') as string;
+		const category = (formData.get('category') as string) || null;
+		const material = (formData.get('material') as string) || null;
+		const style = (formData.get('style') as string) || '[]';
+		const technique = (formData.get('technique') as string) || '[]';
 
 		// Validation
 		if (!name) {
@@ -69,7 +73,11 @@ export const actions: Actions = {
 					description: description || null,
 					price: Math.round(price),
 					stock,
-					image_urls: imageUrls || '[]'
+					image_urls: imageUrls || '[]',
+					category,
+					material,
+					style,
+					technique,
 				},
 				locals.token
 			);

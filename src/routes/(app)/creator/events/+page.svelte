@@ -330,7 +330,7 @@
 								id="date"
 								name="date"
 								required
-								class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+								class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
 							/>
 						</div>
 						<div>
@@ -339,7 +339,7 @@
 								type="time"
 								id="time"
 								name="time"
-								class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+								class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
 							/>
 						</div>
 					</div>
