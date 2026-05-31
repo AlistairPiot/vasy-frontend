@@ -55,17 +55,6 @@
 		};
 	});
 
-	beforeNavigate(() => {
-		gsap.killTweensOf(pageContent);
-		gsap.to(pageContent, {
-			opacity: 0,
-			y: -12,
-			duration: 0.18,
-			ease: 'power2.in',
-			overwrite: true,
-		});
-	});
-
 	afterNavigate(({ type }) => {
 		if (lenisInstance) {
 			lenisInstance.scrollTo(0, { immediate: true });
@@ -79,19 +68,19 @@
 		gsap.set(progressBar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' });
 		gsap.to(progressBar, {
 			scaleX: 1,
-			duration: 0.5,
-			ease: 'power2.inOut',
+			duration: 0.3,
+			ease: 'power2.out',
 			onComplete: () => {
-				gsap.to(progressBar, { opacity: 0, duration: 0.25, delay: 0.05 });
+				gsap.to(progressBar, { opacity: 0, duration: 0.2 });
 			},
 		});
 
-		// Contenu
+		// Fade-in rapide sans mouvement
 		gsap.killTweensOf(pageContent);
 		gsap.fromTo(
 			pageContent,
-			{ opacity: 0, y: 28, scale: 0.97 },
-			{ opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'power3.out', clearProps: 'transform' }
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.2, ease: 'power1.out', clearProps: 'opacity' }
 		);
 	});
 </script>
