@@ -2,10 +2,9 @@
 	import { onMount } from 'svelte';
 
 	interface AddressSuggestion {
-		display_name: string;
-		lat: string;
-		lon: string;
-		place_id: number;
+		label: string;
+		lat: number;
+		lon: number;
 	}
 
 	let {
@@ -54,23 +53,17 @@
 
 		try {
 			const response = await fetch(
-				`https://nominatim.openstreetmap.org/search?` +
-					new URLSearchParams({
-						q: query,
-						format: 'json',
-						limit: '5',
-						countrycodes: 'fr',
-						addressdetails: '1'
-					}),
-				{
-					headers: {
-						'Accept-Language': 'fr'
-					}
-				}
+				`https://api-adresse.data.gouv.fr/search/?` +
+					new URLSearchParams({ q: query, limit: '5' })
 			);
 
 			if (response.ok) {
-				suggestions = await response.json();
+				const data = await response.json();
+				suggestions = data.features.map((f: any) => ({
+					label: f.properties.label,
+					lat: f.geometry.coordinates[1],
+					lon: f.geometry.coordinates[0],
+				}));
 				showDropdown = suggestions.length > 0;
 				selectedIndex = -1;
 			}
@@ -100,10 +93,10 @@
 	}
 
 	function selectAddress(suggestion: AddressSuggestion) {
-		inputValue = suggestion.display_name;
-		value = suggestion.display_name;
-		latitude = parseFloat(suggestion.lat);
-		longitude = parseFloat(suggestion.lon);
+		inputValue = suggestion.label;
+		value = suggestion.label;
+		latitude = suggestion.lat;
+		longitude = suggestion.lon;
 		isAddressSelected = true;
 		showDropdown = false;
 		suggestions = [];
@@ -260,7 +253,7 @@
 									/>
 								</svg>
 							</span>
-							<span class="line-clamp-2">{suggestion.display_name}</span>
+							<span class="line-clamp-2">{suggestion.label}</span>
 						</div>
 					</button>
 				</li>
