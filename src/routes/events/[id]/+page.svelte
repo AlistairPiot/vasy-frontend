@@ -9,6 +9,7 @@
 	import WoodBackground from '$lib/components/WoodBackground.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 	import { eventFavorites } from '$lib/stores/eventFavorites';
+	import ShareButton from '$lib/components/ShareButton.svelte';
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
@@ -233,6 +234,7 @@
 				Retour aux événements
 			</a>
 			<div class="flex items-center gap-2">
+				<ShareButton title={data.event.name} text={data.event.description ?? ''} />
 				{#if data.user}
 					<button
 						type="button"
