@@ -10,6 +10,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import { CATEGORIES, MATERIALS, STYLES, TECHNIQUES } from '$lib/productFilters';
+	import Select from '$lib/components/ui/Select.svelte';
 
 	const sortOptions = [
 		{ value: 'default',    label: 'Par défaut',      icon: '↕' },
@@ -273,29 +274,21 @@
 						<!-- Catégorie -->
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Catégorie</p>
-							<select
+							<Select
 								bind:value={draftCategory}
-								class="w-full px-3 py-2 border border-input bg-background rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-							>
-								<option value="">Toutes</option>
-								{#each CATEGORIES as cat}
-									<option value={cat}>{cat}</option>
-								{/each}
-							</select>
+								placeholder="Toutes"
+								options={CATEGORIES.map(c => ({ value: c, label: c }))}
+							/>
 						</div>
 
 						<!-- Matière -->
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Matière</p>
-							<select
+							<Select
 								bind:value={draftMaterial}
-								class="w-full px-3 py-2 border border-input bg-background rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-							>
-								<option value="">Toutes</option>
-								{#each MATERIALS as mat}
-									<option value={mat}>{mat}</option>
-								{/each}
-							</select>
+								placeholder="Toutes"
+								options={MATERIALS.map(m => ({ value: m, label: m }))}
+							/>
 						</div>
 
 						<!-- Style -->

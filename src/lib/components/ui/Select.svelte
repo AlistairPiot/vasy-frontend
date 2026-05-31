@@ -62,7 +62,8 @@
 	{#if open}
 		<div
 			bind:this={dropdownEl}
-			class="absolute left-0 right-0 top-[calc(100%+4px)] z-30 overflow-hidden rounded-xl border border-border bg-card shadow-xl origin-top"
+			data-lenis-prevent
+		class="absolute left-0 right-0 top-[calc(100%+4px)] z-30 rounded-xl border border-border bg-card shadow-xl origin-top overflow-y-auto max-h-60"
 		>
 			<button
 				type="button"
