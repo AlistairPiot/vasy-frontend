@@ -15,6 +15,16 @@
 	let now = $state(Date.now());
 
 	let containerRef: HTMLDivElement;
+	let emptyStateRef: HTMLDivElement | undefined = $state();
+	let prevCartLength = $cart.items.length;
+
+	$effect(() => {
+		const len = $cart.items.length;
+		if (len === 0 && prevCartLength > 0 && emptyStateRef) {
+			gsap.from(emptyStateRef, { opacity: 0, y: 20, duration: 0.45, ease: 'power2.out', delay: 0.05 });
+		}
+		prevCartLength = len;
+	});
 
 	const ticker = setInterval(() => { now = Date.now(); }, 1000);
 	onDestroy(() => clearInterval(ticker));
@@ -73,8 +83,22 @@
 	}
 
 	function handleClearCart() {
-		cart.clear();
 		showClearCartModal = false;
+		const cards = document.querySelectorAll('.cart-item-card');
+		if (!cards.length) { cart.clear(); return; }
+		gsap.to(cards, {
+			x: 80,
+			opacity: 0,
+			height: 0,
+			marginBottom: 0,
+			paddingTop: 0,
+			paddingBottom: 0,
+			duration: 0.32,
+			stagger: 0.05,
+			ease: 'power2.inOut',
+			delay: 0.1,
+			onComplete: () => cart.clear()
+		});
 	}
 
 	function removeItemWithAnimation(productId: string, event: MouseEvent) {
@@ -126,12 +150,14 @@
 				</div>
 
 				{#if $cart.items.length === 0}
-					<EmptyState
-						variant="cart"
-						title="Votre panier est vide"
-						description="Découvrez les créations de nos artisans et ajoutez vos coups de cœur."
-						ctas={[{ label: 'Explorer les créations', href: '/products' }]}
-					/>
+					<div bind:this={emptyStateRef}>
+						<EmptyState
+							variant="cart"
+							title="Votre panier est vide"
+							description="Découvrez les créations de nos artisans et ajoutez vos coups de cœur."
+							ctas={[{ label: 'Explorer les créations', href: '/products' }]}
+						/>
+					</div>
 				{:else}
 					<div class="space-y-4">
 						{#each $cart.items as item, index (item.id)}

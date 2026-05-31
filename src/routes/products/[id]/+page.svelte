@@ -12,6 +12,7 @@
 	let containerRef: HTMLDivElement;
 	let selectedImage = $state(0);
 	let images = $state<string[]>([]);
+	let mainImageRef: HTMLButtonElement | undefined = $state();
 	let showAddedNotification = $state(false);
 	let notificationTimeout: ReturnType<typeof setTimeout>;
 
@@ -88,6 +89,62 @@
 		return (cents / 100).toFixed(2) + ' €';
 	}
 
+	function flyToCart(onArrive: () => void) {
+		const cartIconEl = Array.from(document.querySelectorAll('[data-cart-icon]'))
+			.find((el) => (el as HTMLElement).getBoundingClientRect().width > 0) as HTMLElement | undefined;
+
+		if (!cartIconEl || !images[selectedImage]) {
+			onArrive();
+			return;
+		}
+
+		const srcEl = mainImageRef;
+		const srcRect = srcEl
+			? srcEl.getBoundingClientRect()
+			: { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+		const dstRect = cartIconEl.getBoundingClientRect();
+
+		const size = Math.min(Math.max(srcRect.width * 0.4, 48), 72);
+		const startLeft = srcRect.left + srcRect.width / 2 - size / 2;
+		const startTop = srcRect.top + srcRect.height / 2 - size / 2;
+
+		const fly = document.createElement('div');
+		Object.assign(fly.style, {
+			position: 'fixed',
+			left: `${startLeft}px`,
+			top: `${startTop}px`,
+			width: `${size}px`,
+			height: `${size}px`,
+			borderRadius: '50%',
+			overflow: 'hidden',
+			zIndex: '9999',
+			pointerEvents: 'none',
+			boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+		});
+		const img = document.createElement('img');
+		img.src = images[selectedImage];
+		img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+		fly.appendChild(img);
+		document.body.appendChild(fly);
+
+		const destX = dstRect.left + dstRect.width / 2 - startLeft - size / 2;
+		const destY = dstRect.top + dstRect.height / 2 - startTop - size / 2;
+
+		const tl = gsap.timeline({
+			onComplete: () => {
+				fly.remove();
+				onArrive();
+				gsap.fromTo(cartIconEl,
+					{ scale: 1.5 },
+					{ scale: 1, duration: 0.4, ease: 'back.out(2.5)' }
+				);
+			}
+		});
+		tl.to(fly, { x: destX, duration: 0.65, ease: 'power2.inOut' }, 0);
+		tl.to(fly, { y: destY, duration: 0.65, ease: 'power3.in' }, 0);
+		tl.to(fly, { scale: 0.15, opacity: 0.7, duration: 0.65, ease: 'power3.in' }, 0);
+	}
+
 	function addToCart() {
 		if (!data.user) {
 			window.location.href = '/login';
@@ -96,15 +153,17 @@
 
 		if (data.product.stock <= 0) return;
 
-		cart.addItem({
-			id: data.product.id,
-			name: data.product.name,
-			price: data.product.price,
-			quantity: 1,
-			image_url: images[0] || '',
-			creator_id: data.product.creator_id,
-			stock: data.product.stock,
-			expires_at: ''
+		flyToCart(() => {
+			cart.addItem({
+				id: data.product.id,
+				name: data.product.name,
+				price: data.product.price,
+				quantity: 1,
+				image_url: images[0] || '',
+				creator_id: data.product.creator_id,
+				stock: data.product.stock,
+				expires_at: ''
+			});
 		});
 
 		showAddedNotification = true;
@@ -113,7 +172,6 @@
 			showAddedNotification = false;
 		}, 2000);
 
-		// Animate notification
 		gsap.fromTo('.notification', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.3 });
 	}
 
@@ -187,6 +245,7 @@
 			<div class="animate-in">
 				{#if images.length > 0}
 					<button
+						bind:this={mainImageRef}
 						onclick={openLightbox}
 						class="block w-full rounded-xl overflow-hidden bg-muted mb-3 aspect-square cursor-zoom-in group"
 						aria-label="Agrandir l'image"

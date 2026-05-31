@@ -17,7 +17,7 @@
 
 	let lenisInstance: any = null;
 	let pageContent: HTMLDivElement;
-
+	let progressBar: HTMLDivElement;
 
 	$effect(() => {
 		if (typeof window !== 'undefined') {
@@ -55,7 +55,17 @@
 		};
 	});
 
-	// Retour en haut + fade-in du contenu à l'arrivée
+	beforeNavigate(() => {
+		gsap.killTweensOf(pageContent);
+		gsap.to(pageContent, {
+			opacity: 0,
+			y: -12,
+			duration: 0.18,
+			ease: 'power2.in',
+			overwrite: true,
+		});
+	});
+
 	afterNavigate(({ type }) => {
 		if (lenisInstance) {
 			lenisInstance.scrollTo(0, { immediate: true });
@@ -65,10 +75,23 @@
 
 		if (type === 'enter') return;
 
+		// Barre de progression
+		gsap.set(progressBar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' });
+		gsap.to(progressBar, {
+			scaleX: 1,
+			duration: 0.5,
+			ease: 'power2.inOut',
+			onComplete: () => {
+				gsap.to(progressBar, { opacity: 0, duration: 0.25, delay: 0.05 });
+			},
+		});
+
+		// Contenu
 		gsap.killTweensOf(pageContent);
-		gsap.fromTo(pageContent,
-			{ opacity: 0, y: 8 },
-			{ opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', clearProps: 'transform' }
+		gsap.fromTo(
+			pageContent,
+			{ opacity: 0, y: 28, scale: 0.97 },
+			{ opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'power3.out', clearProps: 'transform' }
 		);
 	});
 </script>
@@ -76,6 +99,13 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<!-- Barre de progression inter-routes -->
+<div
+	bind:this={progressBar}
+	class="fixed top-0 left-0 w-full h-0.5 bg-primary z-1000 pointer-events-none"
+	style="opacity: 0; transform: scaleX(0); transform-origin: left center;"
+></div>
 
 <div class="flex flex-col min-h-screen">
 	<div class="flex-1" bind:this={pageContent}>

@@ -9,13 +9,31 @@
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 
+	const activeCount    = $derived(data.products.filter((p: any) => p.is_active).length);
+	const inactiveCount  = $derived(data.products.filter((p: any) => !p.is_active).length);
+	const totalStock     = $derived(data.products.reduce((s: number, p: any) => s + p.stock, 0));
+	const inCartsCount   = $derived(data.products.reduce((s: number, p: any) => s + (p.reserved_in_carts || 0), 0));
+
+	let statEls: (HTMLElement | undefined)[] = $state([undefined, undefined, undefined, undefined]);
+
 	onMount(() => {
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
-			y: 20,
-			opacity: 0,
-			duration: 0.5,
-			stagger: 0.1,
-			ease: 'power3.out'
+			y: 20, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out'
+		});
+
+		// Compteurs animés
+		const targets = [activeCount, totalStock, inCartsCount, inactiveCount];
+		targets.forEach((target, i) => {
+			const el = statEls[i];
+			if (!el || target === 0) return;
+			const obj = { v: 0 };
+			gsap.to(obj, {
+				v: target,
+				duration: 1.4,
+				delay: 0.4 + i * 0.1,
+				ease: 'power2.out',
+				onUpdate: () => { el.textContent = Math.round(obj.v).toString(); }
+			});
 		});
 	});
 
@@ -39,6 +57,26 @@
 				{/snippet}
 			</Button>
 		</a>
+	</div>
+
+	<!-- Stats rapides -->
+	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+		<Card class="animate-in p-4 text-center">
+			<p class="text-2xl font-bold text-primary" bind:this={statEls[0]}>{activeCount}</p>
+			<p class="text-xs text-muted-foreground mt-1">En ligne</p>
+		</Card>
+		<Card class="animate-in p-4 text-center">
+			<p class="text-2xl font-bold text-foreground" bind:this={statEls[1]}>{totalStock}</p>
+			<p class="text-xs text-muted-foreground mt-1">Stock total</p>
+		</Card>
+		<Card class="animate-in p-4 text-center">
+			<p class="text-2xl font-bold text-orange-500" bind:this={statEls[2]}>{inCartsCount}</p>
+			<p class="text-xs text-muted-foreground mt-1">En panier</p>
+		</Card>
+		<Card class="animate-in p-4 text-center">
+			<p class="text-2xl font-bold text-muted-foreground" bind:this={statEls[3]}>{inactiveCount}</p>
+			<p class="text-xs text-muted-foreground mt-1">Inactifs</p>
+		</Card>
 	</div>
 
 	{#if !data.stripeStatus.onboarding_complete}
