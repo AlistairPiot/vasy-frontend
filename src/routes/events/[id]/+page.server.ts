@@ -8,6 +8,7 @@ interface Event {
 	name: string;
 	description: string | null;
 	date: string;
+	end_date: string | null;
 	location_text: string;
 	latitude: number | null;
 	longitude: number | null;

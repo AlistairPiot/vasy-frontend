@@ -8,6 +8,7 @@ interface Event {
 	name: string;
 	description: string | null;
 	date: string;
+	end_date: string | null;
 	location_text: string;
 	latitude: number | null;
 	longitude: number | null;
@@ -43,6 +44,8 @@ export const actions: Actions = {
 		const description = formData.get('description') as string;
 		const date = formData.get('date') as string;
 		const time = formData.get('time') as string;
+		const endDate = formData.get('end_date') as string;
+		const endTime = formData.get('end_time') as string;
 		const location_text = formData.get('location_text') as string;
 		const latitudeStr = formData.get('latitude') as string;
 		const longitudeStr = formData.get('longitude') as string;
@@ -56,7 +59,11 @@ export const actions: Actions = {
 		}
 
 		if (!date) {
-			return fail(400, { error: 'La date est requise' });
+			return fail(400, { error: 'La date de début est requise' });
+		}
+
+		if (!time) {
+			return fail(400, { error: "L'heure de début est requise" });
 		}
 
 		if (!location_text || location_text.trim().length === 0) {
@@ -74,7 +81,12 @@ export const actions: Actions = {
 			return fail(400, { error: 'Coordonnées invalides. Veuillez resélectionner une adresse.' });
 		}
 
-		const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+		const dateTime = `${date}T${time}:00`;
+		const endDateTime = endDate && endTime ? `${endDate}T${endTime}:00` : null;
+
+		if (endDateTime && new Date(endDateTime) <= new Date(dateTime)) {
+			return fail(400, { error: 'La date de fin doit être après la date de début' });
+		}
 
 		let price: number | null = null;
 		if (is_paid) {
@@ -91,6 +103,7 @@ export const actions: Actions = {
 					name: name.trim(),
 					description: description?.trim() || null,
 					date: dateTime,
+					end_date: endDateTime,
 					location_text: location_text.trim(),
 					latitude,
 					longitude,

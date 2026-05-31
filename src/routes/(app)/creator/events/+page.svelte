@@ -8,6 +8,7 @@
 	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import EventsMap from '$lib/components/ui/EventsMap.svelte';
 	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 
 	type Registration = {
 		id: string;
@@ -334,25 +335,16 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
-							<label for="date" class="block text-sm font-medium mb-1">
-								Date <span class="text-red-500">*</span>
+							<label class="block text-sm font-medium mb-1">
+								Début <span class="text-red-500">*</span>
 							</label>
-							<input
-								type="date"
-								id="date"
-								name="date"
-								required
-								class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
-							/>
+							<DateTimePicker dateName="date" timeName="time" />
 						</div>
 						<div>
-							<label for="time" class="block text-sm font-medium mb-1"> Heure (optionnel) </label>
-							<input
-								type="time"
-								id="time"
-								name="time"
-								class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
-							/>
+							<label class="block text-sm font-medium mb-1 text-muted-foreground">
+								Fin <span class="text-xs font-normal">(optionnel)</span>
+							</label>
+							<DateTimePicker dateName="end_date" timeName="end_time" placeholder="Choisir une date de fin" />
 						</div>
 					</div>
 
@@ -429,9 +421,9 @@
 								{#each selectedFiles as file, i}
 									<li class="flex items-center gap-3 p-2 rounded-lg bg-muted/50 border">
 										{#if isImage(file)}
-											<img src={URL.createObjectURL(file)} alt={file.name} class="w-10 h-10 object-cover rounded flex-shrink-0" />
+											<img src={URL.createObjectURL(file)} alt={file.name} class="w-10 h-10 object-cover rounded shrink-0" />
 										{:else}
-											<div class="w-10 h-10 rounded bg-red-100 flex items-center justify-center flex-shrink-0">
+											<div class="w-10 h-10 rounded bg-red-100 flex items-center justify-center shrink-0">
 												<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
 											</div>
 										{/if}
@@ -439,7 +431,7 @@
 											<p class="text-sm font-medium truncate">{file.name}</p>
 											<p class="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
 										</div>
-										<button type="button" onclick={() => removeFile(i)} class="p-1 rounded hover:bg-muted transition-colors flex-shrink-0" title="Supprimer">
+										<button type="button" onclick={() => removeFile(i)} class="p-1 rounded hover:bg-muted transition-colors shrink-0" title="Supprimer">
 											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 										</button>
 									</li>
@@ -521,6 +513,11 @@
 													<span class="shrink-0">📅</span>
 													<span class="truncate" class:line-through={isEventPast(event.date)}>
 														{formatDate(event.date)} à {formatTime(event.date)}
+														{#if event.end_date}
+															<svg class="inline w-3 h-3 mx-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>{formatDate(event.date) === formatDate(event.end_date)
+																? formatTime(event.end_date)
+																: `${formatDate(event.end_date)} à ${formatTime(event.end_date)}`}
+														{/if}
 													</span>
 												</p>
 												<p class="flex items-center gap-2 min-w-0">

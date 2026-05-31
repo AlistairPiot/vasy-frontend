@@ -290,15 +290,25 @@
 						<div class="flex items-center gap-3">
 							<span class="text-lg">📅</span>
 							<div>
-								<p
-									class="font-medium"
-									class:line-through={eventStatus === 'past'}
-								>
+								<p class="font-medium" class:line-through={eventStatus === 'past'}>
 									{formatDate(data.event.date)}
 								</p>
-								<p class="text-sm text-muted-foreground">
-									à {formatTime(data.event.date)}
-								</p>
+								{#if data.event.end_date && formatDate(data.event.end_date) !== formatDate(data.event.date)}
+									<p class="text-sm text-muted-foreground">
+										De {formatTime(data.event.date)} à {formatTime(data.event.end_date)}
+									</p>
+									<p class="text-xs text-muted-foreground mt-0.5">
+										Jusqu'au {formatDate(data.event.end_date)}
+									</p>
+								{:else if data.event.end_date}
+									<p class="text-sm text-muted-foreground">
+										De {formatTime(data.event.date)} à {formatTime(data.event.end_date)}
+									</p>
+								{:else}
+									<p class="text-sm text-muted-foreground">
+										à {formatTime(data.event.date)}
+									</p>
+								{/if}
 							</div>
 						</div>
 						<div class="flex items-center gap-3">

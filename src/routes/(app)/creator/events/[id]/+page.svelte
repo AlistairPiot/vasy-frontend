@@ -6,14 +6,16 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 
 	let { data, form } = $props();
 	let containerRef: HTMLDivElement;
 
 	// Extraire la date et l'heure de l'événement
-	const eventDate = new Date(data.event.date);
-	const dateValue = eventDate.toISOString().split('T')[0];
-	const timeValue = eventDate.toTimeString().slice(0, 5);
+	const dateValue = data.event.date.split('T')[0];
+	const timeValue = data.event.date.split('T')[1]?.slice(0, 5) ?? '';
+	const endDateValue = data.event.end_date ? data.event.end_date.split('T')[0] : '';
+	const endTimeValue = data.event.end_date ? data.event.end_date.split('T')[1]?.slice(0, 5) ?? '' : '';
 
 	// État pour l'adresse avec valeurs initiales
 	let locationValue = $state(data.event.location_text);
@@ -154,27 +156,16 @@
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div>
-						<label for="date" class="block text-sm font-medium mb-1">
-							Date <span class="text-red-500">*</span>
+						<label class="block text-sm font-medium mb-1">
+							Début <span class="text-red-500">*</span>
 						</label>
-						<input
-							type="date"
-							id="date"
-							name="date"
-							required
-							value={dateValue}
-							class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
-						/>
+						<DateTimePicker dateName="date" timeName="time" initialDate={dateValue} initialTime={timeValue} />
 					</div>
 					<div>
-						<label for="time" class="block text-sm font-medium mb-1"> Heure (optionnel) </label>
-						<input
-							type="time"
-							id="time"
-							name="time"
-							value={timeValue}
-							class="w-full px-3 py-2 border border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring scheme-light dark:scheme-dark"
-						/>
+						<label class="block text-sm font-medium mb-1 text-muted-foreground">
+							Fin <span class="text-xs font-normal">(optionnel)</span>
+						</label>
+						<DateTimePicker dateName="end_date" timeName="end_time" initialDate={endDateValue} initialTime={endTimeValue} placeholder="Choisir une date de fin" />
 					</div>
 				</div>
 
