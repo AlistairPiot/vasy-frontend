@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -76,7 +75,7 @@
 						<a href="/" class="text-primary hover:underline">Retour à l'accueil</a>
 					</div>
 				{:else if data.invitation}
-					<form method="POST" use:enhance class="space-y-6" novalidate>
+					<form method="POST" class="space-y-6" novalidate>
 						<!-- Hidden field so password managers associate the correct email -->
 						<input type="email" name="username" autocomplete="username" value={data.invitation.email} readonly style="display:none" />
 
