@@ -47,8 +47,8 @@ export const actions: Actions = {
 		}
 
 		const price = parseFloat(priceStr) * 100; // Convert to cents
-		if (isNaN(price) || price < 1000 || price > 500000) {
-			return fail(400, { error: 'Le prix doit être entre 10€ et 5000€' });
+		if (isNaN(price) || price < 1 || price > 500000) {
+			return fail(400, { error: 'Le prix doit être entre 0,01€ et 5000€' });
 		}
 
 		if (!stockStr) {
