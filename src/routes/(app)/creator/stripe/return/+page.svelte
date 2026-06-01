@@ -3,8 +3,12 @@
 	import { goto } from '$app/navigation';
 
 	onMount(async () => {
-		// Laisser le temps au webhook account.updated d'arriver
-		await new Promise(r => setTimeout(r, 2000));
+		// Synchronise le statut directement depuis l'API Stripe (ne dépend pas du webhook)
+		try {
+			await fetch('/api/stripe/connect/sync', { method: 'POST' });
+		} catch {
+			// Si le sync échoue, on redirige quand même
+		}
 		goto('/creator/profile');
 	});
 </script>
