@@ -182,14 +182,14 @@
 			</p>
 
 			<h1 bind:this={h1Ref} class="text-4xl md:text-7xl text-white mb-6 leading-tight">
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">Fait</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">avec</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">les</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">mains,</span></span><br />
-				<em class="not-italic text-[#E8A882]"><span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">vendu</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">avec</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">le</span></span>
-				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block">cœur.</span></span></em>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">Fait</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">avec</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">les</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">mains,</span></span><br />
+				<em class="not-italic text-[#E8A882]"><span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">vendu</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">avec</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">le</span></span>
+				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">cœur.</span></span></em>
 			</h1>
 
 			<p class="hero-subtitle opacity-0 translate-y-5 text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
