@@ -125,7 +125,7 @@
 			</a>
 		</Card>
 	{:else}
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 			{#each data.products as product}
 				<a href="/creator/products/{product.id}" use:tilt class="block">
 					<Card class="animate-in p-4 hover:shadow-md transition-shadow">

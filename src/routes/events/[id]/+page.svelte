@@ -225,7 +225,7 @@
 			]}
 		/>
 
-		<div class="animate-in flex items-center justify-between mt-6">
+		<div class="animate-in flex flex-wrap items-center justify-between gap-2 mt-6">
 			<a
 				href="/events"
 				class="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -283,7 +283,7 @@
 					</div>
 				{/if}
 
-				<h1 class="text-3xl font-bold mb-4">{data.event.name}</h1>
+				<h1 class="text-2xl sm:text-3xl font-bold mb-4">{data.event.name}</h1>
 
 				<Card class="p-4 mb-6">
 					<div class="space-y-3">
@@ -465,7 +465,7 @@
 			<!-- Carte -->
 			<div class="animate-in">
 				{#if hasCoordinates}
-					<Card class="overflow-hidden h-[400px]">
+					<Card class="overflow-hidden h-[280px] md:h-[400px]">
 						<EventsMap
 							events={eventsForMap}
 							bind:selectedEventId
@@ -473,7 +473,7 @@
 						/>
 					</Card>
 				{:else}
-					<Card class="h-[400px] flex items-center justify-center">
+					<Card class="h-[280px] md:h-[400px] flex items-center justify-center">
 						<p class="text-muted-foreground text-sm text-center">
 							Aucune carte disponible pour cet événement.
 						</p>

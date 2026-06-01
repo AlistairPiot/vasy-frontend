@@ -149,7 +149,7 @@
 		]} />
 
 		<div class="pt-8 mb-8">
-			<h1 class="text-3xl md:text-4xl text-foreground">Paiement</h1>
+			<h1 class="text-2xl sm:text-3xl md:text-4xl text-foreground">Paiement</h1>
 		</div>
 
 		<div class="grid md:grid-cols-5 gap-8 items-start">

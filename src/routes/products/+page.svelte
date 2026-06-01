@@ -186,17 +186,17 @@
 		<main class="container mx-auto px-4 md:px-6 py-8">
 			<Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Produits' }]} />
 
-			<div class="flex flex-col sm:flex-row justify-between items-end gap-4 pt-10 mb-6">
+			<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-10 mb-6">
 				<div>
 					{#if data.searchQuery}
-						<h1 class="animate-in text-4xl text-foreground mb-1">
+						<h1 class="animate-in text-2xl sm:text-3xl md:text-4xl text-foreground mb-1">
 							Résultats pour<br /><em class="not-italic text-primary">"{data.searchQuery}"</em>
 						</h1>
 						<p class="animate-in text-sm text-muted-foreground">
 							{data.products.length} produit{data.products.length > 1 ? 's' : ''} trouvé{data.products.length > 1 ? 's' : ''}
 						</p>
 					{:else}
-						<h1 class="animate-in text-4xl text-foreground">Toutes les créations</h1>
+						<h1 class="animate-in text-2xl sm:text-3xl md:text-4xl text-foreground">Toutes les créations</h1>
 						<p class="animate-in text-sm text-muted-foreground mt-1">Pièces uniques façonnées à la main</p>
 					{/if}
 				</div>
@@ -270,7 +270,7 @@
 			<!-- Panneau de filtres -->
 			{#if filtersOpen && !data.searchQuery}
 				<div class="mb-6 p-4 md:p-5 bg-card border border-border rounded-xl animate-in">
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 						<!-- Catégorie -->
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Catégorie</p>

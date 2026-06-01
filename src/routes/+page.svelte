@@ -97,11 +97,11 @@
 </script>
 
 <!-- Header -->
-<header class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b {scrollY > 50 ? 'bg-background/90 backdrop-blur-md shadow-sm border-border' : 'bg-transparent border-transparent'}">
+<header class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b {(scrollY > 50 || mobileMenuOpen) ? 'bg-background/95 backdrop-blur-md shadow-sm border-border' : 'bg-transparent border-transparent'}">
 	<div class="container mx-auto px-4 md:px-6 py-4">
 		<div class="flex justify-between items-center">
 			<a href="/" class="flex items-center gap-2 cursor-pointer">
-				<img src={logo} alt="Vasy" class="h-9 w-auto {scrollY > 50 ? '' : 'brightness-0 invert'}" />
+				<img src={logo} alt="Vasy" class="h-9 w-auto {(scrollY > 50 || mobileMenuOpen) ? '' : 'brightness-0 invert'}" />
 			</a>
 
 			<!-- Desktop nav -->
@@ -127,7 +127,7 @@
 			<!-- Mobile hamburger -->
 			<button
 				onclick={() => mobileMenuOpen = !mobileMenuOpen}
-				class="sm:hidden p-1 transition-colors {scrollY > 50 ? 'text-foreground/70 hover:text-foreground' : 'text-white/80 hover:text-white'}"
+				class="sm:hidden p-2 rounded-md transition-colors {(scrollY > 50 || mobileMenuOpen) ? 'text-foreground/70 hover:text-foreground hover:bg-accent' : 'text-white/80 hover:text-white'}"
 				aria-label="Menu"
 			>
 				{#if mobileMenuOpen}
@@ -144,18 +144,18 @@
 
 		<!-- Mobile menu -->
 		{#if mobileMenuOpen}
-			<div transition:slide={{ duration: 200 }} class="sm:hidden mt-3 pt-3 border-t {scrollY > 50 ? 'border-border/40' : 'border-white/20'}">
+			<div transition:slide={{ duration: 200 }} class="sm:hidden mt-3 pt-3 border-t border-border/40">
 				{#if data.user}
-					<a href="/dashboard" onclick={() => mobileMenuOpen = false} class="block py-2 text-sm font-medium {scrollY > 50 ? 'text-foreground' : 'text-white'}">
+					<a href="/dashboard" onclick={() => mobileMenuOpen = false} class="block py-2.5 px-1 text-sm font-medium text-foreground hover:text-primary transition-colors border-b border-border/30">
 						Mon espace
 					</a>
 				{:else}
-					<div class="flex flex-col gap-2 pb-2">
-						<a href="/login" onclick={() => mobileMenuOpen = false} class="py-2 text-sm font-medium {scrollY > 50 ? 'text-foreground/80' : 'text-white/80'}">
+					<div class="flex flex-col gap-1 pb-2">
+						<a href="/login" onclick={() => mobileMenuOpen = false} class="py-2.5 px-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors border-b border-border/30">
 							Connexion
 						</a>
-						<a href="/register" onclick={() => mobileMenuOpen = false}>
-							<Button size="sm" class="w-full {scrollY > 50 ? '' : 'bg-white/15! text-white! border-white/30!'}">
+						<a href="/register" onclick={() => mobileMenuOpen = false} class="pt-2">
+							<Button size="sm" class="w-full">
 								{#snippet children()}S'inscrire{/snippet}
 							</Button>
 						</a>
@@ -175,13 +175,13 @@
 	</div>
 
 	<div class="relative z-10 min-h-screen flex items-center">
-		<div class="container mx-auto px-5 md:px-6 py-20 md:py-32 text-center">
+		<div class="container mx-auto px-5 md:px-6 py-16 md:py-24 lg:py-32 text-center">
 
-			<p class="hero-tagline opacity-0 translate-y-5 text-white/60 text-sm tracking-[0.25em] uppercase mb-8 font-medium">
+			<p class="hero-tagline opacity-0 translate-y-5 text-white/60 text-sm tracking-[0.25em] uppercase mb-6 md:mb-8 font-medium">
 				Artisanat français
 			</p>
 
-			<h1 bind:this={h1Ref} class="text-4xl md:text-7xl text-white mb-6 leading-tight">
+			<h1 bind:this={h1Ref} class="text-3xl sm:text-5xl md:text-7xl text-white mb-6 leading-tight">
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">Fait</span></span>
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">avec</span></span>
 				<span class="word-wrap overflow-hidden inline-block"><span class="word-inner inline-block" style="transform:translateY(110%)">les</span></span>
@@ -229,7 +229,7 @@
 <!-- Bandeau événements -->
 <section class="py-8 border-b border-border fade-in-section">
 	<div class="container mx-auto px-4 md:px-6">
-		<a href="/events" class="group flex items-center justify-center gap-6">
+		<a href="/events" class="group flex items-center justify-center gap-3 md:gap-6">
 			<div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
 				<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -314,9 +314,9 @@
 	<div class="absolute inset-0 opacity-[0.06]" style="background-image: radial-gradient(circle, #C4704A 1px, transparent 1px); background-size: 32px 32px;"></div>
 
 	<div class="relative container mx-auto px-4 md:px-6">
-		<div class="text-center mb-16">
+		<div class="text-center mb-10 md:mb-16">
 			<p class="text-[#E8A882]/60 text-xs tracking-[0.35em] uppercase mb-4 font-medium">Fonctionnement</p>
-			<h2 class="text-3xl md:text-5xl text-white mb-4">Comment ça marche ?</h2>
+			<h2 class="text-2xl sm:text-3xl md:text-5xl text-white mb-4">Comment ça marche ?</h2>
 			<p class="text-white/35 max-w-xl mx-auto leading-relaxed">
 				Rejoignez notre communauté en quelques étapes simples
 			</p>
@@ -392,7 +392,7 @@
 <section class="py-14 md:py-24 fade-in-section">
 	<div class="container mx-auto px-4 md:px-6">
 		<div class="flex items-end justify-between mb-6 md:mb-12">
-			<h2 class="text-2xl md:text-4xl md:text-5xl text-foreground max-w-xs leading-tight">
+			<h2 class="text-xl sm:text-2xl md:text-4xl lg:text-5xl text-foreground max-w-xs leading-tight">
 				Nos créateurs<br /><em class="not-italic text-primary">passionnés</em>
 			</h2>
 			<a href="/products" class="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -437,7 +437,7 @@
 <!-- CTA final -->
 <section class="py-14 md:py-24 bg-[#2C1F14] text-white fade-in-section">
 	<div class="container mx-auto px-4 md:px-6 text-center">
-		<h2 class="text-2xl md:text-5xl mb-4 md:mb-6 leading-tight">
+		<h2 class="text-xl sm:text-2xl md:text-5xl mb-4 md:mb-6 leading-tight">
 			Prêt à rejoindre<br /><em class="not-italic text-[#E8A882]">l'aventure ?</em>
 		</h2>
 		<p class="text-white/60 mb-10 max-w-xl mx-auto leading-relaxed">

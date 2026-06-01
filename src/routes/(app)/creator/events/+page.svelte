@@ -142,6 +142,8 @@
 	let viewMode = $state<'both' | 'map' | 'list'>('both');
 
 	onMount(() => {
+		if (window.innerWidth < 640) viewMode = 'list';
+
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
 			opacity: 0,
@@ -208,11 +210,11 @@
 
 <div bind:this={containerRef}>
 	<!-- Header avec titre et actions -->
-	<div class="animate-in flex items-center justify-between mb-6">
+	<div class="animate-in flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
 		<h1 class="text-2xl font-bold">Mes événements</h1>
 		<div class="flex items-center gap-3">
-			<!-- Toggle de vue -->
-			<div class="flex bg-muted rounded-lg p-1">
+			<!-- Toggle de vue — caché sur mobile -->
+			<div class="hidden sm:flex bg-muted rounded-lg p-1">
 				<button
 					class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'list'
 						? 'bg-background shadow-sm'

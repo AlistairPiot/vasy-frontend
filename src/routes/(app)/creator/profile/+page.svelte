@@ -234,7 +234,7 @@
 		</div>
 	{/if}
 
-	<div class="grid lg:grid-cols-2 gap-6">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 		<!-- Colonne de gauche : Informations du profil -->
 		<div class="space-y-6">
 			<Card class="p-6">
@@ -407,12 +407,12 @@
 					<div class="space-y-4">
 						{#each data.orders.filter(o => o.status === 'en_attente') as order}
 							<div class="border rounded-lg p-4">
-								<div class="flex justify-between items-start mb-2">
-									<div>
-										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+								<div class="flex justify-between items-start mb-2 gap-2">
+									<div class="min-w-0">
+										<p class="font-semibold truncate">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<div class="text-right">
+									<div class="text-right shrink-0">
 										<p class="font-bold">{formatPrice(order.total_amount)}</p>
 										<p class="text-xs text-green-600">Vous recevrez: {formatPrice(order.creator_earnings)}</p>
 									</div>
@@ -468,12 +468,12 @@
 					<div class="space-y-4">
 						{#each data.orders.filter(o => o.status === 'validee') as order}
 							<div class="border rounded-lg p-4">
-								<div class="flex justify-between items-start mb-2">
-									<div>
-										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+								<div class="flex justify-between items-start mb-2 gap-2">
+									<div class="min-w-0">
+										<p class="font-semibold truncate">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<div class="text-right">
+									<div class="text-right shrink-0">
 										<p class="font-bold">{formatPrice(order.total_amount)}</p>
 										<p class="text-xs text-green-600">Vous recevrez: {formatPrice(order.creator_earnings)}</p>
 									</div>
@@ -554,12 +554,12 @@
 					<div class="space-y-4">
 						{#each data.orders.filter(o => o.status === 'expediee') as order}
 							<div class="border rounded-lg p-4 bg-green-50">
-								<div class="flex justify-between items-start mb-2">
-									<div>
-										<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+								<div class="flex justify-between items-start mb-2 gap-2">
+									<div class="min-w-0">
+										<p class="font-semibold truncate">Commande #{order.id.slice(0, 8)}</p>
 										<p class="text-sm text-muted-foreground">{new Date(order.shipped_at).toLocaleDateString('fr-FR')}</p>
 									</div>
-									<div class="text-right">
+									<div class="text-right shrink-0">
 										<p class="text-sm text-muted-foreground line-through">{formatPrice(order.total_amount)}</p>
 										<p class="font-bold text-green-600">Gagné: {formatPrice(order.creator_earnings)}</p>
 									</div>
@@ -601,12 +601,12 @@
 				<div class="space-y-3">
 					{#each data.orders.filter(o => o.status === 'refusee') as order}
 						<div class="border rounded-lg p-4 bg-muted/30 opacity-70">
-							<div class="flex justify-between items-start mb-2">
-								<div>
-									<p class="font-semibold">Commande #{order.id.slice(0, 8)}</p>
+							<div class="flex justify-between items-start mb-2 gap-2">
+								<div class="min-w-0">
+									<p class="font-semibold truncate">Commande #{order.id.slice(0, 8)}</p>
 									<p class="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</p>
 								</div>
-								<div class="text-right">
+								<div class="text-right shrink-0">
 									<span class="text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">Refusée</span>
 									<p class="text-sm text-muted-foreground mt-1">{formatPrice(order.total_amount)}</p>
 								</div>

@@ -258,7 +258,7 @@
 						/>
 					</button>
 					{#if images.length > 1}
-						<div class="grid grid-cols-5 gap-1 md:gap-2">
+						<div class="grid grid-cols-4 sm:grid-cols-5 gap-1 md:gap-2">
 							{#each images as image, i}
 								<button
 									onclick={() => (selectedImage = i)}
@@ -291,7 +291,7 @@
 					</a>
 				{/if}
 
-				<h1 class="text-3xl md:text-4xl text-foreground mb-3 leading-tight">{data.product.name}</h1>
+				<h1 class="text-2xl sm:text-3xl md:text-4xl text-foreground mb-3 leading-tight">{data.product.name}</h1>
 
 				<p class="text-3xl font-semibold text-primary mb-6">{formatPrice(data.product.price)}</p>
 

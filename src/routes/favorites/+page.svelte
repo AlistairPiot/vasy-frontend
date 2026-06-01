@@ -200,7 +200,7 @@
 						Aucun produit en favori. <a href="/products" class="text-primary hover:underline">Explorer les produits</a>
 					</p>
 				{:else}
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					<div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{#each products as product (product.id)}
 							{@const pending = pendingRemovalProducts.has(product.id)}
 							<div class="fav-card relative transition-opacity duration-200 {pending ? 'opacity-50' : ''}">
@@ -215,7 +215,7 @@
 									</svg>
 								</button>
 
-								<a href="/products/{product.id}">
+								<a href="/products/{product.id}" class="block">
 									<Card class="p-0 overflow-hidden hover:shadow-md transition-shadow">
 										{#if getFirstImage(product.image_urls)}
 											<img src={getFirstImage(product.image_urls)} alt={product.name} class="w-full h-48 object-cover" />
@@ -255,7 +255,7 @@
 						Aucun événement en favori. <a href="/events" class="text-primary hover:underline">Explorer les événements</a>
 					</p>
 				{:else}
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					<div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 						{#each events as event (event.id)}
 							{@const pending = pendingRemovalEvents.has(event.id)}
 							<div class="fav-card relative transition-opacity duration-200 {pending ? 'opacity-50' : ''}">

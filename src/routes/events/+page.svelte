@@ -13,9 +13,11 @@
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 	let selectedEventId = $state<string | null>(null);
-	let viewMode = $state<'both' | 'map' | 'list'>('both');
+	let viewMode = $state<'both' | 'map' | 'list'>('list');
 
 	onMount(() => {
+		if (window.innerWidth >= 768) viewMode = 'both';
+
 		gsap.from(containerRef.querySelectorAll('.animate-in'), {
 			y: 20,
 			opacity: 0,
@@ -80,21 +82,21 @@
 	<div class="relative" style="z-index: 2;">
 	<Header user={data.user} />
 
-	<main class="container mx-auto px-4 py-8">
+	<main class="container mx-auto px-4 py-8 overflow-x-hidden">
 		<Breadcrumb
 			items={[{ label: 'Accueil', href: '/' }, { label: 'Événements' }]}
 		/>
 
-		<div class="flex flex-col sm:flex-row justify-between items-end gap-4 pt-10 mb-8">
+		<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-10 mb-8">
 			<div>
-				<h1 class="animate-in text-4xl text-foreground">Événements</h1>
+				<h1 class="animate-in text-2xl sm:text-3xl md:text-4xl text-foreground">Événements</h1>
 				<p class="animate-in text-sm text-muted-foreground mt-1">
 					{data.events.length} événement{data.events.length > 1 ? 's' : ''} à découvrir
 				</p>
 			</div>
 
 			{#if data.events.length > 0}
-				<div class="animate-in flex bg-muted rounded-lg p-1">
+				<div class="animate-in hidden sm:flex bg-muted rounded-lg p-1">
 					<button
 						class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'list'
 							? 'bg-background shadow-sm'
@@ -142,7 +144,7 @@
 				{#if viewMode === 'list' || viewMode === 'both'}
 					<div
 						class="space-y-4 {viewMode === 'both'
-							? 'max-h-[calc(100vh-280px)] overflow-y-auto pr-2'
+							? 'md:max-h-[calc(100vh-280px)] md:overflow-y-auto md:pr-2'
 							: ''}"
 					>
 						{#each data.events as event}
@@ -237,8 +239,8 @@
 				{#if viewMode === 'map' || viewMode === 'both'}
 					<div
 						class="relative {viewMode === 'map'
-							? 'h-[calc(100vh-200px)]'
-							: 'h-[calc(100vh-280px)]'}"
+							? 'h-[70vh] md:h-[calc(100vh-200px)]'
+							: 'h-[55vh] md:h-[calc(100vh-280px)]'}"
 					>
 						<Card class="h-full overflow-hidden" data-lenis-prevent>
 							<EventsMap

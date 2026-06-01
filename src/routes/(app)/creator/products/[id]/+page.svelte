@@ -124,7 +124,7 @@
 </script>
 
 <div>
-	<div class="flex justify-between items-center mb-6">
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
 		<h1 class="text-2xl font-bold">Modifier le produit</h1>
 		<div class="flex gap-3">
 			<form method="POST" action="?/toggleActive" use:enhance>
@@ -252,7 +252,7 @@
 
 				{#if imageUrls.length > 0}
 					<p class="text-xs text-muted-foreground mt-2">Faites glisser pour réorganiser. La première image est la principale.</p>
-					<div class="grid grid-cols-5 gap-2 mt-1">
+					<div class="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-1">
 						{#each imageUrls as url, i}
 							<div
 								class="relative cursor-grab active:cursor-grabbing transition-opacity rounded
