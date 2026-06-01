@@ -11,6 +11,7 @@
 	import { eventFavorites } from '$lib/stores/eventFavorites';
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
+	import CookieBanner from '$lib/components/CookieBanner.svelte';
 	import { lenisStore } from '$lib/stores/lenis';
 
 	let { children, data } = $props();
@@ -103,4 +104,5 @@
 	</div>
 	<Footer />
 	<ScrollToTop />
+	<CookieBanner />
 </div>
