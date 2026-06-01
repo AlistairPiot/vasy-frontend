@@ -77,6 +77,9 @@
 					</div>
 				{:else if data.invitation}
 					<form method="POST" use:enhance class="space-y-6" novalidate>
+						<!-- Hidden field so password managers associate the correct email -->
+						<input type="email" name="username" autocomplete="username" value={data.invitation.email} readonly style="display:none" />
+
 						<div class="text-center mb-8">
 							<h1 class="text-2xl font-bold">Créer votre compte créateur</h1>
 							<p class="text-muted-foreground mt-2">
@@ -116,6 +119,8 @@
 								value={siretInput}
 								oninput={handleSiretInput}
 								maxlength={17}
+								autocomplete="off"
+								inputmode="numeric"
 								class={form?.errors?.siret ? 'border-destructive' : ''}
 							/>
 							{#if form?.errors?.siret}
@@ -133,6 +138,7 @@
 									required
 									placeholder="••••••••"
 									minlength={8}
+									autocomplete="new-password"
 									class="pr-10 {form?.errors?.password ? 'border-destructive' : ''}"
 								/>
 								<button
@@ -163,6 +169,7 @@
 									required
 									placeholder="••••••••"
 									minlength={8}
+									autocomplete="new-password"
 									class="pr-10 {form?.errors?.confirmPassword ? 'border-destructive' : ''}"
 								/>
 								<button
