@@ -51,13 +51,10 @@
 			}
 		}
 
-		gsap.from(containerRef.querySelectorAll('.animate-in'), {
-			y: 20,
-			opacity: 0,
-			duration: 0.6,
-			stagger: 0.1,
-			ease: 'power3.out'
-		});
+		gsap.fromTo(containerRef.querySelectorAll('.animate-in'),
+			{ y: 20, opacity: 0 },
+			{ y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' }
+		);
 	});
 
 	function formatPrice(cents: number): string {
@@ -142,7 +139,7 @@
 		<div class="grid md:grid-cols-3 gap-8 py-10">
 			<!-- Cart Items -->
 			<div class="md:col-span-2">
-				<div class="animate-in mb-8">
+				<div class="animate-in mb-8" style="opacity: 0">
 					<h1 class="text-4xl text-foreground mb-1">Mon panier</h1>
 					<p class="text-sm text-muted-foreground">
 						{$cart.items.length} article{$cart.items.length !== 1 ? 's' : ''}
@@ -161,7 +158,7 @@
 				{:else}
 					<div class="space-y-4">
 						{#each $cart.items as item, index (item.id)}
-							<Card class="cart-item-card p-4 animate-in hover:shadow-md transition-shadow" style={`animation-delay: ${index * 0.1}s`}>
+							<Card class="cart-item-card p-4 animate-in hover:shadow-md transition-shadow" style="opacity: 0">
 								<div class="flex gap-4">
 									<!-- Image -->
 									<a href="/products/{item.id}" class="w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity">
@@ -228,7 +225,7 @@
 
 			<!-- Order Summary -->
 			<div>
-				<Card class="p-6 animate-in sticky top-24">
+				<Card class="p-6 animate-in sticky top-24" style="opacity: 0">
 					<h2 class="text-xl font-semibold mb-6">Résumé</h2>
 
 					<div class="space-y-4 mb-6 border-b pb-6">
