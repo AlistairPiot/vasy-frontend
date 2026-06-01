@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 
 	const STORAGE_KEY = 'vasy_cookie_consent';
 
 	let visible = $state(false);
-	let bannerEl: HTMLDivElement;
+	let bannerEl = $state<HTMLDivElement | undefined>(undefined);
 
-	$effect(() => {
-		if (!browser) return;
+	onMount(() => {
 		if (!localStorage.getItem(STORAGE_KEY)) {
 			visible = true;
 		}
