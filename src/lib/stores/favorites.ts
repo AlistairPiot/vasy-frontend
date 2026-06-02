@@ -24,25 +24,31 @@ function createFavoritesStore() {
 			}
 		},
 
-		async add(productId: string) {
+		async add(productId: string): Promise<boolean> {
 			try {
-				await fetch('/api/favorites', {
+				const res = await fetch('/api/favorites', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ productId })
 				});
+				if (!res.ok) return false;
 				update((favs) => (favs.includes(productId) ? favs : [...favs, productId]));
+				return true;
 			} catch (err) {
 				console.error('Failed to add favorite:', err);
+				return false;
 			}
 		},
 
-		async remove(productId: string) {
+		async remove(productId: string): Promise<boolean> {
 			try {
-				await fetch(`/api/favorites/${productId}`, { method: 'DELETE' });
+				const res = await fetch(`/api/favorites/${productId}`, { method: 'DELETE' });
+				if (!res.ok) return false;
 				update((favs) => favs.filter((id) => id !== productId));
+				return true;
 			} catch (err) {
 				console.error('Failed to remove favorite:', err);
+				return false;
 			}
 		},
 
