@@ -2,8 +2,6 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import { beforeNavigate } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
-	const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -17,7 +15,7 @@
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
 
-	let products = $state<any[]>([]);
+	let products = $state<any[]>(data.products ?? []);
 	let events = $state<any[]>([]);
 	let loading = $state(true);
 
@@ -34,37 +32,22 @@
 	beforeNavigate(() => commitRemovals());
 
 	onMount(async () => {
-		const productIds = data.favoriteIds ?? [];
 		const eventIds = $eventFavorites;
 
-		const [productResults, eventResults] = await Promise.all([
-			Promise.all(
-				productIds.map(async (id) => {
-					try {
-						const res = await fetch(`${PUBLIC_API_URL}/products/${id}`);
-						return res.ok ? await res.json() : null;
-					} catch { return null; }
-				})
-			),
-			Promise.all(
-				eventIds.map(async (id) => {
-					try {
-						const res = await fetch(`${PUBLIC_API_URL}/events/public/${id}`);
-						return res.ok ? await res.json() : null;
-					} catch { return null; }
-				})
-			)
-		]);
+		const eventResults = await Promise.all(
+			eventIds.map(async (id) => {
+				try {
+					const res = await fetch(`/api/events/${id}`);
+					return res.ok ? await res.json() : null;
+				} catch { return null; }
+			})
+		);
 
-		// Purger immédiatement les favoris obsolètes (badge mis à jour)
+		// Purger les événements favoris obsolètes (localStorage uniquement)
 		eventIds.forEach((id, i) => {
-			if (!eventResults[i]) eventFavorites.remove(id);
-		});
-		productIds.forEach((id, i) => {
-			if (!productResults[i]) favorites.remove(id);
+			if (eventResults[i] === null) eventFavorites.remove(id);
 		});
 
-		products = productResults.filter(Boolean);
 		events = eventResults.filter(Boolean);
 		loading = false;
 
