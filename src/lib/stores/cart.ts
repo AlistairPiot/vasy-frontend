@@ -21,15 +21,20 @@ function newExpiresAt(): string {
 	return new Date(Date.now() + 30 * 60 * 1000).toISOString();
 }
 
-async function syncReservation(productId: string, quantity: number): Promise<void> {
+async function syncReservation(productId: string, quantity: number): Promise<{ ok: boolean; error?: string }> {
 	try {
-		await fetch(`/api/cart/items/${productId}`, {
+		const res = await fetch(`/api/cart/items/${productId}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ quantity }),
 		});
+		if (!res.ok) {
+			const data = await res.json().catch(() => ({}));
+			return { ok: false, error: data.detail || 'Stock insuffisant' };
+		}
+		return { ok: true };
 	} catch {
-		// Silencieux : la réservation est best-effort, le backend validera au checkout
+		return { ok: false, error: 'Erreur réseau' };
 	}
 }
 
@@ -54,10 +59,12 @@ function createCartStore() {
 		items: []
 	};
 
-	const { subscribe, set, update } = writable<Cart>(initialCart);
-
 	let currentUserId: string | null = null;
 	let isAuthenticated = false;
+	let currentCart: Cart = initialCart;
+
+	const { subscribe, set, update } = writable<Cart>(initialCart);
+	subscribe((c) => { currentCart = c; });
 
 	function getStorageKey(): string {
 		return currentUserId ? `${STORAGE_KEY_PREFIX}${currentUserId}` : `${STORAGE_KEY_PREFIX}guest`;
@@ -84,22 +91,31 @@ function createCartStore() {
 			}
 		},
 
-		addItem(item: CartItem) {
+		async addItem(item: CartItem): Promise<{ ok: boolean; error?: string }> {
+			const currentQty = currentCart.items.find((i) => i.id === item.id)?.quantity ?? 0;
+			const newQty = Math.min(currentQty + item.quantity, item.stock);
+
+			if (newQty <= currentQty) {
+				return { ok: false, error: 'Quantité maximum atteinte' };
+			}
+
+			if (isAuthenticated) {
+				const result = await syncReservation(item.id, newQty);
+				if (!result.ok) return result;
+			}
+
 			update((cart) => {
 				const existing = cart.items.find((i) => i.id === item.id);
 				if (existing) {
-					const newQty = Math.min(existing.quantity + item.quantity, item.stock);
 					existing.quantity = newQty;
 					existing.expires_at = newExpiresAt();
-					if (isAuthenticated) syncReservation(item.id, newQty);
 				} else {
-					const clampedQty = Math.min(item.quantity, item.stock);
-					cart.items.push({ ...item, quantity: clampedQty, expires_at: newExpiresAt() });
-					if (isAuthenticated) syncReservation(item.id, clampedQty);
+					cart.items.push({ ...item, quantity: newQty, expires_at: newExpiresAt() });
 				}
 				this.persist(cart);
 				return cart;
 			});
+			return { ok: true };
 		},
 
 		removeItem(productId: string) {
@@ -111,22 +127,32 @@ function createCartStore() {
 			});
 		},
 
-		updateQuantity(productId: string, quantity: number) {
+		async updateQuantity(productId: string, quantity: number): Promise<{ ok: boolean; error?: string }> {
+			if (quantity <= 0) {
+				update((cart) => {
+					cart.items = cart.items.filter((i) => i.id !== productId);
+					this.persist(cart);
+					return cart;
+				});
+				if (isAuthenticated) removeReservation(productId);
+				return { ok: true };
+			}
+
+			if (isAuthenticated) {
+				const result = await syncReservation(productId, quantity);
+				if (!result.ok) return result;
+			}
+
 			update((cart) => {
 				const item = cart.items.find((i) => i.id === productId);
 				if (item) {
-					if (quantity <= 0) {
-						cart.items = cart.items.filter((i) => i.id !== productId);
-						if (isAuthenticated) removeReservation(productId);
-					} else {
-						item.quantity = quantity;
-						item.expires_at = newExpiresAt();
-						if (isAuthenticated) syncReservation(productId, quantity);
-					}
+					item.quantity = quantity;
+					item.expires_at = newExpiresAt();
 				}
 				this.persist(cart);
 				return cart;
 			});
+			return { ok: true };
 		},
 
 		clear() {

@@ -16,10 +16,15 @@
 	let mainImageRef: HTMLButtonElement | undefined = $state();
 	let showAddedNotification = $state(false);
 	let notificationTimeout: ReturnType<typeof setTimeout>;
+	let addingToCart = $state(false);
 
 	const isFavorite = $derived(favorites.isFavorite(data.product.id, $favorites));
 	const cartItem = $derived($cart.items.find((i) => i.id === data.product.id));
-	const isMaxInCart = $derived(!!cartItem && cartItem.quantity >= data.product.stock);
+	// Le backend retourne stock ajusté (réel - réservation de cet utilisateur).
+	// On reconstitue le stock réel une seule fois au chargement (quantité initiale en panier fixe).
+	const initialCartQty = $cart.items.find((i) => i.id === data.product.id)?.quantity ?? 0;
+	const trueStock = data.product.stock + initialCartQty;
+	const isMaxInCart = $derived(!!cartItem && cartItem.quantity >= trueStock);
 
 	// Lightbox
 	let lightboxOpen = $state(false);
@@ -146,34 +151,41 @@
 		tl.to(fly, { scale: 0.15, opacity: 0.7, duration: 0.65, ease: 'power3.in' }, 0);
 	}
 
-	function addToCart() {
+	async function addToCart() {
 		if (!data.user) {
 			window.location.href = '/login';
 			return;
 		}
 
-		if (data.product.stock <= 0) return;
+		if (trueStock <= 0 || isMaxInCart || addingToCart) return;
 
-		flyToCart(() => {
-			cart.addItem({
+		addingToCart = true;
+		try {
+			const result = await cart.addItem({
 				id: data.product.id,
 				name: data.product.name,
 				price: data.product.price,
 				quantity: 1,
 				image_url: images[0] || '',
 				creator_id: data.product.creator_id,
-				stock: data.product.stock,
+				stock: trueStock,
 				expires_at: ''
 			});
-		});
 
-		showAddedNotification = true;
-		if (notificationTimeout) clearTimeout(notificationTimeout);
-		notificationTimeout = setTimeout(() => {
-			showAddedNotification = false;
-		}, 2000);
+			if (!result.ok) return;
 
-		gsap.fromTo('.notification', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.3 });
+			flyToCart(() => {});
+
+			showAddedNotification = true;
+			if (notificationTimeout) clearTimeout(notificationTimeout);
+			notificationTimeout = setTimeout(() => {
+				showAddedNotification = false;
+			}, 2000);
+
+			gsap.fromTo('.notification', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.3 });
+		} finally {
+			addingToCart = false;
+		}
 	}
 
 	function toggleFavorite() {
@@ -303,12 +315,15 @@
 
 				<!-- Stock -->
 				<div class="flex items-center gap-2 mb-6 py-3 border-y border-border/50">
-					{#if data.product.stock > 0}
-						<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
-						<span class="text-sm text-foreground/70">En stock — {data.product.stock} disponible{data.product.stock > 1 ? 's' : ''}</span>
-					{:else}
+					{#if trueStock <= 0}
 						<span class="w-2 h-2 rounded-full bg-muted-foreground shrink-0"></span>
 						<span class="text-sm text-muted-foreground">Épuisé</span>
+					{:else if isMaxInCart}
+						<span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+						<span class="text-sm text-muted-foreground">Quantité maximum dans votre panier</span>
+					{:else}
+						<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+						<span class="text-sm text-foreground/70">En stock — {trueStock} disponible{trueStock > 1 ? 's' : ''}</span>
 					{/if}
 				</div>
 
@@ -322,7 +337,7 @@
 					<div class="flex gap-3 mb-4">
 						<button
 							onclick={addToCart}
-							disabled={data.product.stock === 0 || isMaxInCart}
+							disabled={trueStock <= 0 || isMaxInCart || addingToCart}
 							class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed h-11 px-6 rounded-lg font-medium transition-colors text-sm"
 						>
 							{#if data.product.stock === 0}

@@ -13,6 +13,7 @@
 	let { data } = $props();
 	let showClearCartModal = $state(false);
 	let now = $state(Date.now());
+	let stockErrors = $state<Record<string, string>>({});
 
 	let containerRef: HTMLDivElement;
 	let emptyStateRef: HTMLDivElement | undefined = $state();
@@ -65,10 +66,20 @@
 		return $cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
 	}
 
-	function incrementQuantity(productId: string) {
+	async function incrementQuantity(productId: string) {
 		const item = $cart.items.find((i) => i.id === productId);
 		if (item && item.quantity < item.stock) {
-			cart.updateQuantity(productId, item.quantity + 1);
+			const result = await cart.updateQuantity(productId, item.quantity + 1);
+			if (!result.ok) {
+				stockErrors = { ...stockErrors, [productId]: result.error ?? 'Stock insuffisant' };
+				setTimeout(() => {
+					const { [productId]: _, ...rest } = stockErrors;
+					stockErrors = rest;
+				}, 4000);
+			} else {
+				const { [productId]: _, ...rest } = stockErrors;
+				stockErrors = rest;
+			}
 		}
 	}
 
@@ -201,7 +212,9 @@
 												+
 											</button>
 										</div>
-										{#if item.quantity >= item.stock}
+										{#if stockErrors[item.id]}
+											<p class="text-xs text-red-500 mt-1">{stockErrors[item.id]}</p>
+										{:else if item.quantity >= item.stock}
 											<p class="text-xs text-muted-foreground mt-1">Stock maximum atteint</p>
 										{/if}
 									</div>
