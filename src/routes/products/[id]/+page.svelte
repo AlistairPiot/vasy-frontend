@@ -161,7 +161,7 @@
 
 		addingToCart = true;
 		try {
-			const result = await cart.addItem({
+			const cartItem = {
 				id: data.product.id,
 				name: data.product.name,
 				price: data.product.price,
@@ -170,11 +170,16 @@
 				creator_id: data.product.creator_id,
 				stock: trueStock,
 				expires_at: ''
-			});
+			};
 
+			// 1. Vérifier le stock et réserver côté backend
+			const result = await cart.reserveItem(cartItem);
 			if (!result.ok) return;
 
-			flyToCart(() => {});
+			// 2. Lancer l'animation — le store se met à jour à l'arrivée (badge à la fin)
+			flyToCart(() => {
+				cart.addItem(cartItem);
+			});
 
 			showAddedNotification = true;
 			if (notificationTimeout) clearTimeout(notificationTimeout);

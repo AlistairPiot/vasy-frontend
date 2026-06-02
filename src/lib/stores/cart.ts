@@ -91,7 +91,7 @@ function createCartStore() {
 			}
 		},
 
-		async addItem(item: CartItem): Promise<{ ok: boolean; error?: string }> {
+		async reserveItem(item: CartItem): Promise<{ ok: boolean; error?: string }> {
 			const currentQty = currentCart.items.find((i) => i.id === item.id)?.quantity ?? 0;
 			const newQty = Math.min(currentQty + item.quantity, item.stock);
 
@@ -100,12 +100,16 @@ function createCartStore() {
 			}
 
 			if (isAuthenticated) {
-				const result = await syncReservation(item.id, newQty);
-				if (!result.ok) return result;
+				return await syncReservation(item.id, newQty);
 			}
+			return { ok: true };
+		},
 
+		addItem(item: CartItem): void {
 			update((cart) => {
 				const existing = cart.items.find((i) => i.id === item.id);
+				const currentQty = existing?.quantity ?? 0;
+				const newQty = Math.min(currentQty + item.quantity, item.stock);
 				if (existing) {
 					existing.quantity = newQty;
 					existing.expires_at = newExpiresAt();
@@ -115,7 +119,6 @@ function createCartStore() {
 				this.persist(cart);
 				return cart;
 			});
-			return { ok: true };
 		},
 
 		removeItem(productId: string) {
