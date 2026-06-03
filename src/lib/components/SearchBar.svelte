@@ -235,10 +235,16 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 		return `${(price / 100).toFixed(2)} €`;
 	}
 
+	function escapeHtml(str: string): string {
+		return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
 	function highlightText(text: string, query: string): string {
-		if (!query.trim()) return text;
-		const regex = new RegExp(`(${query})`, 'gi');
-		return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+		const safeText = escapeHtml(text);
+		if (!query.trim()) return safeText;
+		const safeQuery = escapeHtml(query.trim()).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const regex = new RegExp(`(${safeQuery})`, 'gi');
+		return safeText.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
 	}
 </script>
 

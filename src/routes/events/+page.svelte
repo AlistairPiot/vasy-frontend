@@ -12,8 +12,9 @@
 
 	let { data } = $props();
 	let containerRef: HTMLDivElement;
+	let listContainerRef: HTMLDivElement;
 	let selectedEventId = $state<string | null>(null);
-	let viewMode = $state<'both' | 'map' | 'list'>('list');
+	let viewMode = $state<'both' | 'list'>('list');
 
 	onMount(() => {
 		if (window.innerWidth >= 768) viewMode = 'both';
@@ -25,6 +26,14 @@
 			stagger: 0.08,
 			ease: 'power3.out'
 		});
+	});
+
+	$effect(() => {
+		if (!selectedEventId) return;
+		const el = document.getElementById(`event-${selectedEventId}`);
+		if (el) {
+			gsap.fromTo(el, { scale: 1 }, { scale: 1.025, duration: 0.14, ease: 'power2.out', yoyo: true, repeat: 1 });
+		}
 	});
 
 	function formatDate(dateStr: string): string {
@@ -68,11 +77,18 @@
 
 	function handleEventSelect(eventId: string) {
 		selectedEventId = eventId;
-		if (viewMode !== 'map') {
-			const element = document.getElementById(`event-${eventId}`);
-			if (element) {
-				element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
+		const element = document.getElementById(`event-${eventId}`);
+		if (!element) return;
+
+		if (viewMode === 'both' && listContainerRef) {
+			const offset =
+				element.getBoundingClientRect().top -
+				listContainerRef.getBoundingClientRect().top -
+				listContainerRef.clientHeight / 2 +
+				element.clientHeight / 2;
+			listContainerRef.scrollBy({ top: offset, behavior: 'smooth' });
+		} else {
+			element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}
 	}
 </script>
@@ -113,14 +129,6 @@
 					>
 						Les deux
 					</button>
-					<button
-						class="px-3 py-1.5 text-sm rounded-md transition-colors {viewMode === 'map'
-							? 'bg-background shadow-sm'
-							: 'hover:bg-background/50'}"
-						onclick={() => (viewMode = 'map')}
-					>
-						Carte
-					</button>
 				</div>
 			{/if}
 		</div>
@@ -143,16 +151,17 @@
 				<!-- Liste des événements -->
 				{#if viewMode === 'list' || viewMode === 'both'}
 					<div
+						bind:this={listContainerRef}
 						class="space-y-4 {viewMode === 'both'
-							? 'md:max-h-[calc(100vh-280px)] md:overflow-y-auto md:pr-2'
+							? 'md:max-h-[calc(100vh-280px)] md:overflow-y-auto md:pr-2 md:pl-0.5 md:py-0.5'
 							: ''}"
 					>
 						{#each data.events as event}
 							{@const badge = getStatusBadge(event.date)}
 							<Card
 								id="event-{event.id}"
-								class="transition-all cursor-pointer hover:shadow-md hover:-translate-y-0.5 {selectedEventId === event.id
-									? 'shadow-md -translate-y-0.5'
+								class="transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 {selectedEventId === event.id
+									? 'ring-2 ring-primary shadow-lg -translate-y-0.5'
 									: ''}"
 							>
 								<div
@@ -236,12 +245,8 @@
 				{/if}
 
 				<!-- Carte -->
-				{#if viewMode === 'map' || viewMode === 'both'}
-					<div
-						class="relative {viewMode === 'map'
-							? 'h-[70vh] md:h-[calc(100vh-200px)]'
-							: 'h-[55vh] md:h-[calc(100vh-280px)]'}"
-					>
+				{#if viewMode === 'both'}
+					<div class="relative h-[55vh] md:h-[calc(100vh-280px)]">
 						<Card class="h-full overflow-hidden" data-lenis-prevent>
 							<EventsMap
 								events={data.events}

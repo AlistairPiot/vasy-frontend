@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { serverApi } from '$lib/server/api';
+import { serverApi, RateLimitError } from '$lib/server/api';
 import { loginSchema } from '$lib/validations/auth';
 
 export const actions: Actions = {
@@ -36,9 +36,13 @@ export const actions: Actions = {
 
 			throw redirect(302, '/dashboard');
 		} catch (err) {
-			// Re-throw SvelteKit errors (like redirect)
-			if (err && typeof err === 'object' && 'status' in err) {
-				throw err;
+			if (err && typeof err === 'object' && 'status' in err) throw err;
+			if (err instanceof RateLimitError) {
+				return fail(429, {
+					errors: { form: [err.message] },
+					email: data.email,
+					rateLimitSeconds: err.retryAfter
+				});
 			}
 			if (err instanceof Error && err.message) {
 				return fail(401, {

@@ -2,6 +2,12 @@ import { env } from '$env/dynamic/private';
 
 const baseUrl = env.API_URL || 'http://localhost:8000/api';
 
+export class RateLimitError extends Error {
+	constructor(public retryAfter: number) {
+		super(`Trop de tentatives. Réessayez dans ${retryAfter} secondes.`);
+	}
+}
+
 export async function api<T>(
 	endpoint: string,
 	options: RequestInit & { token?: string } = {}
@@ -23,6 +29,10 @@ export async function api<T>(
 	});
 
 	if (!response.ok) {
+		if (response.status === 429) {
+			const retryAfter = parseInt(response.headers.get('Retry-After') || '60', 10);
+			throw new RateLimitError(retryAfter);
+		}
 		const error = await response.json().catch(() => ({ detail: 'Erreur serveur' }));
 		throw new Error(error.detail || 'Erreur');
 	}

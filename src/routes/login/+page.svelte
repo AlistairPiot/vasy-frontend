@@ -7,11 +7,30 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import logo from '$lib/assets/vasy.svg';
 
+	import { onDestroy } from 'svelte';
+
 	let { form } = $props();
 	let formRef: HTMLFormElement;
 	let cardRef: HTMLDivElement;
 	let logoRef: HTMLAnchorElement;
 	let showPassword = $state(false);
+	let countdown = $state(0);
+	let countdownTimer: ReturnType<typeof setInterval> | null = null;
+
+	function startCountdown(seconds: number) {
+		if (countdownTimer) clearInterval(countdownTimer);
+		countdown = seconds;
+		countdownTimer = setInterval(() => {
+			countdown -= 1;
+			if (countdown <= 0) {
+				clearInterval(countdownTimer!);
+				countdownTimer = null;
+				countdown = 0;
+			}
+		}, 1000);
+	}
+
+	onDestroy(() => { if (countdownTimer) clearInterval(countdownTimer); });
 
 	onMount(() => {
 		gsap.to(logoRef, {
@@ -30,6 +49,9 @@
 	});
 
 	$effect(() => {
+		if (form?.rateLimitSeconds) {
+			startCountdown(form.rateLimitSeconds);
+		}
 		if (form?.errors) {
 			gsap.from('.error-message', {
 				y: -10,
@@ -115,9 +137,13 @@
 						{/if}
 					</div>
 
-					<Button type="submit" class="w-full">
+					<Button type="submit" class="w-full" disabled={countdown > 0}>
 						{#snippet children()}
-							Se connecter
+							{#if countdown > 0}
+								Réessayer dans {countdown}s
+							{:else}
+								Se connecter
+							{/if}
 						{/snippet}
 					</Button>
 

@@ -325,18 +325,22 @@
 						<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prix (€)</p>
 						<div class="flex items-center gap-2">
 							<input
-								type="number"
+								type="text"
+								inputmode="numeric"
+								pattern="[0-9]*"
 								placeholder="Min"
-								min="0"
-								bind:value={draftPriceMin}
+								value={draftPriceMin}
+								oninput={(e) => { const el = e.currentTarget as HTMLInputElement; const v = el.value.replace(/\D/g, ''); el.value = v; draftPriceMin = v; }}
 								class="w-20 px-2 py-1.5 border border-input bg-background rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 							/>
 							<span class="text-muted-foreground text-sm">—</span>
 							<input
-								type="number"
+								type="text"
+								inputmode="numeric"
+								pattern="[0-9]*"
 								placeholder="Max"
-								min="0"
-								bind:value={draftPriceMax}
+								value={draftPriceMax}
+								oninput={(e) => { const el = e.currentTarget as HTMLInputElement; const v = el.value.replace(/\D/g, ''); el.value = v; draftPriceMax = v; }}
 								class="w-20 px-2 py-1.5 border border-input bg-background rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 							/>
 						</div>

@@ -80,10 +80,16 @@
   }
   html {
     overflow-x: hidden;
+    font-size: 16px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 17px;
+    }
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Jost', sans-serif;
     overflow-x: hidden;
   }
   .font-serif {

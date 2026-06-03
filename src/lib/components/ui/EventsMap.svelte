@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import type { Map, Marker } from 'leaflet';
 
 	interface Event {
@@ -26,7 +26,7 @@
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
-	let markers: Marker[] = [];
+	let markerMap = new Map<string, Marker>();
 	let L: typeof import('leaflet') | null = null;
 
 	// Position par défaut (France)
@@ -34,120 +34,83 @@
 	const DEFAULT_ZOOM = 6;
 
 	onMount(async () => {
-		// Import dynamique de Leaflet (côté client uniquement)
 		L = await import('leaflet');
-
-		// Créer la carte
 		map = L.map(mapContainer).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-
-		// Ajouter les tuiles OpenStreetMap
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution:
 				'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
-
-		// Ajouter les marqueurs
-		updateMarkers();
+		buildMarkers();
 	});
 
 	onDestroy(() => {
-		if (map) {
-			map.remove();
-			map = null;
-		}
+		if (map) { map.remove(); map = null; }
 	});
 
-	function updateMarkers() {
+	function createIcon(isSelected: boolean, isActive: boolean) {
+		const color = isSelected ? '#7c3aed' : isActive ? '#22c55e' : '#6b7280';
+		const size = isSelected ? 32 : 24;
+		const anchor = size / 2;
+		return L!.divIcon({
+			className: 'custom-marker',
+			html: `<div style="background-color:${color};width:${size}px;height:${size}px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);transition:all 0.2s;"></div>`,
+			iconSize: [size, size],
+			iconAnchor: [anchor, anchor]
+		});
+	}
+
+	// Construit tous les marqueurs et ajuste la vue (appelé une seule fois ou quand events change)
+	function buildMarkers() {
 		if (!map || !L) return;
+		markerMap.forEach((m) => m.remove());
+		markerMap.clear();
 
-		// Supprimer les anciens marqueurs
-		markers.forEach((marker) => marker.remove());
-		markers = [];
-
-		// Filtrer les événements avec coordonnées
 		const eventsWithCoords = events.filter(
 			(e) => e.latitude !== null && e.longitude !== null && e.status !== 'deleted'
 		);
+		if (eventsWithCoords.length === 0) return;
 
-		if (eventsWithCoords.length === 0) {
-			// Pas de coordonnées, afficher un message sur la carte
-			return;
-		}
-
-		// Créer l'icône personnalisée
-		const createIcon = (isSelected: boolean, isActive: boolean) => {
-			const color = isSelected ? '#7c3aed' : isActive ? '#22c55e' : '#6b7280';
-			return L!.divIcon({
-				className: 'custom-marker',
-				html: `
-					<div style="
-						background-color: ${color};
-						width: ${isSelected ? '32px' : '24px'};
-						height: ${isSelected ? '32px' : '24px'};
-						border-radius: 50%;
-						border: 3px solid white;
-						box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						transition: all 0.2s;
-					"></div>
-				`,
-				iconSize: [isSelected ? 32 : 24, isSelected ? 32 : 24],
-				iconAnchor: [isSelected ? 16 : 12, isSelected ? 16 : 12]
-			});
-		};
-
-		// Ajouter les marqueurs
 		eventsWithCoords.forEach((event) => {
-			const isSelected = event.id === selectedEventId;
-			const isActive = event.status === 'active';
 			const marker = L!.marker([event.latitude!, event.longitude!], {
-				icon: createIcon(isSelected, isActive)
+				icon: createIcon(event.id === selectedEventId, event.status === 'active')
 			}).addTo(map!);
 
-			// Popup avec infos
-			const popupContent = `
-				<div style="min-width: 150px;">
+			marker.bindPopup(`
+				<div style="min-width:150px;">
 					<strong>${event.name}</strong>
-					<p style="margin: 4px 0; font-size: 12px; color: #666;">
-						${event.location_text}
-					</p>
-					<p style="margin: 0; font-size: 11px; color: #888;">
-						${new Date(event.date).toLocaleDateString('fr-FR', {
-							day: 'numeric',
-							month: 'short',
-							year: 'numeric'
-						})}
-					</p>
+					<p style="margin:4px 0;font-size:12px;color:#666;">${event.location_text}</p>
+					<p style="margin:0;font-size:11px;color:#888;">${new Date(event.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
 				</div>
-			`;
-			marker.bindPopup(popupContent);
-
-			// Clic sur le marqueur
-			marker.on('click', () => {
-				onEventSelect(event.id);
-			});
-
-			markers.push(marker);
+			`);
+			marker.on('click', () => onEventSelect(event.id));
+			markerMap.set(event.id, marker);
 		});
 
-		// Ajuster la vue pour montrer tous les marqueurs
-		if (markers.length > 0) {
-			const group = L!.featureGroup(markers);
-			map!.fitBounds(group.getBounds().pad(0.1));
-		}
+		// fitBounds uniquement à la construction, pas lors d'un clic
+		const group = L!.featureGroup([...markerMap.values()]);
+		map!.fitBounds(group.getBounds().pad(0.1));
 	}
 
-	// Réagir aux changements des events et de la sélection
-	$effect(() => {
-		// Référencer explicitement les dépendances pour que Svelte les track
-		const _events = events;
-		const _selectedId = selectedEventId;
+	// Met à jour uniquement les icônes sans toucher au zoom
+	function refreshIcons() {
+		if (!L) return;
+		const eventMap = new Map(events.map((e) => [e.id, e]));
+		markerMap.forEach((marker, eventId) => {
+			const event = eventMap.get(eventId);
+			if (event) marker.setIcon(createIcon(eventId === selectedEventId, event.status === 'active'));
+		});
+	}
 
-		if (map && L && _events) {
-			updateMarkers();
-		}
+	// Reconstruire si la liste d'événements change (untrack selectedEventId pour ne pas fitBounds au clic)
+	$effect(() => {
+		const _events = events;
+		if (map && L && _events) untrack(() => buildMarkers());
+	});
+
+	// Juste mettre à jour les icônes quand la sélection change (pas de fitBounds)
+	$effect(() => {
+		const _selected = selectedEventId;
+		if (map && L && markerMap.size > 0) refreshIcons();
 	});
 </script>
 
