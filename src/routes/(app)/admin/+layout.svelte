@@ -13,7 +13,8 @@
 		{ href: '/admin/orders', label: 'Commandes' },
 		{ href: '/admin/commissions', label: 'Commissions' },
 		{ href: '/admin/events', label: 'Événements' },
-		{ href: '/admin/signalements', label: 'Signalements' }
+		{ href: '/admin/signalements', label: 'Signalements' },
+		{ href: '/admin/email', label: 'Emails' }
 	];
 </script>
 
