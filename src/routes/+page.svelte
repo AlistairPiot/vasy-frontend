@@ -393,7 +393,7 @@
 	<div class="container mx-auto px-4 md:px-6">
 		<div class="flex items-end justify-between mb-6 md:mb-12">
 			<h2 class="text-xl sm:text-2xl md:text-4xl lg:text-5xl text-foreground max-w-xs leading-tight">
-				Nos créateurs<br /><em class="not-italic text-primary">passionnés</em>
+				Nos dernières<br /><em class="not-italic text-primary">créations</em>
 			</h2>
 			<a href="/products" class="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
 				Tout voir
@@ -403,26 +403,30 @@
 			</a>
 		</div>
 
-		<div class="columns-2 md:columns-3 gap-2 md:gap-4 space-y-2 md:space-y-4">
-			{#each [
-				{ h: 'aspect-[3/4]', label: 'Céramique', creator: 'Atelier du Midi' },
-				{ h: 'aspect-square', label: 'Maroquinerie', creator: 'L\'Atelier cuir' },
-				{ h: 'aspect-[4/5]', label: 'Bijoux', creator: 'Créations Léa' },
-				{ h: 'aspect-[3/5]', label: 'Bois tourné', creator: 'Bois & Sens' },
-				{ h: 'aspect-square', label: 'Textile', creator: 'Fil Rouge' },
-				{ h: 'aspect-[4/3]', label: 'Poterie', creator: 'La Terre Cuite' },
-			] as card}
-				<div use:tilt class="break-inside-avoid group cursor-pointer">
-					<div class="{card.h} bg-muted rounded-lg overflow-hidden relative">
-						<div class="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-300"></div>
-					</div>
-					<div class="pt-2 pb-1">
-						<p class="text-sm font-medium text-foreground">{card.label}</p>
-						<p class="text-xs text-muted-foreground">{card.creator}</p>
-					</div>
-				</div>
-			{/each}
-		</div>
+		{#if data.featuredProducts.length > 0}
+			<div class="columns-2 md:columns-3 gap-2 md:gap-4 space-y-2 md:space-y-4">
+				{#each data.featuredProducts as product, i}
+					{@const images = (() => { try { return JSON.parse(product.image_urls); } catch { return []; } })()}
+					{@const aspects = ['aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[3/5]', 'aspect-square', 'aspect-[4/3]']}
+					<a href="/products/{product.id}" use:tilt class="break-inside-avoid group cursor-pointer block">
+						<div class="{aspects[i % aspects.length]} bg-muted rounded-lg overflow-hidden relative">
+							{#if images[0]}
+								<img src={images[0]} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+							{/if}
+							<div class="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-300"></div>
+						</div>
+						<div class="pt-2 pb-1">
+							<p class="text-sm font-medium text-foreground truncate">{product.name}</p>
+							<p class="text-xs text-muted-foreground">{product.creator_name ?? ''}</p>
+						</div>
+					</a>
+				{/each}
+			</div>
+		{:else}
+			<div class="text-center py-16 text-muted-foreground">
+				<p class="text-sm">Les premières créations arrivent bientôt…</p>
+			</div>
+		{/if}
 
 		<div class="text-center mt-14">
 			<a href="/products">
