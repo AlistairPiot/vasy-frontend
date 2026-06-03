@@ -2,8 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { gsap } from 'gsap';
 	import { goto } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
-const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 
 	interface SearchResult {
 		id: string;
@@ -71,7 +69,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 
 	async function loadSuggestions() {
 		try {
-			const response = await fetch(`${PUBLIC_API_URL}/search/suggestions?limit=5`);
+			const response = await fetch(`/api/search/suggestions?limit=5`);
 			const data = await response.json();
 			suggestions = data.suggestions || [];
 		} catch (error) {
@@ -103,7 +101,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 
 	async function performSearch(query: string) {
 		try {
-			const response = await fetch(`${PUBLIC_API_URL}/search?q=${encodeURIComponent(query)}&limit=8`);
+			const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=8`);
 			const data = await response.json();
 			results = data.results || [];
 			creators = data.creators || [];
@@ -431,7 +429,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 	{#if showPreview && hoveredResult}
 		<div
 			bind:this={previewContainer}
-			class="fixed z-[60] bg-white rounded-lg shadow-2xl border border-gray-200 p-6 w-80"
+			class="fixed z-60 bg-white rounded-lg shadow-2xl border border-gray-200 p-6 w-80"
 			style="left: calc(100% + 1rem); top: 0;"
 		>
 			<img
