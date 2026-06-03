@@ -66,7 +66,7 @@
 					imageUrls = [...imageUrls, data.url];
 				}
 			} catch (err) {
-				console.error('Upload failed:', err);
+				// silently ignore
 			}
 		}
 

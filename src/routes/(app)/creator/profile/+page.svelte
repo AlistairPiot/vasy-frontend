@@ -147,7 +147,7 @@
 				const d = await res.json();
 				if (d.url) profileImageUrl = d.url;
 			} catch (err) {
-				console.error('Upload failed:', err);
+				// silently ignore
 			} finally {
 				uploading = false;
 			}

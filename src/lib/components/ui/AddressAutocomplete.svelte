@@ -68,7 +68,7 @@
 				selectedIndex = -1;
 			}
 		} catch (error) {
-			console.error('Erreur de recherche:', error);
+			// silently ignore
 			suggestions = [];
 		} finally {
 			isLoading = false;

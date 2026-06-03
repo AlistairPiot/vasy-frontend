@@ -34,8 +34,7 @@ function createFavoritesStore() {
 				if (!res.ok) return false;
 				update((favs) => (favs.includes(productId) ? favs : [...favs, productId]));
 				return true;
-			} catch (err) {
-				console.error('Failed to add favorite:', err);
+			} catch {
 				return false;
 			}
 		},
@@ -46,8 +45,7 @@ function createFavoritesStore() {
 				if (!res.ok) return false;
 				update((favs) => favs.filter((id) => id !== productId));
 				return true;
-			} catch (err) {
-				console.error('Failed to remove favorite:', err);
+			} catch {
 				return false;
 			}
 		},

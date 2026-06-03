@@ -75,7 +75,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 			const data = await response.json();
 			suggestions = data.suggestions || [];
 		} catch (error) {
-			console.error('Erreur lors du chargement des suggestions:', error);
+			// silently ignore
 		}
 	}
 
@@ -114,7 +114,7 @@ const PUBLIC_API_URL = env.PUBLIC_API_URL || 'http://localhost:8000/api';
 				animateResults();
 			}
 		} catch (error) {
-			console.error('Erreur lors de la recherche:', error);
+			// silently ignore
 			results = [];
 			creators = [];
 		} finally {

@@ -85,7 +85,7 @@ function createCartStore() {
 						set({ items: [] });
 					}
 				} catch (err) {
-					console.error('Failed to load cart from localStorage:', err);
+					// silently ignore
 					set({ items: [] });
 				}
 			}
