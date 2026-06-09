@@ -70,7 +70,7 @@
 				const data = await response.json();
 				suggestions = data.features.map((f: any) => ({
 					label: f.properties.label,
-					street: f.properties.name ?? '',
+					street: f.properties.street ?? f.properties.name ?? '',
 					postcode: f.properties.postcode ?? '',
 					city: f.properties.city ?? '',
 					lat: f.geometry.coordinates[1],

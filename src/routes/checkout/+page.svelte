@@ -20,6 +20,7 @@
 	let errorMessage = $state('');
 
 	let shippingName = $state('');
+	let shippingNumber = $state('');
 	let shippingAddress = $state('');
 	let shippingCity = $state('');
 	let shippingPostalCode = $state('');
@@ -63,7 +64,7 @@
 	const checkoutPayload = () => ({
 		items: $cart.items.map(item => ({ product_id: item.id, quantity: item.quantity })),
 		shipping_name: shippingName,
-		shipping_address: shippingAddress,
+		shipping_address: shippingNumber ? `${shippingNumber} ${shippingAddress}` : shippingAddress,
 		shipping_city: shippingCity,
 		shipping_postal_code: shippingPostalCode,
 		shipping_country: 'FR',
@@ -174,18 +175,31 @@
 									class={inputClass}
 								/>
 							</div>
-							<div>
-								<label for="shipping-address" class={labelClass}>Adresse de livraison</label>
-								<AddressAutocomplete
-									id="shipping-address"
-									name="shipping-address"
-									placeholder="123 Rue de la Paix, Paris..."
-									required
-									bind:value={shippingAddressLabel}
-									bind:street={shippingAddress}
-									bind:postcode={shippingPostalCode}
-									bind:city={shippingCity}
-								/>
+							<div class="grid grid-cols-3 gap-3">
+								<div>
+									<label for="shipping-number" class={labelClass}>Numéro</label>
+									<input
+										id="shipping-number"
+										type="text"
+										bind:value={shippingNumber}
+										placeholder="12"
+										autocomplete="off"
+										class={inputClass}
+									/>
+								</div>
+								<div class="col-span-2">
+									<label for="shipping-address" class={labelClass}>Rue *</label>
+									<AddressAutocomplete
+										id="shipping-address"
+										name="shipping-address"
+										placeholder="Rue de la Paix, Paris..."
+										required
+										bind:value={shippingAddressLabel}
+										bind:street={shippingAddress}
+										bind:postcode={shippingPostalCode}
+										bind:city={shippingCity}
+									/>
+								</div>
 							</div>
 							<div>
 								<label class={labelClass}>Pays</label>
