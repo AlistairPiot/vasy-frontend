@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { onMount } from 'svelte';
-	import { gsap } from 'gsap';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import {
-		calculateProductCommission,
-		formatPrice,
-		COMMISSION_PERCENT
-	} from '$lib/utils';
 	import { CATEGORIES, MATERIALS, STYLES, TECHNIQUES } from '$lib/productFilters';
+	import {
+	    calculateProductCommission,
+	    COMMISSION_PERCENT,
+	    formatPrice
+	} from '$lib/utils';
+	import { gsap } from 'gsap';
+	import { onMount } from 'svelte';
 
 	let { data, form } = $props();
 
@@ -164,7 +164,7 @@
 		</div>
 		<div class="mt-4 pt-4 border-t border-blue-200">
 			<div class="flex justify-between text-xs font-semibold text-blue-900">
-				<span>Commission ({COMMISSION_PERCENT}% tout inclus)</span>
+				<span>Commission Vasy ({COMMISSION_PERCENT}% — frais de paiement inclus)</span>
 				<span>-{formatPrice(commission.totalCommission)}</span>
 			</div>
 		</div>
