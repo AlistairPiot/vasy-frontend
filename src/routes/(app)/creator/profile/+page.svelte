@@ -8,6 +8,18 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import { formatPrice } from '$lib/utils';
 
+	function getTerritoire(postalCode: string): { label: string; overseas: boolean } {
+		if (!postalCode) return { label: 'France', overseas: false };
+		const prefix = postalCode.substring(0, 3);
+		if (prefix === '971') return { label: 'Guadeloupe', overseas: true };
+		if (prefix === '972') return { label: 'Martinique', overseas: true };
+		if (prefix === '973') return { label: 'Guyane', overseas: true };
+		if (prefix === '974') return { label: 'La Réunion', overseas: true };
+		if (prefix === '976') return { label: 'Mayotte', overseas: true };
+		if (postalCode.startsWith('20')) return { label: 'Corse', overseas: true };
+		return { label: 'France', overseas: false };
+	}
+
 	let { data, form } = $props();
 	let formRef: HTMLFormElement;
 	let profileImageUrl = $state(data.creator.profile_image_url || '');
@@ -420,7 +432,12 @@
 
 								<div class="text-sm mb-3">
 									<p><strong>Livraison :</strong> {order.shipping_name}</p>
-									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
+									<p class="text-muted-foreground">
+									{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}
+									<span class="inline-block ml-1 px-1.5 py-0.5 rounded text-xs font-medium {getTerritoire(order.shipping_postal_code).overseas ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}">
+										{getTerritoire(order.shipping_postal_code).label}
+									</span>
+								</p>
 								</div>
 
 								<div class="mb-3 space-y-1">
@@ -481,7 +498,12 @@
 
 								<div class="text-sm mb-3">
 									<p><strong>Livraison :</strong> {order.shipping_name}</p>
-									<p class="text-muted-foreground">{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}</p>
+									<p class="text-muted-foreground">
+									{order.shipping_address}, {order.shipping_postal_code} {order.shipping_city}
+									<span class="inline-block ml-1 px-1.5 py-0.5 rounded text-xs font-medium {getTerritoire(order.shipping_postal_code).overseas ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}">
+										{getTerritoire(order.shipping_postal_code).label}
+									</span>
+								</p>
 								</div>
 
 								<div class="mb-3 space-y-1">

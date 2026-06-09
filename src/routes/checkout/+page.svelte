@@ -8,6 +8,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import AddressAutocomplete from '$lib/components/ui/AddressAutocomplete.svelte';
 
 	let { data } = $props();
 
@@ -22,6 +23,7 @@
 	let shippingAddress = $state('');
 	let shippingCity = $state('');
 	let shippingPostalCode = $state('');
+	let shippingAddressLabel = $state('');
 
 	let totalAmount = $derived($cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0));
 
@@ -173,42 +175,26 @@
 								/>
 							</div>
 							<div>
-								<label for="shipping-address" class={labelClass}>Adresse</label>
-								<input
+								<label for="shipping-address" class={labelClass}>Adresse de livraison</label>
+								<AddressAutocomplete
 									id="shipping-address"
-									type="text"
-									bind:value={shippingAddress}
+									name="shipping-address"
+									placeholder="123 Rue de la Paix, Paris..."
 									required
-									autocomplete="street-address"
-									placeholder="123 Rue de la Paix"
-									class={inputClass}
+									bind:value={shippingAddressLabel}
+									bind:street={shippingAddress}
+									bind:postcode={shippingPostalCode}
+									bind:city={shippingCity}
 								/>
 							</div>
-							<div class="grid grid-cols-2 gap-4">
-								<div>
-									<label for="shipping-postal" class={labelClass}>Code postal</label>
-									<input
-										id="shipping-postal"
-										type="text"
-										bind:value={shippingPostalCode}
-										required
-										autocomplete="postal-code"
-										placeholder="75001"
-										class={inputClass}
-									/>
-								</div>
-								<div>
-									<label for="shipping-city" class={labelClass}>Ville</label>
-									<input
-										id="shipping-city"
-										type="text"
-										bind:value={shippingCity}
-										required
-										autocomplete="address-level2"
-										placeholder="Paris"
-										class={inputClass}
-									/>
-								</div>
+							<div>
+								<label class={labelClass}>Pays</label>
+								<input
+									type="text"
+									value="France"
+									disabled
+									class="{inputClass} bg-muted text-muted-foreground cursor-not-allowed"
+								/>
 							</div>
 						</div>
 					</Card>

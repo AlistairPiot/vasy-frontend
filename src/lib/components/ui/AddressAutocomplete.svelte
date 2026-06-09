@@ -3,6 +3,9 @@
 
 	interface AddressSuggestion {
 		label: string;
+		street: string;
+		postcode: string;
+		city: string;
 		lat: number;
 		lon: number;
 	}
@@ -11,6 +14,9 @@
 		value = $bindable(''),
 		latitude = $bindable<number | null>(null),
 		longitude = $bindable<number | null>(null),
+		street = $bindable(''),
+		postcode = $bindable(''),
+		city = $bindable(''),
 		placeholder = 'Rechercher une adresse...',
 		required = false,
 		id = 'address',
@@ -20,6 +26,9 @@
 		value?: string;
 		latitude?: number | null;
 		longitude?: number | null;
+		street?: string;
+		postcode?: string;
+		city?: string;
 		placeholder?: string;
 		required?: boolean;
 		id?: string;
@@ -61,6 +70,9 @@
 				const data = await response.json();
 				suggestions = data.features.map((f: any) => ({
 					label: f.properties.label,
+					street: f.properties.name ?? '',
+					postcode: f.properties.postcode ?? '',
+					city: f.properties.city ?? '',
 					lat: f.geometry.coordinates[1],
 					lon: f.geometry.coordinates[0],
 				}));
@@ -97,6 +109,9 @@
 		value = suggestion.label;
 		latitude = suggestion.lat;
 		longitude = suggestion.lon;
+		street = suggestion.street;
+		postcode = suggestion.postcode;
+		city = suggestion.city;
 		isAddressSelected = true;
 		showDropdown = false;
 		suggestions = [];
@@ -146,6 +161,9 @@
 		value = '';
 		latitude = null;
 		longitude = null;
+		street = '';
+		postcode = '';
+		city = '';
 		isAddressSelected = false;
 		suggestions = [];
 		inputRef?.focus();
