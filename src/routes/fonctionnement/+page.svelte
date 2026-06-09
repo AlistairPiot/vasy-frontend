@@ -91,6 +91,9 @@
 						L'encaissement définitif n'a lieu qu'au moment où le créateur expédie votre colis.
 						Si la commande est refusée ou annulée, la réservation est levée et le montant disparaît de votre relevé.
 					</p>
+					<p class="text-sm text-muted-foreground leading-relaxed">
+						Le <strong class="text-foreground">prix affiché inclut les frais de livraison</strong> — aucun frais supplémentaire ne vous sera demandé au moment du paiement.
+					</p>
 
 					<div class="border rounded-lg divide-y mt-2">
 						<div class="flex items-center gap-3 px-4 py-3">

@@ -190,6 +190,12 @@
 					<Input type="number" id="stock" name="stock" required min="0" value="0" />
 				</div>
 			</div>
+			<div class="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0">
+					<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+				</svg>
+				Les frais de livraison sont à votre charge. Pensez à les inclure dans le prix affiché.
+			</div>
 
 			<div class="space-y-2">
 				<label class="text-sm font-medium">Images *</label>
