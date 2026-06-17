@@ -313,7 +313,7 @@
 				<p class="text-3xl font-semibold text-primary mb-6">{formatPrice(data.product.price)}</p>
 
 				{#if data.product.description}
-					<div class="max-h-48 overflow-y-auto mb-6 pr-1" data-lenis-prevent>
+					<div class="mb-6">
 						<p class="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">{data.product.description}</p>
 					</div>
 				{/if}

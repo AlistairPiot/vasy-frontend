@@ -45,14 +45,22 @@
 		}
 	});
 
+	const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 Mo
+	let uploadError = $state('');
+
 	async function handleImageUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const files = input.files;
 		if (!files || files.length === 0) return;
 
+		uploadError = '';
 		uploading = true;
 
 		for (const file of files) {
+			if (file.size > MAX_IMAGE_SIZE) {
+				uploadError = `"${file.name}" dépasse la taille maximale de 10 Mo.`;
+				continue;
+			}
 			const formData = new FormData();
 			formData.append('file', file);
 
@@ -199,6 +207,7 @@
 
 			<div class="space-y-2">
 				<label class="text-sm font-medium">Images *</label>
+				<p class="text-xs text-muted-foreground">Max 5 images · 10 Mo par image</p>
 				<div class="border-2 border-dashed rounded-md p-4 {imageUrls.length === 0 && form?.error?.includes('image') ? 'border-destructive' : 'border-input'}">
 					<input
 						type="file"
@@ -218,10 +227,13 @@
 						{:else if imageUrls.length >= 5}
 							Maximum 5 images atteint
 						{:else}
-							Cliquez pour ajouter des images (max 5)
+							Cliquez pour ajouter des images
 						{/if}
 					</label>
 				</div>
+				{#if uploadError}
+					<p class="text-xs text-destructive">{uploadError}</p>
+				{/if}
 
 				{#if imageUrls.length > 0}
 					<p class="text-xs text-muted-foreground mt-2">Faites glisser pour réorganiser. La première image est la principale.</p>
