@@ -179,7 +179,7 @@
 	</Card>
 
 	<Card class="max-w-2xl p-6">
-		<form method="POST" action="?/update" use:enhance bind:this={formRef} class="space-y-6" novalidate>
+		<form method="POST" action="?/update" use:enhance={() => ({ update }) => update({ reset: false })} bind:this={formRef} class="space-y-6" novalidate>
 			{#if form?.error}
 				<div class="form-message bg-destructive/10 text-destructive text-sm p-3 rounded-md">
 					{form.error}
@@ -304,7 +304,7 @@
 			<!-- Catégorie & Matière -->
 			<div class="grid grid-cols-2 gap-4">
 				<div class="space-y-2">
-					<label for="category" class="text-sm font-medium">Catégorie</label>
+					<label for="category" class="text-sm font-medium">Catégorie *</label>
 					<Select
 						id="category"
 						name="category"

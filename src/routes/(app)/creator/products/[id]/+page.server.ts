@@ -41,6 +41,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Champs requis manquants' });
 		}
 
+		if (!category) {
+			return fail(400, { error: 'La catégorie est requise' });
+		}
+
 		try {
 			await serverApi.patch(
 				`/products/${params.id}`,

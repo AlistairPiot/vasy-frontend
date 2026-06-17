@@ -65,6 +65,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Au moins une image est requise' });
 		}
 
+		if (!category) {
+			return fail(400, { error: 'La catégorie est requise' });
+		}
+
 		try {
 			await serverApi.post(
 				'/products/',

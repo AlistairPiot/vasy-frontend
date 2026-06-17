@@ -271,7 +271,7 @@
 			<!-- Catégorie & Matière -->
 			<div class="grid grid-cols-2 gap-4">
 				<div class="space-y-2">
-					<label for="category" class="text-sm font-medium">Catégorie</label>
+					<label for="category" class="text-sm font-medium">Catégorie *</label>
 					<Select
 						id="category"
 						name="category"
