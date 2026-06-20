@@ -9,7 +9,8 @@
 		<div class="prose prose-sm max-w-none">
 			<h2 class="text-2xl font-semibold mb-4">1. Éditeur du site</h2>
 			<p class="mb-4">
-				<strong>Raison sociale :</strong> Vasy<br/>
+				<strong>Nom commercial :</strong> Vasy Creation<br/>
+				<strong>Exploitant :</strong> Alistair Piot<br/>
 				<strong>Siège social :</strong> 13 Rue Georges Braque, 86550 Mignaloux-Beauvoir, France<br/>
 				<strong>Email :</strong> <a href="mailto:vasy.creation.contact@gmail.com" class="text-primary hover:underline">vasy.creation.contact@gmail.com</a><br/>
 				<strong>SIRET :</strong> 989 593 447 00018

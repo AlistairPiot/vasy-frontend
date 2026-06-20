@@ -326,7 +326,7 @@
 			{#each [
 				{
 					n: '01', title: 'Inscrivez-vous',
-					text: 'Créez votre compte gratuitement. Choisissez votre rôle : créateur ou client.',
+					text: 'Créez votre compte gratuitement en quelques secondes.',
 					texture: textureCuir,
 					glow: 'rgba(196,80,45,0.5)',
 				},
