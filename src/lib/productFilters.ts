@@ -42,6 +42,7 @@ export const TECHNIQUES = [
 	'Tournage',
 	'Tissage',
 	'Broderie',
+	'Couture',
 	'Gravure',
 	'Forge',
 	'Soufflage de verre',

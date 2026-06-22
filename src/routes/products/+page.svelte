@@ -438,7 +438,7 @@
 				<div class="columns-2 md:columns-3 xl:columns-4 gap-2 md:gap-4">
 					{#each data.products as product}
 						<a href="/products/{product.id}" use:tilt class="block break-inside-avoid mb-4 group">
-							<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-all duration-300">
+							<div class="product-card opacity-0 overflow-hidden rounded-lg bg-card border border-border/40 hover:border-border hover:shadow-md transition-[box-shadow,border-color] duration-300">
 								{#if getFirstImage(product.image_urls)}
 									<div class="overflow-hidden">
 										<img
