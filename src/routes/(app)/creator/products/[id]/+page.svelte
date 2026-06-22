@@ -54,6 +54,7 @@
 
 	$effect(() => {
 		if (form?.error || form?.success) {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 			gsap.from('.form-message', {
 				y: -10,
 				opacity: 0,
