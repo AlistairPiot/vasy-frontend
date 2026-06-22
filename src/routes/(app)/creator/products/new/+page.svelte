@@ -7,6 +7,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { CATEGORIES, MATERIALS, STYLES, TECHNIQUES } from '$lib/productFilters';
+	import { PUBLIC_CLOUDINARY_CLOUD_NAME, PUBLIC_CLOUDINARY_UPLOAD_PRESET } from '$env/static/public';
 
 	let { form, data } = $props();
 	let formRef: HTMLFormElement;
@@ -63,15 +64,18 @@
 			}
 			const formData = new FormData();
 			formData.append('file', file);
+			formData.append('upload_preset', PUBLIC_CLOUDINARY_UPLOAD_PRESET);
 
 			try {
-				const response = await fetch('/api/upload', {
-					method: 'POST',
-					body: formData
-				});
+				const response = await fetch(
+					`https://api.cloudinary.com/v1_1/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+					{ method: 'POST', body: formData }
+				);
 				const data = await response.json();
-				if (data.url) {
-					imageUrls = [...imageUrls, data.url];
+				if (data.secure_url) {
+					imageUrls = [...imageUrls, data.secure_url];
+				} else {
+					uploadError = data.error?.message ?? "Erreur lors de l'upload.";
 				}
 			} catch (err) {
 				// silently ignore
